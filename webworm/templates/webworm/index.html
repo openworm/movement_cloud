@@ -1,0 +1,9 @@
+<h1>All Worm Movement Experiments</h1>
+
+<ul>
+  {% for experiment in experiments_list %}
+  <li>{{ experiment.base_name }}</li>
+  {% empty %}
+  <p>No Experiments in Database.</p>
+  {% endfor %}
+</ul>

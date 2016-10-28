@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'polls.apps.PollsConfig',
+    'webworm.apps.WebwormConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -76,6 +77,9 @@ WSGI_APPLICATION = 'movement_site.wsgi.application'
 
 DATABASES = {
     'default': {
+        'NAME': 'TestWormMove',
+        'USER': 'openworm',
+        'PASSWORD': 'openworm',
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {
             'read_default_file': '/etc/mysql/my.cnf'
