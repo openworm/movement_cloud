@@ -77,9 +77,6 @@ WSGI_APPLICATION = 'movement_site.wsgi.application'
 
 DATABASES = {
     'default': {
-        'NAME': 'TestWormMove',
-        'USER': 'openworm',
-        'PASSWORD': 'openworm',
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {
             'read_default_file': '/etc/mysql/my.cnf'
@@ -125,3 +122,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
+
+import sys
+sys.path.append(BASE_DIR)
+try:
+    from local_settings import *
+except ImportError:
+    print 'Warning: No Local Settings found. Using defaults.'
