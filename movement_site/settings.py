@@ -128,4 +128,4 @@ sys.path.append(BASE_DIR)
 try:
     from local_settings import *
 except ImportError:
-    print 'Warning: No Local Settings found. Using defaults.'
+    print ('Warning: No Local Settings found. Using defaults.')
