@@ -1,4 +1,26 @@
-<h1>All Worm Movement Experiments</h1>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Worm Movement Database</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Worm Movement Database">
+    <meta name="author" content="cheelee@openworm.org">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  </head>
+
+  <header class="jumbotron subhead" id="overview">
+    <div class="container">
+      <h1>All Worm Movement Experiments</h1>
+      <p class="lead">
+	A Prototype implementation of Worm Movement Database Browser Tool.
+      </p>
+    </div>
+  </header>
 
 <ul>
   {% for experiment in experiments_list %}
@@ -7,3 +29,4 @@
   <p>No Experiments in Database.</p>
   {% endfor %}
 </ul>
+</html>
