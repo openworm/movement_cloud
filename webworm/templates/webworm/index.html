@@ -22,11 +22,30 @@
     </div>
   </header>
 
-<ul>
-  {% for experiment in experiments_list %}
-  <li>{{ experiment.base_name }}</li>
-  {% empty %}
-  <p>No Experiments in Database.</p>
-  {% endfor %}
-</ul>
+<div class="container">
+<h2>Experiments</h2>
+<p>Experiments sorted by name:</p>
+<table class="table table-striped table-bordered table-responsive">
+  <thead>
+    <tr>
+      <!-- Hardcoded for now. There are Django methods for these --> 
+      <th>Experiment Name</th>
+      <th>Experiment Date</th>
+      <th>Worm Strain</th>
+      <th>Gender</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for experiment in experiments_list %}
+    <tr>
+      <th>{{ experiment.base_name }}</th>
+      <th>{{ experiment.date|default_if_none:"Empty" }}</th>
+      <th>{{ experiment.strain.name|default_if_none:"Empty" }}</th>
+      <th>{{ experiment.sex|default_if_none:"Empty" }}</th>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
 </html>
