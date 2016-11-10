@@ -1,51 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>Worm Movement Database</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Worm Movement Database">
-    <meta name="author" content="cheelee@openworm.org">
+{% extends "common/header.html" %}
 
-    <!-- Styles -->
-    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-  </head>
-
-  <header class="jumbotron subhead" id="overview">
-    <div class="container">
-      <h1>All Worm Movement Experiments</h1>
-      <p class="lead">
-	A Prototype implementation of Worm Movement Database Browser Tool.
-      </p>
-    </div>
-  </header>
-
+{% block content %}
+{% include "common/search.html" %}
 <div class="container">
-<h2>Experiments</h2>
-<p>Experiments sorted by name:</p>
-<table class="table table-striped table-bordered table-responsive">
-  <thead>
-    <tr>
-      <!-- Hardcoded for now. There are Django methods for these --> 
-      <th>Experiment Name</th>
-      <th>Experiment Date</th>
-      <th>Worm Strain</th>
-      <th>Gender</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for experiment in experiments_list %}
-    <tr>
-      <th>{{ experiment.base_name }}</th>
-      <th>{{ experiment.date|default_if_none:"Empty" }}</th>
-      <th>{{ experiment.strain.name|default_if_none:"Empty" }}</th>
-      <th>{{ experiment.sex|default_if_none:"Empty" }}</th>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<h2>To get started please use the search filter, or click on the "Show
+All Experiments" Button to display all records. Please note that the
+latter can be a lengthy operation.</h2>
 </div>
-
-</html>
+{% endblock %}

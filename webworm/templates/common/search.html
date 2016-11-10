@@ -1,0 +1,16 @@
+<div class="container" id="controls">
+  <form action="{% url "tables" %}" method="get">
+    {{ form }}
+    <input type="submit" value="Search">
+  </form>
+</div>
+<hr>
+<div class="container">
+  <a href="{% url "tables" %}" class="btn btn-primary" role="button">Show All Experiments</a>
+</div>
+<hr>
+<div class="container" id="info">
+  <h3>Last Search String:</h3>
+  <p> {{ search_string }} </p>
+</div>
+<hr>
