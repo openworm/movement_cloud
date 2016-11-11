@@ -22,13 +22,20 @@ def summary(request):
     strain_list = Strains.objects.order_by('name').values_list('name', flat=True).distinct();
     strain_counts = {};
     for element in strain_list:
-        strain_counts[element] = experiments_list.filter(strain__name__exact=element).count();
+        if element:
+            strain_counts[element] = experiments_list.filter(strain__name__exact=element).count();
+        else:
+            strain_counts['None'] = experiments_list.filter(strain__name__exact=element).count();
     strain_counts = sorted(strain_counts.items());
 
     dev_stage_list = DevelopmentalStages.objects.order_by('name').values_list('name', flat=True).distinct();
     dev_stage_counts = {};
     for element in dev_stage_list:
-        dev_stage_counts[element] = experiments_list.filter(developmental_stage__name__exact=element).count();
+        if element:
+            dev_stage_counts[element] = experiments_list.filter(developmental_stage__name__exact=element).count();
+        else:
+            dev_stage_counts['None'] = experiments_list.filter(developmental_stage__name__exact=element).count();
+            
     dev_stage_counts = sorted(dev_stage_counts.items());
 
     context = {'db_experiment_count': db_experiment_count,
