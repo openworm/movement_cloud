@@ -21,8 +21,8 @@ def tables(request):
     search_string = '';
     if request.method == "GET":
         # Sane defaults
-        exact = False;
-        case_sen = False;
+        exact = 'off';
+        case_sen = 'off';
         if 'exact_match' in request.GET:
             exact = request.GET['exact_match'];
         if 'case_sensitive' in request.GET:
@@ -31,13 +31,13 @@ def tables(request):
             search = request.GET['search_name'];
             if search:
                 search_string = search_string + ' String:' + search;
-                if exact == True and case_sen == True:
+                if exact == 'on' and case_sen == 'on':
                     experiments_list = experiments_list.filter(base_name__exact=search);
-                elif exact == True and case_sen == False:
+                elif exact == 'on' and case_sen == 'off':
                     experiments_list = experiments_list.filter(base_name__iexact=search);
-                elif exact == False and case_sen == True:
+                elif exact == 'off' and case_sen == 'on':
                     experiments_list = experiments_list.filter(base_name__contains=search);
-                else:
+                else: # default 'off' and 'off'
                     experiments_list = experiments_list.filter(base_name__icontains=search);
         if 'start_date' in request.GET:
             start = request.GET['start_date'];
@@ -49,6 +49,51 @@ def tables(request):
             if end:
                 search_string = search_string + ' End:' + end;
                 experiments_list = experiments_list.filter(date__lte=end);
+        if 'strain' in request.GET:
+            strain = request.GET['strain'];
+            if strain:
+                search_string = search_string + ' Strain:' + strain;
+                experiments_list = experiments_list.filter(strain__name__icontains=strain);
+        if 'trackers' in request.GET:
+            trackers = request.GET['trackers'];
+            if trackers:
+                search_string = search_string + ' Trackers:' + trackers;
+                experiments_list = experiments_list.filter(tracker__name__icontains=trackers);
+        if 'sex' in request.GET:
+            sex = request.GET['sex'];
+            if sex:
+                search_string = search_string + ' Sex:' + sex;
+                experiments_list = experiments_list.filter(sex__name__icontains=sex);
+        if 'stage' in request.GET:
+            stage = request.GET['stage'];
+            if stage:
+                search_string = search_string + ' Stage:' + stage;
+                experiments_list = experiments_list.filter(development_stage__name__icontains=stage);
+        if 'ventral' in request.GET:
+            ventral = request.GET['ventral'];
+            if ventral:
+                search_string = search_string + ' Ventral:' + ventral;
+                experiments_list = experiments_list.filter(ventral_side__name__iexact=ventral);
+        if 'food' in request.GET:
+            food = request.GET['food'];
+            if food:
+                search_string = search_string + ' Food:' + food;
+                experiments_list = experiments_list.filter(food__name__icontains=food);
+        if 'arena' in request.GET:
+            arena = request.GET['arena'];
+            if arena:
+                search_string = search_string + ' Arena:' + arena;
+                experiments_list = experiments_list.filter(arena__name__icontains=arena);
+        if 'hab' in request.GET:
+            hab = request.GET['hab'];
+            if hab:
+                search_string = search_string + ' HabTime:' + hab;
+                experiments_list = experiments_list.filter(habituation__name__icontains=hab);
+        if 'staff' in request.GET:
+            staff = request.GET['staff'];
+            if staff:
+                search_string = search_string + ' Experimenter:' + staff;
+                experiments_list = experiments_list.filter(experimenter__name__icontains=staff);
                 
     experiment_count = experiments_list.count();
     context = {'experiments_list': experiments_list, 
