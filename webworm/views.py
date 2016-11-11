@@ -14,6 +14,28 @@ def index(request):
     context = {'db_experiment_count': db_experiment_count, 'form':form }
     return render(request, 'webworm/index.html', context);
 
+def summary(request):
+    experiments_list = Experiments.objects.all();
+    db_experiment_count = experiments_list.count();
+#    arena_list = Arenas.objects.order_by('name').distinct('name');
+#    arena_count = arena_list.count();
+    strain_list = Strains.objects.order_by('name').values_list('name', flat=True).distinct();
+    strain_counts = {};
+    for element in strain_list:
+        strain_counts[element] = experiments_list.filter(strain__name__exact=element).count();
+    strain_counts = sorted(strain_counts.items());
+
+    dev_stage_list = DevelopmentalStages.objects.order_by('name').values_list('name', flat=True).distinct();
+    dev_stage_counts = {};
+    for element in dev_stage_list:
+        dev_stage_counts[element] = experiments_list.filter(developmental_stage__name__exact=element).count();
+    dev_stage_counts = sorted(dev_stage_counts.items());
+
+    context = {'db_experiment_count': db_experiment_count,
+               'dev_stage_counts': dev_stage_counts,
+               'strain_counts': strain_counts}
+    return render(request, 'webworm/summary.html', context);
+
 def tables(request):
     form = SearchForm();
     db_experiment_count = Experiments.objects.all().count();
@@ -68,7 +90,7 @@ def tables(request):
             stage = request.GET['stage'];
             if stage:
                 search_string = search_string + ' Stage:' + stage;
-                experiments_list = experiments_list.filter(development_stage__name__icontains=stage);
+                experiments_list = experiments_list.filter(developmental_stage__name__icontains=stage);
         if 'ventral' in request.GET:
             ventral = request.GET['ventral'];
             if ventral:
