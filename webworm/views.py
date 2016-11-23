@@ -17,8 +17,12 @@ def index(request):
 def summary(request):
     experiments_list = Experiments.objects.all();
     db_experiment_count = experiments_list.count();
-#    arena_list = Arenas.objects.order_by('name').distinct('name');
-#    arena_count = arena_list.count();
+
+    # Experiment does not make sense
+    # Experiment date does not make sense ... though it might be nice to specify 
+    #   the range of dates.
+
+    # Strains
     strain_list = Strains.objects.order_by('name').values_list('name', flat=True).distinct();
     strain_counts = {};
     for element in strain_list:
@@ -28,6 +32,27 @@ def summary(request):
             strain_counts['None'] = experiments_list.filter(strain__name__exact=element).count();
     strain_counts = sorted(strain_counts.items());
 
+    # Trackers
+    trackers_list = Trackers.objects.order_by('name').values_list('name', flat=True).distinct();
+    trackers_counts = {};
+    for element in trackers_list:
+        if element:
+            trackers_counts[element] = experiments_list.filter(tracker__name__exact=element).count();
+        else:
+            trackers_counts['Unknown'] = experiments_list.filter(tracker__name__exact=element).count();
+    trackers_counts = sorted(trackers_counts.items());
+
+    # Sex - should we even need to have this field discoverable?
+    sex_list = Sexes.objects.order_by('name').values_list('name', flat=True).distinct();
+    sex_counts = {};
+    for element in sex_list:
+        if element:
+            sex_counts[element] = experiments_list.filter(sex__name__exact=element).count();
+        else:
+            sex_counts['Unknown'] = experiments_list.filter(sex__name__exact=element).count();
+    sex_counts = sorted(sex_counts.items());
+
+    # Development Stages
     dev_stage_list = DevelopmentalStages.objects.order_by('name').values_list('name', flat=True).distinct();
     dev_stage_counts = {};
     for element in dev_stage_list:
@@ -35,12 +60,69 @@ def summary(request):
             dev_stage_counts[element] = experiments_list.filter(developmental_stage__name__exact=element).count();
         else:
             dev_stage_counts['None'] = experiments_list.filter(developmental_stage__name__exact=element).count();
-            
     dev_stage_counts = sorted(dev_stage_counts.items());
 
-    context = {'db_experiment_count': db_experiment_count,
+    # Ventral Side - again, should we even need this?
+    ventral_list = VentralSides.objects.order_by('name').values_list('name', flat=True).distinct();
+    ventral_counts = {};
+    for element in ventral_list:
+        if element:
+            ventral_counts[element] = experiments_list.filter(ventral_side__name__exact=element).count();
+        else:
+            ventral_counts['Unknown'] = experiments_list.filter(ventral_side__name__exact=element).count();
+    ventral_counts = sorted(ventral_counts.items());
+
+    # Food
+    food_list = Foods.objects.order_by('name').values_list('name', flat=True).distinct();
+    food_counts = {};
+    for element in food_list:
+        if element:
+            food_counts[element] = experiments_list.filter(food__name__exact=element).count();
+        else:
+            food_counts['Unknown'] = experiments_list.filter(food__name__exact=element).count();
+    food_counts = sorted(food_counts.items());
+
+    # Arena - I'm assuming this has valid categories instead of being a free-form descriptor
+    arena_list = Arenas.objects.order_by('name').values_list('name', flat=True).distinct();
+    arena_counts = {};
+    for element in arena_list:
+        if element:
+            arena_counts[element] = experiments_list.filter(arena__name__exact=element).count();
+        else:
+            arena_counts['None'] = experiments_list.filter(arena__name__exact=element).count();
+    arena_counts = sorted(arena_counts.items());
+    
+    # Habituation really ought to be a time-based field
+    habit_list = Habituations.objects.order_by('name').values_list('name', flat=True).distinct();
+    habit_counts = {};
+    for element in habit_list:
+        if element:
+            habit_counts[element] = experiments_list.filter(habituation__name__exact=element).count();
+        else:
+            habit_counts['Unknown'] = experiments_list.filter(habituation__name__exact=element).count();
+    habit_counts = sorted(habit_counts.items());
+
+    # Experimenter
+    experimenter_list = Experimenters.objects.order_by('name').values_list('name', flat=True).distinct();
+    experimenter_counts = {};
+    for element in experimenter_list:
+        if element:
+            experimenter_counts[element] = experiments_list.filter(experimenter__name__exact=element).count();
+        else:
+            experimenter_counts['Unknown'] = experiments_list.filter(experimenter__name__exact=element).count();
+    experimenter_counts = sorted(experimenter_counts.items());
+    
+
+    context = {'strain_counts': strain_counts,
+               'trackers_counts': trackers_counts,
+               'sex_counts': sex_counts,
                'dev_stage_counts': dev_stage_counts,
-               'strain_counts': strain_counts}
+               'ventral_counts': ventral_counts,
+               'food_counts': food_counts,
+               'arena_counts': arena_counts,
+               'habit_counts': habit_counts,
+               'experimenter_counts': experimenter_counts,
+               'db_experiment_count': db_experiment_count}
     return render(request, 'webworm/summary.html', context);
 
 def tables(request):
