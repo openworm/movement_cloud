@@ -1,0 +1,49 @@
+{% extends "common/header.html" %}
+
+{% block content %}
+{% include "common/search.html" %}
+<div class="container">
+  <a href="{% url "summary" %}" class="btn btn-success" role="button">View Database Summary</a>
+</div>
+<div class="container">
+<h2>Experiments</h2>
+<p>Total number of experiments selected = {{ experiment_count }} </p>
+<table id="results" class="table table-striped table-bordered table-responsive">
+  <thead>
+    <tr>
+      <!-- Hardcoded for now. There are Django methods for these --> 
+      <th>Experiment Name</th>
+      <th>Experiment Date</th>
+      <th>Worm Strain</th>
+      <th>Trackers</th>
+      <th>Sex</th>
+      <th>Stage</th>
+      <th>Ventral Side</th>
+      <th>Food</th>
+      <th>Arena</th>
+      <th>Habituation</th>
+      <th>Experimenter</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for experiment in experiments_list %}
+    <tr>
+      <th>{{ experiment.base_name }}</th>
+      <th>{{ experiment.date|default_if_none:"None" }}</th>
+      <th>{{ experiment.strain.name|default_if_none:"None" }}</th>
+      <th>{{ experiment.tracker.name|default_if_none:"None" }}</th>
+      <th>{{ experiment.sex|default_if_none:"Unknown" }}</th>
+      <th>{{ experiment.developmental_stage|default_if_none:"Unknown" }}</th>
+      <th>{{ experiment.ventral_side.name|default_if_none:"None" }}</th>
+      <th>{{ experiment.food|default_if_none:"None" }}</th>
+      <th>{{ experiment.arena|default_if_none:"None" }}</th>
+      <th>{{ experiment.habituation|default_if_none:"None" }}</th>
+      <th>{{ experiment.experimenter|default_if_none:"Unknown" }}</th>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% load static %}
+<script src="{% static "webworm/paginate.js" %}"></script>
+{% endblock %}

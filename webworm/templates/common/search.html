@@ -1,0 +1,70 @@
+<div class="container">
+  <a href="{% url "tables" %}" class="btn btn-primary" role="button">Show All Experiments</a>
+</div>
+<hr>
+<div class="container" id="info">
+  <h4>Last Search String:</h4>
+  <p> {{ search_string }} </p>
+</div>
+<hr>
+<div class="container" id="controls">
+  <form action="{% url "tables" %}" method="get">
+    <div class="form-group" >
+      <div class="row">
+	<label class="col-sm-2" for="search_name">Experiment Name:</label>
+	<input class="col-sm-6" type="text" name="search_name" class="form-control" id="search_name">
+	<div class="col-sm-2"class="checkbox">
+	  <label><input type="checkbox" name="exact_match">Exact Match</label>
+	</div>
+	<div class="col-sm-2"class="checkbox">
+	  <label><input type="checkbox" name="case_sensitive">Case Sensitive</label>
+	</div>
+      </div>
+      <div class="row">
+	<label class="col-sm-2" for="start_date">Start Date:</label>
+	<input class="col-sm-2" type="date" 
+	       name="start_date" class="form-control" id="start_date">
+	<label class="col-sm-2" for="end_date">End Date:</label>
+	<input class="col-sm-2" type="date" 
+	       name="end_date" class="form-control" id="end_date">
+      </div>
+      <div class="row">
+	<label class="col-sm-2" for="strain">Worm Strain:</label>
+	<input class="col-sm-2" type="text" 
+	       name="strain" class="form-control" id="strain">
+	<label class="col-sm-2" for="trackers">Trackers:</label>
+	<input class="col-sm-2" type="text" 
+	       name="trackers" class="form-control" id="trackers">
+	<label class="col-sm-2" for="sex">Sex:</label>
+	<input class="col-sm-2" type="text" 
+	       name="sex" class="form-control" id="sex">
+      </div>
+      <div class="row">
+	<label class="col-sm-2" for="stage">Development Stage:</label>
+	<input class="col-sm-2" type="text" 
+	       name="stage" class="form-control" id="stage">
+	<label class="col-sm-2" for="ventral">Ventral Side:</label>
+	<input class="col-sm-2" type="text" 
+	       name="ventral" class="form-control" id="ventral">
+	<label class="col-sm-2" for="food">Food:</label>
+	<input class="col-sm-2" type="text" 
+	       name="food" class="form-control" id="food">
+      </div>
+      <div class="row">
+	<label class="col-sm-2" for="arena">Arena:</label>
+	<input class="col-sm-2" type="text" 
+	       name="arena" class="form-control" id="arena">
+	<label class="col-sm-2" for="hab">Habituation Time:</label>
+	<input class="col-sm-2" type="text" 
+	       name="hab" class="form-control" id="hab">
+	<label class="col-sm-2" for="staff">Experimenter:</label>
+	<input class="col-sm-2" type="text" 
+	       name="staff" class="form-control" id="staff">
+      </div>
+      <div class="row">
+	<button class="col-sm-1" type="submit" class="btn btn-sm btn-info">Search</button>
+      </div>
+    </div>
+  </form>
+</div>
+<hr>
