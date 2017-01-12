@@ -1,0 +1,13 @@
+{% extends "common/header.html" %}
+
+{% block content %}
+{% include "common/search.html" %}
+<div class="container">
+  <a href="{% url "summary" %}" class="btn btn-success" role="button">View Database Summary</a>
+</div>
+<div class="container">
+<h2>To get started please use the search filter, or click on the "Show
+All Experiments" Button to display all records. Please note that the
+latter can be a lengthy operation.</h2>
+</div>
+{% endblock %}
