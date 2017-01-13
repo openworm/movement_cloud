@@ -1,13 +1,13 @@
-<div class="container">
-  <a href="{% url "tables" %}" class="btn btn-primary" role="button">Show All Experiments</a>
-</div>
-<hr>
 <div class="container" id="info">
+  <div class="row">
+    <button type="button" class="btn btn-success" data-toggle="collapse" data-target="#controls">Toggle Search Filters</button>
+    <a href="{% url "tables" %}" class="btn btn-primary" role="button">Show All Experiments</a>
+  </div>
   <h4>Last Search String:</h4>
   <p> {{ search_string }} </p>
 </div>
 <hr>
-<div class="container" id="controls">
+<div class="container" class="hidden" class="collapse" id="controls">
   <form action="{% url "tables" %}" method="get">
     <div class="form-group" >
       <div class="row">

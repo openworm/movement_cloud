@@ -9,10 +9,12 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//cdn.datatables.net/1.10.12/css/dataTables.bootstrap.min.css">
+
+    <!-- jQuery and Bootstrap -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <!-- For DataTable support -->
-    <link rel="stylesheet" href="//cdn.datatables.net/1.10.12/css/dataTables.bootstrap.min.css">
     <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js"></script>
   </head>
@@ -26,5 +28,26 @@
       </p>
     </div>
   </header>
-{% block content %}{% endblock %}
+  <div class="container" id="searchPane">
+    <div id="searchInfo">
+      <div class="row">
+	<button type="button" class="btn btn-success" data-toggle="collapse" data-target="#searchControls">Toggle Search Filters</button>
+	<a href="{% url "results" %}" class="btn btn-primary" role="button">Show All Experiments</a>
+	<a href="{% url "index" %}" class="btn btn-danger" role="button">Reset Display</a>
+      </div>
+      <h4>Number of Filtered Elements: {{ experiment_count }}</h4>
+      <h4>Current Search Filter String:</h4>
+      <p> {{ search_string }} </p>
+    </div>
+    <div class="collapse" id="searchControls">
+      <hr>
+      <form action="{% url "results" %}" method="get">
+	<div class="form-group" >
+	  {% include "common/search-template.html" %}
+	</div>
+      </form>
+    </div>
+  </div>
+  <hr>
+  {% block content %}{% endblock %}
 </html>
