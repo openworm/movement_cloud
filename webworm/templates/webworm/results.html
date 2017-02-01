@@ -34,13 +34,13 @@
 	    <th>{{ experiment.date|default_if_none:"None" }}</th>
 	    <th>{{ experiment.strain.name|default_if_none:"None" }}</th>
 	    <th>{{ experiment.tracker.name|default_if_none:"None" }}</th>
-	    <th>{{ experiment.sex|default_if_none:"Unknown" }}</th>
-	    <th>{{ experiment.developmental_stage|default_if_none:"Unknown" }}</th>
+	    <th>{{ experiment.sex.name|default_if_none:"Unknown" }}</th>
+	    <th>{{ experiment.developmental_stage.name|default_if_none:"Unknown" }}</th>
 	    <th>{{ experiment.ventral_side.name|default_if_none:"None" }}</th>
-	    <th>{{ experiment.food|default_if_none:"None" }}</th>
-	    <th>{{ experiment.arena|default_if_none:"None" }}</th>
-	    <th>{{ experiment.habituation|default_if_none:"None" }}</th>
-	    <th>{{ experiment.experimenter|default_if_none:"Unknown" }}</th>
+	    <th>{{ experiment.food.name|default_if_none:"None" }}</th>
+	    <th>{{ experiment.arena.name|default_if_none:"None" }}</th>
+	    <th>{{ experiment.habituation.name|default_if_none:"None" }}</th>
+	    <th>{{ experiment.experimenter.name|default_if_none:"Unknown" }}</th>
 	  </tr>
 	  {% endfor %}
 	</tbody>
