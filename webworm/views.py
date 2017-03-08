@@ -2,6 +2,9 @@ from django.shortcuts import render
 from django.http import HttpResponse
 
 from django.template.response import TemplateResponse
+from django.db.models import Avg
+from django.db.models import Min
+from django.db.models import Max
 
 from .models import *
 from .forms import *
@@ -69,6 +72,26 @@ def createSummary(experiments, context):
 
 def index(request):
     form = SearchForm();
+    f = FeaturesMeans._meta.get_fields();
+    # This is clunky, there has to be a better way to do this.
+    parameter_field_list = tuple(x for x in f 
+                                 if (x.name != "id") and 
+                                 (x.name != "experiment_id") and
+                                 (x.name != "worm_index") and
+                                 (x.name != "n_frames") and
+                                 (x.name != "n_valid_skel") and
+                                 (x.name != "first_frame")
+                                 );
+    parameter_name_list = [x.name for x in parameter_field_list];
+    parameter_min_list = [];
+    # *CWL* Hardcoding the name of the dictionary returned has to be the ugliest hack!
+    for field_min in parameter_field_list:
+        parameter_min_list.append(FeaturesMeans.objects.all().aggregate(Min(field_min.name)).get(field_min.name+'__min'));
+    parameter_max_list = [];
+    for field_max in parameter_field_list:
+        parameter_max_list.append(FeaturesMeans.objects.all().aggregate(Max(field_max.name)).get(field_max.name+'__max'));
+    params_list = zip(parameter_name_list, parameter_min_list, parameter_max_list)
+                               
     experiments_list = Experiments.objects.all();
     db_experiment_count = experiments_list.count();
     experiment_count = 0;
@@ -76,6 +99,9 @@ def index(request):
     context = {'db_experiment_count': db_experiment_count,
                'experiment_count': experiment_count,
                'search_string': search_string,
+#               'parameter_field_list': parameter_field_list,
+#               'zipped_params_list': zipped_params_list, 
+               'params_list': params_list, 
                'form': form
                };
     createSummary(experiments_list, context);
