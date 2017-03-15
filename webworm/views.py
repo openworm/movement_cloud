@@ -10,6 +10,12 @@ from .models import *
 from .forms import *
 
 # Support functions
+def createJsGridRow(tripleOfDictionaries):
+    result = tripleOfDictionaries[0].copy();
+    result.update(tripleOfDictionaries[1]);
+    result.update(tripleOfDictionaries[2]);
+    return result;
+
 def getFieldCounts(experiments, fieldName, fieldList, nullNameString):
     counts = {};
     param = fieldName + '__name__exact';
@@ -83,15 +89,29 @@ def index(request):
                                  (x.name != "first_frame")
                                  );
     parameter_name_list = [x.name for x in parameter_field_list];
-    parameter_min_list = [];
+    param_jsgrid_name_list = [{"Parameter Name":x.name} for x in parameter_field_list];
+
+    param_jsgrid_min_list = [];
     # *CWL* Hardcoding the name of the dictionary returned has to be the ugliest hack!
     for field_min in parameter_field_list:
-        parameter_min_list.append(FeaturesMeans.objects.all().aggregate(Min(field_min.name)).get(field_min.name+'__min'));
-    parameter_max_list = [];
+        minval = FeaturesMeans.objects.all().aggregate(Min(field_min.name)).get(field_min.name+'__min');
+        if (minval == None):
+            param_jsgrid_min_list.append({"Minimum":"None"});
+        else:
+            param_jsgrid_min_list.append({"Minimum":minval});
+        
+
+    param_jsgrid_max_list = [];
     for field_max in parameter_field_list:
-        parameter_max_list.append(FeaturesMeans.objects.all().aggregate(Max(field_max.name)).get(field_max.name+'__max'));
-    params_list = zip(parameter_name_list, parameter_min_list, parameter_max_list)
-                               
+        maxval = FeaturesMeans.objects.all().aggregate(Max(field_max.name)).get(field_max.name+'__max');
+        if (maxval == None):
+            param_jsgrid_max_list.append({"Maximum":"None"});
+        else:
+            param_jsgrid_max_list.append({"Maximum":maxval});
+
+    param_jsgrid_tuple_list = zip(param_jsgrid_name_list, param_jsgrid_min_list, param_jsgrid_max_list);
+    param_jsgrid_list = map(createJsGridRow, param_jsgrid_tuple_list);
+                          
     experiments_list = Experiments.objects.all();
     db_experiment_count = experiments_list.count();
     experiment_count = 0;
@@ -99,9 +119,7 @@ def index(request):
     context = {'db_experiment_count': db_experiment_count,
                'experiment_count': experiment_count,
                'search_string': search_string,
-#               'parameter_field_list': parameter_field_list,
-#               'zipped_params_list': zipped_params_list, 
-               'params_list': params_list, 
+               'param_jsgrid_list': param_jsgrid_list,
                'form': form
                };
     createSummary(experiments_list, context);
