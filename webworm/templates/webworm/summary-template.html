@@ -1,11 +1,12 @@
-{% extends "common/header.html" %}
-
-{% block content %}
-<div class="container">
-  <a href="{% url "index" %}" class="btn btn-success" role="button">Return to Search</a>
-</div>
-<div class="container">
   <!-- Row 1 Strains and Trackers -->
+  <div class="row">
+    <div class="col-sm-6">
+      <p><b>Min Experiment date:</b> {{min_date}} </p>
+    </div>
+    <div class="col-sm-6">
+      <p><b>Max Experiment date:</b> {{max_date}} </p>
+    </div>
+  </div>
   <div class="row">
     <div class="col-sm-6">
       <p><b>Strains Summary</b></p>
@@ -13,7 +14,7 @@
 	<thead>
 	  <tr>
 	    <th>Name</th>
-	    <th>Count</th>
+	    <th>Num Experiments</th>
 	  </tr>
 	</thead>
 	<tbody>
@@ -32,7 +33,7 @@
 	<thead>
 	  <tr>
 	    <th>Name</th>
-	    <th>Count</th>
+	    <th>Num Experiments</th>
 	  </tr>
 	</thead>
 	<tbody>
@@ -55,7 +56,7 @@
 	<thead>
 	  <tr>
 	    <th>Name</th>
-	    <th>Count</th>
+	    <th>Num Experiments</th>
 	  </tr>
 	</thead>
 	<tbody>
@@ -74,7 +75,7 @@
 	<thead>
 	  <tr>
 	    <th>Name</th>
-	    <th>Count</th>
+	    <th>Num Experiments</th>
 	  </tr>
 	</thead>
 	<tbody>
@@ -97,7 +98,7 @@
 	<thead>
 	  <tr>
 	    <th>Name</th>
-	    <th>Count</th>
+	    <th>Num Experiments</th>
 	  </tr>
 	</thead>
 	<tbody>
@@ -116,7 +117,7 @@
 	<thead>
 	  <tr>
 	    <th>Name</th>
-	    <th>Count</th>
+	    <th>Num Experiments</th>
 	  </tr>
 	</thead>
 	<tbody>
@@ -139,7 +140,7 @@
 	<thead>
 	  <tr>
 	    <th>Name</th>
-	    <th>Count</th>
+	    <th>Num Experiments</th>
 	  </tr>
 	</thead>
 	<tbody>
@@ -158,7 +159,7 @@
 	<thead>
 	  <tr>
 	    <th>Name</th>
-	    <th>Count</th>
+	    <th>Num Experiments</th>
 	  </tr>
 	</thead>
 	<tbody>
@@ -181,7 +182,7 @@
 	<thead>
 	  <tr>
 	    <th>Name</th>
-	    <th>Count</th>
+	    <th>Num Experiments</th>
 	  </tr>
 	</thead>
 	<tbody>
@@ -195,7 +196,4 @@
       </table>
     </div>
   </div>
-</div>
-{% load static %}
-<script src="{% static "webworm/paginate-summary.js" %}"></script>
-{% endblock %}
+

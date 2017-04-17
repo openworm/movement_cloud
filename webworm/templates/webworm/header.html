@@ -10,25 +10,28 @@
     <!-- Styles -->
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" href="//cdn.datatables.net/1.10.12/css/dataTables.bootstrap.min.css">
-    <!-- CDN jsGrid Styles -->
-    <link type="text/css" rel="stylesheet" href="http://js-grid.com/css/jsgrid.min.css">
-    <link type="text/css" rel="stylesheet" href="http://js-grid.com/css/jsgrid-theme.min.css">
-
+    <!-- jQuery UI Styles -->
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <!-- DataTables (generated from https://datatables.net/download/) -->
+    <!-- Buttons + Select + Bootstrap -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs/dt-1.10.13/b-1.2.4/se-1.2.0/datatables.min.css"/>
+ 
+    <!-- Scripts -->
     <!-- jQuery and Bootstrap -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <!-- For DataTable support -->
-    <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js"></script>
-    <!-- CDN jsGrid -->
-    <script type="text/javascript" src="http://js-grid.com/js/jsgrid.min.js"></script>
+    <!-- jQuery UI (currently not used) -->
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <!-- DataTables (generated from https://datatables.net/download/) -->
+    <!-- Buttons + Select + Bootstrap -->
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs/dt-1.10.13/b-1.2.4/se-1.2.0/datatables.min.js"></script>
   </head>
 
   <header class="jumbotron subhead" id="overview">
     <div class="container">
-      <h1>All Worm Movement Experiments</h1>
+      <h1>Worm Movement Database</h1>
       <p class="lead">
-	A Prototype implementation of Worm Movement Database Browser Tool.
+	A Prototype implementation of the Worm Movement Database Browser Tool.
       <p>Total number of experiments in database = {{ db_experiment_count }} </p>
       </p>
     </div>
@@ -37,7 +40,6 @@
     <div id="searchInfo">
       <div class="row">
 	<button type="button" class="btn btn-success" data-toggle="collapse" data-target="#searchControls">Toggle Search Filters</button>
-	<a href="{% url "results" %}" class="btn btn-primary" role="button">Show All Experiments</a>
 	<a href="{% url "index" %}" class="btn btn-danger" role="button">Reset Display</a>
       </div>
       <h4>Number of Filtered Elements: {{ experiment_count }}</h4>
@@ -61,7 +63,7 @@
 	  <div class="tab-pane fade" id="fieldsPane">
 	    <form action="{% url "results" %}" method="get">
 	      <div class="form-group" >
-		{% include "common/search-template.html" %}
+		{% include "webworm/search-template.html" %}
 	      </div>
 	    </form>
 	  </div>
@@ -72,4 +74,6 @@
   </div>
   <hr>
   {% block content %}{% endblock %}
+  {% load static %}
+  <script src="{% static "webworm/paginate-parameters.js" %}"></script>
 </html>

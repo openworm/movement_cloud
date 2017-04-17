@@ -1,4 +1,4 @@
-{% extends "common/header.html" %}
+{% extends "webworm/header.html" %}
 
 {% block content %}
 <div class="container" id="master">
@@ -14,7 +14,9 @@
 	<thead>
 	  <tr>
 	    <!-- Hardcoded for now. There are Django methods for these --> 
-	    <th>Experiment Name</th>
+	    <!-- Dropping Experiment Names
+	    <th>Experiment Name</th> 
+	    -->
 	    <th>Experiment Date</th>
 	    <th>Worm Strain</th>
 	    <th>Trackers</th>
@@ -25,12 +27,16 @@
 	    <th>Arena</th>
 	    <th>Habituation</th>
 	    <th>Experimenter</th>
+	    <th>Zenodo</th>
+	    <th>Sample Video</th>
 	  </tr>
 	</thead>
 	<tbody>
 	  {% for experiment in experiments_list %}
 	  <tr>
+	    <!-- Dropping Experiment Names 
 	    <th>{{ experiment.base_name }}</th>
+	    -->
 	    <th>{{ experiment.date|default_if_none:"None" }}</th>
 	    <th>{{ experiment.strain.name|default_if_none:"None" }}</th>
 	    <th>{{ experiment.tracker.name|default_if_none:"None" }}</th>
@@ -41,6 +47,10 @@
 	    <th>{{ experiment.arena.name|default_if_none:"None" }}</th>
 	    <th>{{ experiment.habituation.name|default_if_none:"None" }}</th>
 	    <th>{{ experiment.experimenter.name|default_if_none:"Unknown" }}</th>
+	    <th> <a href="#">Link</a> </th>
+	    <th>
+	      <iframe width="240" height="135" src="https://www.youtube.com/embed/MflKJyaRADk" frameborder="0" allowfullscreen></iframe>
+	    </th>
 	  </tr>
 	  {% endfor %}
 	</tbody>
@@ -48,10 +58,10 @@
     </div>
 
     <div class="tab-pane fade" id="summaryPane">
-      {% include "common/summary-template.html" %}
+      {% include "webworm/summary-template.html" %}
     </div>
 </div>
 {% load static %}
-<script src="{% static "webworm/paginate.js" %}"></script>
+<script src="{% static "webworm/paginate-results.js" %}"></script>
 <script src="{% static "webworm/paginate-summary.js" %}"></script>
 {% endblock %}

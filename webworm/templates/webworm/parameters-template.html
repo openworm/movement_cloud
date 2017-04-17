@@ -1,41 +1,22 @@
-<div id="paramTable"></div>
+<div class="row">
+  <p><b>Parameters and Ranges</b></p>
+  <table id="parameters" class="table table-striped table-bordered table-responsive">
+    <thead>
+      <tr>
+	<th>Name</th>
+	<th>Minimum</th>
+	<th>Maximum</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for name, min, max in param_list %}
+      <tr>
+	<th>{{ name }}</th>
+	<th>{{ min }}</th>
+	<th>{{ max }}</th>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 
-{% load static %}
-<script>
-    var paramdata = {{ param_jsgrid_list|safe }};
-    var constructGrid = function() {
-      $('#paramTable').jsGrid({
-        width: "100%",
-        height: "auto",
-    
-        inserting: false,
-        editing: false,
-        sorting: true,
-        paging: true,
-        pageSize: 10,
-    
-        rowClick: function(e) {
-          e.event.target.closest("tr").find("td:last").find('input[type=checkbox]').click();
-        },
-    
-        data: paramdata,
-     
-        fields: [
-          { name: "Parameter Name", type: "text", width: "auto" },
-          { name: "Minimum", type: "text", width: "auto" },
-          { name: "Maximum", type: "text", width: "auto" },
-          { name: "Selected", title: "Is Selected", align: "center",
-             itemTemplate: function(value, item) {
-             return $("<input>").attr("type", "checkbox")
-                                .attr("checked", value || item.Checked)
-                                .on("change", function(e) {
-                                  item.Checked = $(this).is(":checked");
-                                  e.stopPropagation();
-                                });
-             }
-          },
-        ]
-      });
-    }
-    constructGrid();
-</script>

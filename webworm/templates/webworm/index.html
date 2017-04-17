@@ -1,4 +1,4 @@
-{% extends "common/header.html" %}
+{% extends "webworm/header.html" %}
 
 {% block content %}
 <div class="container" id="master">
@@ -10,11 +10,7 @@
   <div class="tab-content">
     <!-- Information Panel -->
     <div class="tab-pane fade in active" id="indexInfo">
-      <h4>To get started please use the search filter, or click on the "Show
-	All Experiments" Button to display all records.
-      </h4>
-      <h4>
-	Please note that "Show All Experiments" can be a very lengthy operation.
+      <h4>To get started please use the search filters.
       </h4>
       <h4>
 	A summary of searchable parameter names along with record
@@ -23,7 +19,7 @@
     </div>
 
     <div class="tab-pane fade" id="summaryPane">
-      {% include "common/summary-template.html" %}
+      {% include "webworm/summary-template.html" %}
     </div>
 </div>
 {% load static %}
