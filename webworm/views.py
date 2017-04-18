@@ -28,6 +28,85 @@ def getFieldCounts(experiments, fieldName, fieldList, nullNameString):
             counts[nullNameString] = experiments.filter(**{param:element}).count();
     return sorted(counts.items());
 
+def processSearchConfiguration(getRequest, experimentsList):
+    # Sane defaults
+    exact = 'off';
+    case_sen = 'off';
+    if 'exact_match' in getRequest:
+        exact = getRequest['exact_match'];
+    if 'case_sensitive' in getRequest:
+        case_sen = getRequest['case_sensitive'];
+# *CWL* It has been agreed that searching by experiment "name" is not productive.
+#    if 'search_name' in getRequest:
+#        search = getRequest['search_name'];
+#        if search:
+#            search_string = search_string + ' String:' + search;
+#            if exact == 'on' and case_sen == 'on':
+#                experimentsList = experimentsList.filter(base_name__exact=search);
+#            elif exact == 'on' and case_sen == 'off':
+#                experimentsList = experimentsList.filter(base_name__iexact=search);
+#            elif exact == 'off' and case_sen == 'on':
+#                experimentsList = experimentsList.filter(base_name__contains=search);
+#            else: # default 'off' and 'off'
+#                experimentsList = experimentsList.filter(base_name__icontains=search);
+    if 'start_date' in getRequest:
+        start = getRequest['start_date'];
+        if start:
+#            search_string = search_string + ' Start:' + start;
+            returnList = experimentsList.filter(date__gte=start);
+    if 'end_date' in getRequest:
+        end = getRequest['end_date'];
+        if end:
+#            search_string = search_string + ' End:' + end;
+            returnList = experimentsList.filter(date__lte=end);
+    if 'strain' in getRequest:
+        strain = getRequest['strain'];
+        if strain:
+#            search_string = search_string + ' Strain:' + strain;
+            returnList = experimentsList.filter(strain__name__icontains=strain);
+    if 'trackers' in getRequest:
+        trackers = getRequest['trackers'];
+        if trackers:
+#            search_string = search_string + ' Trackers:' + trackers;
+            returnList = experimentsList.filter(tracker__name__icontains=trackers);
+    if 'sex' in getRequest:
+        sex = getRequest['sex'];
+        if sex:
+#            search_string = search_string + ' Sex:' + sex;
+            returnList = experimentsList.filter(sex__name__icontains=sex);
+    if 'stage' in getRequest:
+        stage = getRequest['stage'];
+        if stage:
+#            search_string = search_string + ' Stage:' + stage;
+            returnList = experimentsList.filter(developmental_stage__name__icontains=stage);
+    if 'ventral' in getRequest:
+        ventral = getRequest['ventral'];
+        if ventral:
+#            search_string = search_string + ' Ventral:' + ventral;
+            returnList = experimentsList.filter(ventral_side__name__iexact=ventral);
+    if 'food' in getRequest:
+        food = getRequest['food'];
+        if food:
+#            search_string = search_string + ' Food:' + food;
+            returnList = experimentsList.filter(food__name__icontains=food);
+    if 'arena' in getRequest:
+        arena = getRequest['arena'];
+        if arena:
+#            search_string = search_string + ' Arena:' + arena;
+            returnList = experimentsList.filter(arena__name__icontains=arena);
+    if 'hab' in getRequest:
+        hab = getRequest['hab'];
+        if hab:
+#            search_string = search_string + ' HabTime:' + hab;
+            returnList = experimentsList.filter(habituation__name__icontains=hab);
+    if 'staff' in getRequest:
+        staff = getRequest['staff'];
+        if staff:
+#            search_string = search_string + ' Experimenter:' + staff;
+            returnList = experimentsList.filter(experimenter__name__icontains=staff);
+    return returnList;
+    
+
 def createParametersMetadata(featuresFields, featuresObjects, context):
     # This is clunky, there has to be a better way to do this.
     parameter_field_list = tuple(x for x in featuresFields
@@ -149,90 +228,16 @@ def filter(request):
     form = SearchForm();
     experiments_list = Experiments.objects.order_by('base_name');
     db_experiment_count = experiments_list.count();
-    search_string = '';
+#    search_string = '';
     if request.method == "GET":
-        # Sane defaults
-        exact = 'off';
-        case_sen = 'off';
-        if 'exact_match' in request.GET:
-            exact = request.GET['exact_match'];
-        if 'case_sensitive' in request.GET:
-            case_sen = request.GET['case_sensitive'];
-        if 'search_name' in request.GET:
-            search = request.GET['search_name'];
-            if search:
-                search_string = search_string + ' String:' + search;
-                if exact == 'on' and case_sen == 'on':
-                    experiments_list = experiments_list.filter(base_name__exact=search);
-                elif exact == 'on' and case_sen == 'off':
-                    experiments_list = experiments_list.filter(base_name__iexact=search);
-                elif exact == 'off' and case_sen == 'on':
-                    experiments_list = experiments_list.filter(base_name__contains=search);
-                else: # default 'off' and 'off'
-                    experiments_list = experiments_list.filter(base_name__icontains=search);
-        if 'start_date' in request.GET:
-            start = request.GET['start_date'];
-            if start:
-                search_string = search_string + ' Start:' + start;
-                experiments_list = experiments_list.filter(date__gte=start);
-        if 'end_date' in request.GET:
-            end = request.GET['end_date'];
-            if end:
-                search_string = search_string + ' End:' + end;
-                experiments_list = experiments_list.filter(date__lte=end);
-        if 'strain' in request.GET:
-            strain = request.GET['strain'];
-            if strain:
-                search_string = search_string + ' Strain:' + strain;
-                experiments_list = experiments_list.filter(strain__name__icontains=strain);
-        if 'trackers' in request.GET:
-            trackers = request.GET['trackers'];
-            if trackers:
-                search_string = search_string + ' Trackers:' + trackers;
-                experiments_list = experiments_list.filter(tracker__name__icontains=trackers);
-        if 'sex' in request.GET:
-            sex = request.GET['sex'];
-            if sex:
-                search_string = search_string + ' Sex:' + sex;
-                experiments_list = experiments_list.filter(sex__name__icontains=sex);
-        if 'stage' in request.GET:
-            stage = request.GET['stage'];
-            if stage:
-                search_string = search_string + ' Stage:' + stage;
-                experiments_list = experiments_list.filter(developmental_stage__name__icontains=stage);
-        if 'ventral' in request.GET:
-            ventral = request.GET['ventral'];
-            if ventral:
-                search_string = search_string + ' Ventral:' + ventral;
-                experiments_list = experiments_list.filter(ventral_side__name__iexact=ventral);
-        if 'food' in request.GET:
-            food = request.GET['food'];
-            if food:
-                search_string = search_string + ' Food:' + food;
-                experiments_list = experiments_list.filter(food__name__icontains=food);
-        if 'arena' in request.GET:
-            arena = request.GET['arena'];
-            if arena:
-                search_string = search_string + ' Arena:' + arena;
-                experiments_list = experiments_list.filter(arena__name__icontains=arena);
-        if 'hab' in request.GET:
-            hab = request.GET['hab'];
-            if hab:
-                search_string = search_string + ' HabTime:' + hab;
-                experiments_list = experiments_list.filter(habituation__name__icontains=hab);
-        if 'staff' in request.GET:
-            staff = request.GET['staff'];
-            if staff:
-                search_string = search_string + ' Experimenter:' + staff;
-                experiments_list = experiments_list.filter(experimenter__name__icontains=staff);
-    
-    if search_string == '':
-        search_string = 'All';
+        experiments_list = processSearchConfiguration(request.GET, experiments_list);
+#    if search_string == '':
+#        search_string = 'All';
     experiment_count = experiments_list.count();
     context = {'experiments_list': experiments_list, 
                'experiment_count': experiment_count,
                'db_experiment_count': db_experiment_count, 
-               'search_string': search_string,
+#               'search_string': search_string,
                'form':form }
     createDiscreteFieldMetadata(experiments_list, context);
     return render(request, 'webworm/results.html', context);
