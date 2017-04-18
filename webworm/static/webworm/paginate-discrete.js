@@ -1,6 +1,6 @@
 $(document).ready(function() {
 	$('#sum_strain').DataTable( {
-		dom: 'Bfrtip',
+		dom: 'Blfrtip',
 		buttons: [
 			  'selectAll',
 			  'selectNone',
@@ -10,7 +10,7 @@ $(document).ready(function() {
 		}
 	    });
 	$('#sum_trackers').DataTable( {
-		dom: 'Bfrtip',
+		dom: 'Blfrtip',
 		buttons: [
 			  'selectAll',
 			  'selectNone',
@@ -20,7 +20,7 @@ $(document).ready(function() {
 		}
 	    });
 	$('#sum_sex').DataTable( {
-		dom: 'Bfrtip',
+		dom: 'Blfrtip',
 		buttons: [
 			  'selectAll',
 			  'selectNone',
@@ -30,7 +30,7 @@ $(document).ready(function() {
 		}
 	    });
 	$('#sum_dev').DataTable( {
-		dom: 'Bfrtip',
+		dom: 'Blfrtip',
 		buttons: [
 			  'selectAll',
 			  'selectNone',
@@ -40,7 +40,7 @@ $(document).ready(function() {
 		}
 	    });
 	$('#sum_ventral').DataTable( {
-		dom: 'Bfrtip',
+		dom: 'Blfrtip',
 		buttons: [
 			  'selectAll',
 			  'selectNone',
@@ -50,7 +50,7 @@ $(document).ready(function() {
 		}
 	    });
 	$('#sum_food').DataTable( {
-		dom: 'Bfrtip',
+		dom: 'Blfrtip',
 		buttons: [
 			  'selectAll',
 			  'selectNone',
@@ -60,7 +60,7 @@ $(document).ready(function() {
 		}
 	    });
 	$('#sum_arena').DataTable( {
-		dom: 'Bfrtip',
+		dom: 'Blfrtip',
 		buttons: [
 			  'selectAll',
 			  'selectNone',
@@ -70,7 +70,7 @@ $(document).ready(function() {
 		}
 	    });
 	$('#sum_habit').DataTable( {
-		dom: 'Bfrtip',
+		dom: 'Blfrtip',
 		buttons: [
 			  'selectAll',
 			  'selectNone',
@@ -80,7 +80,7 @@ $(document).ready(function() {
 		}
 	    });
 	$('#sum_experimenter').DataTable( {
-		dom: 'Bfrtip',
+		dom: 'Blfrtip',
 		buttons: [
 			  'selectAll',
 			  'selectNone',

@@ -1,0 +1,53 @@
+<div id="resultsContent">
+  <h4>Number of Experiments Found: {{ results_count }}</h4>
+  <hr>
+  <table id="results" class="table table-striped table-bordered table-responsive">
+    <thead>
+      <tr>
+	<!-- Hardcoded for now. There are Django methods for these --> 
+	<!-- Dropping Experiment Names
+	<th>Experiment Name</th> 
+	 -->
+	<th>Experiment Date</th>
+	<th>Worm Strain</th>
+	<th>Trackers</th>
+	<th>Sex</th>
+	<th>Stage</th>
+	<th>Ventral Side</th>
+	<th>Food</th>
+	<th>Arena</th>
+	<th>Habituation</th>
+	<th>Experimenter</th>
+	<th>Zenodo</th>
+	<th>Sample Video</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for experiment in results_list %}
+      <tr>
+	<!-- Dropping Experiment Names 
+        <td>{{ experiment.base_name }}</td>
+	-->
+	<td>{{ experiment.date|default_if_none:"None" }}</td>
+	<td>{{ experiment.strain.name|default_if_none:"None" }}</td>
+	<td>{{ experiment.tracker.name|default_if_none:"None" }}</td>
+	<td>{{ experiment.sex.name|default_if_none:"Unknown" }}</td>
+	<td>{{ experiment.developmental_stage.name|default_if_none:"Unknown" }}</td>
+	<td>{{ experiment.ventral_side.name|default_if_none:"None" }}</td>
+	<td>{{ experiment.food.name|default_if_none:"None" }}</td>
+	<td>{{ experiment.arena.name|default_if_none:"None" }}</td>
+	<td>{{ experiment.habituation.name|default_if_none:"None" }}</td>
+	<td>{{ experiment.experimenter.name|default_if_none:"Unknown" }}</td>
+	<td> <a href="#">Link</a> </td>
+	<td>
+	  <!-- Proof of concept established to work. To reduce bandwidth consumption 
+	       due to accidents this is now replaced with a plain stub link.
+	  <iframe width="240" height="135" src="https://www.youtube.com/embed/MflKJyaRADk" frameborder="0" allowfullscreen></iframe>
+	  -->
+	  <a href="#">Blank Stub Link</a>
+	</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>      
+</div>

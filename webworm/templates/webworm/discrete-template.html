@@ -1,12 +1,6 @@
+<div id="discreteFieldsContentPane">
+
   <!-- Row 1 Strains and Trackers -->
-  <div class="row">
-    <div class="col-sm-6">
-      <p><b>Min Experiment date:</b> {{min_date}} </p>
-    </div>
-    <div class="col-sm-6">
-      <p><b>Max Experiment date:</b> {{max_date}} </p>
-    </div>
-  </div>
   <div class="row">
     <div class="col-sm-6">
       <p><b>Strains Summary</b></p>
@@ -20,8 +14,8 @@
 	<tbody>
 	  {% for name, count in strain_counts %}
 	  <tr>
-	    <th>{{ name }}</th>
-	    <th>{{ count }}</th>
+	    <td>{{ name }}</td>
+	    <td>{{ count }}</td>
 	  </tr>
 	  {% endfor %}
 	</tbody>
@@ -39,16 +33,17 @@
 	<tbody>
 	  {% for name, count in trackers_counts %}
 	  <tr>
-	    <th>{{ name }}</th>
-	    <th>{{ count }}</th>
+	    <td>{{ name }}</td>
+	    <td>{{ count }}</td>
 	  </tr>
 	  {% endfor %}
 	</tbody>
       </table>
     </div>
   </div>
-  <!-- Row 2 Sex and Development Stages -->
   <hr>
+
+  <!-- Row 2 Sex and Development Stages -->
   <div class="row">
     <div class="col-sm-6">
       <p><b>Sex Summary</b></p>
@@ -62,8 +57,8 @@
 	<tbody>
 	  {% for name, count in sex_counts %}
 	  <tr>
-	    <th>{{ name }}</th>
-	    <th>{{ count }}</th>
+	    <td>{{ name }}</td>
+	    <td>{{ count }}</td>
 	  </tr>
 	  {% endfor %}
       </tbody>
@@ -81,16 +76,17 @@
 	<tbody>
 	  {% for name, count in dev_stage_counts %}
 	  <tr>
-	    <th>{{ name }}</th>
-	    <th>{{ count }}</th>
+	    <td>{{ name }}</td>
+	    <td>{{ count }}</td>
 	  </tr>
 	  {% endfor %}
       </tbody>
       </table>
     </div>
   </div>
-  <!-- Row 3  Ventral Sides and Food -->
   <hr>
+
+  <!-- Row 3  Ventral Sides and Food -->
   <div class="row">
     <div class="col-sm-6">
       <p><b>Ventral Sides Summary</b></p>
@@ -104,8 +100,8 @@
 	<tbody>
 	  {% for name, count in ventral_counts %}
 	  <tr>
-	    <th>{{ name }}</th>
-	    <th>{{ count }}</th>
+	    <td>{{ name }}</td>
+	    <td>{{ count }}</td>
 	  </tr>
 	  {% endfor %}
       </tbody>
@@ -123,16 +119,17 @@
 	<tbody>
 	  {% for name, count in food_counts %}
 	  <tr>
-	    <th>{{ name }}</th>
-	    <th>{{ count }}</th>
+	    <td>{{ name }}</td>
+	    <td>{{ count }}</td>
 	  </tr>
 	  {% endfor %}
       </tbody>
       </table>
     </div>
   </div>
-  <!-- Row 4 Arena and Habituation -->
   <hr>
+
+  <!-- Row 4 Arena and Habituation -->
   <div class="row">
     <div class="col-sm-6">
       <p><b>Arena Summary</b></p>
@@ -146,8 +143,8 @@
 	<tbody>
 	  {% for name, count in arena_counts %}
 	  <tr>
-	    <th>{{ name }}</th>
-	    <th>{{ count }}</th>
+	    <td>{{ name }}</td>
+	    <td>{{ count }}</td>
 	  </tr>
 	  {% endfor %}
       </tbody>
@@ -165,16 +162,17 @@
 	<tbody>
 	  {% for name, count in habit_counts %}
 	  <tr>
-	    <th>{{ name }}</th>
-	    <th>{{ count }}</th>
+	    <td>{{ name }}</td>
+	    <td>{{ count }}</td>
 	  </tr>
 	  {% endfor %}
       </tbody>
       </table>
     </div>
   </div>
-  <!-- Row 5 Experimenters  -->
   <hr>
+
+  <!-- Row 5 Experimenters  -->
   <div class="row">
     <div class="col-sm-6">
       <p><b>Experimenters Summary</b></p>
@@ -188,12 +186,14 @@
 	<tbody>
 	  {% for name, count in experimenter_counts %}
 	  <tr>
-	    <th>{{ name }}</th>
-	    <th>{{ count }}</th>
+	    <td>{{ name }}</td>
+	    <td>{{ count }}</td>
 	  </tr>
 	  {% endfor %}
-      </tbody>
+	</tbody>
       </table>
     </div>
   </div>
+  <hr>
 
+</div>

@@ -1,6 +1,6 @@
 $(document).ready(function() {
 	$('#parameters').DataTable( {
-		dom: 'Bfrtip',
+		dom: 'Blfrtip',
 		buttons: [
 			  'selectAll',
 			  'selectNone',

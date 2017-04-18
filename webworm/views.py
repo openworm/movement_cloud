@@ -32,6 +32,7 @@ def processSearchConfiguration(getRequest, experimentsList):
     # Sane defaults
     exact = 'off';
     case_sen = 'off';
+    returnList = experimentsList;
     if 'exact_match' in getRequest:
         exact = getRequest['exact_match'];
     if 'case_sensitive' in getRequest:
@@ -53,57 +54,57 @@ def processSearchConfiguration(getRequest, experimentsList):
         start = getRequest['start_date'];
         if start:
 #            search_string = search_string + ' Start:' + start;
-            returnList = experimentsList.filter(date__gte=start);
+            returnList = returnList.filter(date__gte=start);
     if 'end_date' in getRequest:
         end = getRequest['end_date'];
         if end:
 #            search_string = search_string + ' End:' + end;
-            returnList = experimentsList.filter(date__lte=end);
+            returnList = returnList.filter(date__lte=end);
     if 'strain' in getRequest:
         strain = getRequest['strain'];
         if strain:
 #            search_string = search_string + ' Strain:' + strain;
-            returnList = experimentsList.filter(strain__name__icontains=strain);
+            returnList = returnList.filter(strain__name__icontains=strain);
     if 'trackers' in getRequest:
         trackers = getRequest['trackers'];
         if trackers:
 #            search_string = search_string + ' Trackers:' + trackers;
-            returnList = experimentsList.filter(tracker__name__icontains=trackers);
+            returnList = returnList.filter(tracker__name__icontains=trackers);
     if 'sex' in getRequest:
         sex = getRequest['sex'];
         if sex:
 #            search_string = search_string + ' Sex:' + sex;
-            returnList = experimentsList.filter(sex__name__icontains=sex);
+            returnList = returnList.filter(sex__name__icontains=sex);
     if 'stage' in getRequest:
         stage = getRequest['stage'];
         if stage:
 #            search_string = search_string + ' Stage:' + stage;
-            returnList = experimentsList.filter(developmental_stage__name__icontains=stage);
+            returnList = returnList.filter(developmental_stage__name__icontains=stage);
     if 'ventral' in getRequest:
         ventral = getRequest['ventral'];
         if ventral:
 #            search_string = search_string + ' Ventral:' + ventral;
-            returnList = experimentsList.filter(ventral_side__name__iexact=ventral);
+            returnList = returnList.filter(ventral_side__name__iexact=ventral);
     if 'food' in getRequest:
         food = getRequest['food'];
         if food:
 #            search_string = search_string + ' Food:' + food;
-            returnList = experimentsList.filter(food__name__icontains=food);
+            returnList = returnList.filter(food__name__icontains=food);
     if 'arena' in getRequest:
         arena = getRequest['arena'];
         if arena:
 #            search_string = search_string + ' Arena:' + arena;
-            returnList = experimentsList.filter(arena__name__icontains=arena);
+            returnList = returnList.filter(arena__name__icontains=arena);
     if 'hab' in getRequest:
         hab = getRequest['hab'];
         if hab:
 #            search_string = search_string + ' HabTime:' + hab;
-            returnList = experimentsList.filter(habituation__name__icontains=hab);
+            returnList = returnList.filter(habituation__name__icontains=hab);
     if 'staff' in getRequest:
         staff = getRequest['staff'];
         if staff:
 #            search_string = search_string + ' Experimenter:' + staff;
-            returnList = experimentsList.filter(experimenter__name__icontains=staff);
+            returnList = returnList.filter(experimenter__name__icontains=staff);
     return returnList;
     
 
@@ -202,42 +203,54 @@ def createDiscreteFieldMetadata(experiments, context):
 def index(request):
     form = SearchForm();
     context = {};
+
+    # Compute static global database metadata
+    experiments_list = Experiments.objects.all();
+    db_experiment_count = experiments_list.count();
+
+    createDiscreteFieldMetadata(experiments_list, context);
+
     featuresFields = FeaturesMeans._meta.get_fields();
     featuresObjects = FeaturesMeans.objects.all();
     createParametersMetadata(featuresFields, featuresObjects, context);
-                          
-    experiments_list = Experiments.objects.all();
-    createDiscreteFieldMetadata(experiments_list, context);
-
-    db_experiment_count = experiments_list.count();
 
     experiment_date_min = experiments_list.aggregate(Min('date')).get('date__min');
     experiment_date_max = experiments_list.aggregate(Max('date')).get('date__max');
 
-    experiment_count = 0;
-    search_string = 'None';
+    # Parameters for Search
+    results_count = 0;
+    results_list = None;
+#    search_string = '';
+    if request.method == "GET":
+        if (len(request.GET.keys()) > 0):
+            results_list = processSearchConfiguration(request.GET, 
+                                                      Experiments.objects.order_by('base_name'));
+            results_count = results_list.count();
+
     context['db_experiment_count'] = db_experiment_count;
-    context['experiment_count'] = experiment_count;
+    context['results_list'] = results_list;
+    context['results_count'] = results_count;
     context['min_date'] = experiment_date_min;
     context['max_date'] = experiment_date_max;
-    context['search_string'] = search_string;
+#    context['search_string'] = search_string;
     context['form'] = form;
     return render(request, 'webworm/index.html', context);
 
-def filter(request):
-    form = SearchForm();
-    experiments_list = Experiments.objects.order_by('base_name');
-    db_experiment_count = experiments_list.count();
+# *CWL* - Consolidated into a single page.
+#def filter(request):
+#    form = SearchForm();
+#    experiments_list = Experiments.objects.order_by('base_name');
+#    db_experiment_count = experiments_list.count();
 #    search_string = '';
-    if request.method == "GET":
-        experiments_list = processSearchConfiguration(request.GET, experiments_list);
+#    if request.method == "GET":
+#        experiments_list = processSearchConfiguration(request.GET, experiments_list);
 #    if search_string == '':
 #        search_string = 'All';
-    experiment_count = experiments_list.count();
-    context = {'experiments_list': experiments_list, 
-               'experiment_count': experiment_count,
-               'db_experiment_count': db_experiment_count, 
+#    experiment_count = experiments_list.count();
+#    context = {'experiments_list': experiments_list, 
+#               'experiment_count': experiment_count,
+#               'db_experiment_count': db_experiment_count, 
 #               'search_string': search_string,
-               'form':form }
-    createDiscreteFieldMetadata(experiments_list, context);
-    return render(request, 'webworm/results.html', context);
+#               'form':form }
+#    createDiscreteFieldMetadata(experiments_list, context);
+#    return render(request, 'webworm/results.html', context);
