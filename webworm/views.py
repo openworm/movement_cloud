@@ -70,7 +70,7 @@ def createParametersMetadata(featuresFields, featuresObjects, context):
     context['param_list'] = param_tuple_list;
     context['parameter_name_list'] = param_name_list;
 
-def createSummary(experiments, context):
+def createDiscreteFieldMetadata(experiments, context):
     experiments_count = experiments.count();
 
     # Strains
@@ -128,7 +128,7 @@ def index(request):
     createParametersMetadata(featuresFields, featuresObjects, context);
                           
     experiments_list = Experiments.objects.all();
-    createSummary(experiments_list, context);
+    createDiscreteFieldMetadata(experiments_list, context);
 
     db_experiment_count = experiments_list.count();
 
@@ -234,5 +234,5 @@ def filter(request):
                'db_experiment_count': db_experiment_count, 
                'search_string': search_string,
                'form':form }
-    createSummary(experiments_list, context);
+    createDiscreteFieldMetadata(experiments_list, context);
     return render(request, 'webworm/results.html', context);
