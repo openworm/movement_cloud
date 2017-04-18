@@ -12,11 +12,11 @@ from .forms import *
 # Support functions
 
 # Only required for jsGrid because of all the dictionaries nonsense.
-def createJsGridRow(tripleOfDictionaries):
-    result = tripleOfDictionaries[0].copy();
-    result.update(tripleOfDictionaries[1]);
-    result.update(tripleOfDictionaries[2]);
-    return result;
+#def createJsGridRow(tripleOfDictionaries):
+#    result = tripleOfDictionaries[0].copy();
+#    result.update(tripleOfDictionaries[1]);
+#    result.update(tripleOfDictionaries[2]);
+#    return result;
 
 def getFieldCounts(experiments, fieldName, fieldList, nullNameString):
     counts = {};
@@ -27,6 +27,48 @@ def getFieldCounts(experiments, fieldName, fieldList, nullNameString):
         else:
             counts[nullNameString] = experiments.filter(**{param:element}).count();
     return sorted(counts.items());
+
+def createParametersMetadata(featuresFields, featuresObjects, context):
+    # This is clunky, there has to be a better way to do this.
+    parameter_field_list = tuple(x for x in featuresFields
+                                 if (x.name != "id") and 
+                                 (x.name != "experiment_id") and
+                                 (x.name != "worm_index") and
+                                 (x.name != "n_frames") and
+                                 (x.name != "n_valid_skel") and
+                                 (x.name != "first_frame")
+                                 );
+    param_name_list = [x.name for x in parameter_field_list];
+#    param_jsgrid_name_list = [{"Parameter Name":x.name} for x in parameter_field_list];
+
+    param_min_list = [];
+#    param_jsgrid_min_list = [];
+    # *CWL* Hardcoding the name of the dictionary returned has to be the ugliest hack!
+    for field_min in parameter_field_list:
+        minval = featuresObjects.aggregate(Min(field_min.name)).get(field_min.name+'__min');
+        if (minval == None):
+            param_min_list.append("None");
+#            param_jsgrid_min_list.append({"Minimum":"None"});
+        else:
+            param_min_list.append(minval);
+#            param_jsgrid_min_list.append({"Minimum":minval});        
+
+    param_max_list = [];
+#    param_jsgrid_max_list = [];
+    for field_max in parameter_field_list:
+        maxval = featuresObjects.aggregate(Max(field_max.name)).get(field_max.name+'__max');
+        if (maxval == None):
+            param_max_list.append("None");
+#            param_jsgrid_max_list.append({"Maximum":"None"});
+        else:
+            param_max_list.append(maxval);
+#            param_jsgrid_max_list.append({"Maximum":maxval});
+
+    param_tuple_list = zip(param_name_list, param_min_list, param_max_list);
+#    param_jsgrid_tuple_list = zip(param_jsgrid_name_list, param_jsgrid_min_list, param_jsgrid_max_list);
+#    param_jsgrid_list = map(createJsGridRow, param_jsgrid_tuple_list);
+    context['param_list'] = param_tuple_list;
+    context['parameter_name_list'] = param_name_list;
 
 def createSummary(experiments, context):
     experiments_count = experiments.count();
@@ -80,47 +122,14 @@ def createSummary(experiments, context):
 
 def index(request):
     form = SearchForm();
-    f = FeaturesMeans._meta.get_fields();
-    # This is clunky, there has to be a better way to do this.
-    parameter_field_list = tuple(x for x in f 
-                                 if (x.name != "id") and 
-                                 (x.name != "experiment_id") and
-                                 (x.name != "worm_index") and
-                                 (x.name != "n_frames") and
-                                 (x.name != "n_valid_skel") and
-                                 (x.name != "first_frame")
-                                 );
-    param_name_list = [x.name for x in parameter_field_list];
-    param_jsgrid_name_list = [{"Parameter Name":x.name} for x in parameter_field_list];
-
-    param_min_list = [];
-    param_jsgrid_min_list = [];
-    # *CWL* Hardcoding the name of the dictionary returned has to be the ugliest hack!
-    for field_min in parameter_field_list:
-        minval = FeaturesMeans.objects.all().aggregate(Min(field_min.name)).get(field_min.name+'__min');
-        if (minval == None):
-            param_min_list.append("None");
-            param_jsgrid_min_list.append({"Minimum":"None"});
-        else:
-            param_min_list.append(minval);
-            param_jsgrid_min_list.append({"Minimum":minval});        
-
-    param_max_list = [];
-    param_jsgrid_max_list = [];
-    for field_max in parameter_field_list:
-        maxval = FeaturesMeans.objects.all().aggregate(Max(field_max.name)).get(field_max.name+'__max');
-        if (maxval == None):
-            param_max_list.append("None");
-            param_jsgrid_max_list.append({"Maximum":"None"});
-        else:
-            param_max_list.append(maxval);
-            param_jsgrid_max_list.append({"Maximum":maxval});
-
-    param_tuple_list = zip(param_name_list, param_min_list, param_max_list);
-    param_jsgrid_tuple_list = zip(param_jsgrid_name_list, param_jsgrid_min_list, param_jsgrid_max_list);
-    param_jsgrid_list = map(createJsGridRow, param_jsgrid_tuple_list);
+    context = {};
+    featuresFields = FeaturesMeans._meta.get_fields();
+    featuresObjects = FeaturesMeans.objects.all();
+    createParametersMetadata(featuresFields, featuresObjects, context);
                           
     experiments_list = Experiments.objects.all();
+    createSummary(experiments_list, context);
+
     db_experiment_count = experiments_list.count();
 
     experiment_date_min = experiments_list.aggregate(Min('date')).get('date__min');
@@ -128,16 +137,12 @@ def index(request):
 
     experiment_count = 0;
     search_string = 'None';
-    context = {'db_experiment_count': db_experiment_count,
-               'experiment_count': experiment_count,
-               'min_date': experiment_date_min,
-               'max_date': experiment_date_max,
-               'search_string': search_string,
-               'param_list': param_tuple_list,
-               'parameter_name_list': param_name_list,
-               'form': form
-               };
-    createSummary(experiments_list, context);
+    context['db_experiment_count'] = db_experiment_count;
+    context['experiment_count'] = experiment_count;
+    context['min_date'] = experiment_date_min;
+    context['max_date'] = experiment_date_max;
+    context['search_string'] = search_string;
+    context['form'] = form;
     return render(request, 'webworm/index.html', context);
 
 def filter(request):
