@@ -11,13 +11,6 @@ from .forms import *
 
 # Support functions
 
-# Only required for jsGrid because of all the dictionaries nonsense.
-#def createJsGridRow(tripleOfDictionaries):
-#    result = tripleOfDictionaries[0].copy();
-#    result.update(tripleOfDictionaries[1]);
-#    result.update(tripleOfDictionaries[2]);
-#    return result;
-
 def getFieldCounts(experiments, fieldName, fieldList, nullNameString):
     counts = {};
     param = fieldName + '__name__exact';
@@ -128,25 +121,18 @@ def createParametersMetadata(featuresFields, featuresObjects, context):
         minval = featuresObjects.aggregate(Min(field_min.name)).get(field_min.name+'__min');
         if (minval == None):
             param_min_list.append("None");
-#            param_jsgrid_min_list.append({"Minimum":"None"});
         else:
             param_min_list.append(minval);
-#            param_jsgrid_min_list.append({"Minimum":minval});        
 
     param_max_list = [];
-#    param_jsgrid_max_list = [];
     for field_max in parameter_field_list:
         maxval = featuresObjects.aggregate(Max(field_max.name)).get(field_max.name+'__max');
         if (maxval == None):
             param_max_list.append("None");
-#            param_jsgrid_max_list.append({"Maximum":"None"});
         else:
             param_max_list.append(maxval);
-#            param_jsgrid_max_list.append({"Maximum":maxval});
 
     param_tuple_list = zip(param_name_list, param_min_list, param_max_list);
-#    param_jsgrid_tuple_list = zip(param_jsgrid_name_list, param_jsgrid_min_list, param_jsgrid_max_list);
-#    param_jsgrid_list = map(createJsGridRow, param_jsgrid_tuple_list);
     context['param_list'] = param_tuple_list;
     context['parameter_name_list'] = param_name_list;
 
