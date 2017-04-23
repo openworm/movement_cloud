@@ -1,5 +1,19 @@
+// *CWL* - A lot of hardcodes to get an early prototype working. 
+//        Can be refactored to be better parameterized. Please fix.
+var selectedStrainsIndices = {};
+var selectedTrackersIndices = {};
+var selectedSexIndices = {};
+var selectedDevIndices = {};
+var selectedVentralIndices = {};
+var selectedFoodIndices = {};
+var selectedArenaIndices = {};
+var selectedHabituationIndices = {};
+var selectedExperimentersIndices = {};
+var hiddenDiscreteIndex = 1;
+
 $(document).ready(function() {
-	$('#sum_strain').DataTable( {
+
+	var strainsTable = $('#sum_strains').DataTable( {
 		dom: 'Blfrtip',
 		buttons: [
 			  'selectAll',
@@ -9,7 +23,8 @@ $(document).ready(function() {
 		    style: 'multi'
 		}
 	    });
-	$('#sum_trackers').DataTable( {
+
+	var trackersTable = $('#sum_trackers').DataTable( {
 		dom: 'Blfrtip',
 		buttons: [
 			  'selectAll',
@@ -19,7 +34,8 @@ $(document).ready(function() {
 		    style: 'multi'
 		}
 	    });
-	$('#sum_sex').DataTable( {
+
+	var sexTable = $('#sum_sex').DataTable( {
 		dom: 'Blfrtip',
 		buttons: [
 			  'selectAll',
@@ -29,7 +45,8 @@ $(document).ready(function() {
 		    style: 'multi'
 		}
 	    });
-	$('#sum_dev').DataTable( {
+
+	var devTable = $('#sum_dev').DataTable( {
 		dom: 'Blfrtip',
 		buttons: [
 			  'selectAll',
@@ -39,7 +56,8 @@ $(document).ready(function() {
 		    style: 'multi'
 		}
 	    });
-	$('#sum_ventral').DataTable( {
+
+	var ventralTable = $('#sum_ventral').DataTable( {
 		dom: 'Blfrtip',
 		buttons: [
 			  'selectAll',
@@ -49,7 +67,8 @@ $(document).ready(function() {
 		    style: 'multi'
 		}
 	    });
-	$('#sum_food').DataTable( {
+
+	var foodTable = $('#sum_food').DataTable( {
 		dom: 'Blfrtip',
 		buttons: [
 			  'selectAll',
@@ -59,7 +78,8 @@ $(document).ready(function() {
 		    style: 'multi'
 		}
 	    });
-	$('#sum_arena').DataTable( {
+
+	var arenaTable = $('#sum_arena').DataTable( {
 		dom: 'Blfrtip',
 		buttons: [
 			  'selectAll',
@@ -69,7 +89,8 @@ $(document).ready(function() {
 		    style: 'multi'
 		}
 	    });
-	$('#sum_habit').DataTable( {
+
+	var habitTable = $('#sum_habit').DataTable( {
 		dom: 'Blfrtip',
 		buttons: [
 			  'selectAll',
@@ -79,7 +100,7 @@ $(document).ready(function() {
 		    style: 'multi'
 		}
 	    });
-	$('#sum_experimenter').DataTable( {
+	var exprTable = $('#sum_experimenter').DataTable( {
 		dom: 'Blfrtip',
 		buttons: [
 			  'selectAll',
@@ -89,4 +110,49 @@ $(document).ready(function() {
 		    style: 'multi'
 		}
 	    });
+
+	var confirmStrainsTable = $('#confirmStrains').DataTable( {
+		"columnDefs": [
+	{
+	    "targets":[hiddenDiscreteIndex],
+	    "visible": false,
+	    "searchable": false
+	},
+			       ],
+	});
+
+	strainsTable.on( 'select', function ( e, dt, type, indexes ) {
+		if ( type === 'row' ) {
+		    var origData = strainsTable.rows(indexes).data();
+		    var selectLength = indexes.length;
+		    for (var i=0; i<selectLength; i++) {
+			if (!selectedStrainsIndices[indexes[i]]) {
+			    selectedStrainsIndices[indexes[i]] = "true";
+			    var data = [];
+			    // *CWL* This is an annoying hardcode.
+			    data.push(origData[i][0]); // name of parameter
+			    data.push(indexes[i]);
+			    confirmStrainsTable.row.add(data);
+			}
+		    }
+		    confirmStrainsTable.draw();
+		}
+	    } );
+
+	strainsTable.on( 'deselect', function ( e, dt, type, indexes ) {
+		if ( type === 'row' ) {
+		    var selectLength = indexes.length;
+		    for (var i=0; i<selectLength; i++) {
+			if (selectedStrainsIndices[indexes[i]]) {
+			    delete selectedStrainsIndices[indexes[i]];
+			    confirmStrainsTable.row( function(idx, data, node){
+				    return data[hiddenDiscreteIndex] === indexes[i]?true:false;
+				}).remove();
+			}
+		    }
+		    confirmStrainsTable.draw();
+		}
+	    } );
+
+
     } );

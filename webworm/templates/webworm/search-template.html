@@ -5,7 +5,9 @@
 	<ul class="nav nav-pills">
 	  <li class="active"><a data-toggle="pill" href="#parametersPane">Parameters</a></li>
 	  <li><a data-toggle="pill" href="#discretePane">Discrete Fields</a></li>
+	  <!-- *CWL* Tentatively unnecessary and should be merged with Parameters
 	  <li><a data-toggle="pill" href="#rangedPane">Ranged Fields</a></li>
+	  -->
 	  <li><a data-toggle="pill" href="#confirmSearchPane">Review and Confirm</a></li>
 	</ul>
 	
@@ -21,10 +23,12 @@
 	  </div>
 	  
 	  <!-- Search by ranged database fields -->
+	  <!-- *CWL* Tentatively unnecessary and should be merged with Parameters
 	  <div class="tab-pane fade" id="rangedPane">
 	    {% include "webworm/ranged-template.html" %}
 	  </div>
-	  
+	  -->
+
 	  <!-- Confirmation tab to review and submit search request to server -->
 	  <div class="tab-pane fade" id="confirmSearchPane">
 	    {% include "webworm/confirmSearch-template.html" %}
