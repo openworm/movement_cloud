@@ -10,6 +10,23 @@ var discreteMap = [
 		   'experimenter',
 		   ];
 var hiddenDiscreteIndex = 1;
+var discreteTables = new Array(discreteMap.length);
+var confirmTables = new Array(discreteMap.length);
+
+// On Form Submission, populate the discrete search parameters
+var submitFunction = function() {
+    for (var disIdx=0; disIdx<discreteMap.length; disIdx++) {
+	var fieldString = '';
+	confirmTables[disIdx].rows().every( function(index) {
+		var data = this.data();
+		fieldString += data[0] + ',';
+	    });
+	// remove last excess comma
+        fieldString = fieldString.substring(0, fieldString.length - 1);
+	//	alert(fieldString);
+	$('#'+discreteMap[disIdx]+'InputList').val(fieldString);
+    }
+}
 
 $(document).ready(function() {
 
@@ -63,9 +80,6 @@ $(document).ready(function() {
 	for (var disIdx=0; disIdx<discreteMap.length; disIdx++) {
 	    discreteIndices[disIdx] = {};
 	}
-
-	var discreteTables = new Array(discreteMap.length);
-	var confirmTables = new Array(discreteMap.length);
 
 	for (var disIdx=0; disIdx<confirmTables.length; disIdx++) {
 	    confirmTables[disIdx] = $('#'+discreteMap[disIdx]+'Confirm').DataTable( {

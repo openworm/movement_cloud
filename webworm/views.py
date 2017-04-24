@@ -21,6 +21,15 @@ def getFieldCounts(experiments, fieldName, fieldList, nullNameString):
             counts[nullNameString] = experiments.filter(**{param:element}).count();
     return sorted(counts.items());
 
+def processSearchField(key, db_filter, getRequest, experimentsList):
+    returnList = Experiments.objects.none();
+    if key in getRequest:
+        searchList = getRequest[key].split(',');
+        if searchList:
+            for searchTerm in searchList:
+                exec('returnList =  returnList | experimentsList.filter(' + db_filter + '=searchTerm);');
+    return returnList;
+
 def processSearchConfiguration(getRequest, experimentsList):
     # Sane defaults
     exact = 'off';
@@ -46,58 +55,30 @@ def processSearchConfiguration(getRequest, experimentsList):
     if 'start_date' in getRequest:
         start = getRequest['start_date'];
         if start:
-#            search_string = search_string + ' Start:' + start;
             returnList = returnList.filter(date__gte=start);
     if 'end_date' in getRequest:
         end = getRequest['end_date'];
         if end:
-#            search_string = search_string + ' End:' + end;
             returnList = returnList.filter(date__lte=end);
-    if 'strain' in getRequest:
-        strain = getRequest['strain'];
-        if strain:
-#            search_string = search_string + ' Strain:' + strain;
-            returnList = returnList.filter(strain__name__icontains=strain);
-    if 'trackers' in getRequest:
-        trackers = getRequest['trackers'];
-        if trackers:
-#            search_string = search_string + ' Trackers:' + trackers;
-            returnList = returnList.filter(tracker__name__icontains=trackers);
-    if 'sex' in getRequest:
-        sex = getRequest['sex'];
-        if sex:
-#            search_string = search_string + ' Sex:' + sex;
-            returnList = returnList.filter(sex__name__icontains=sex);
-    if 'stage' in getRequest:
-        stage = getRequest['stage'];
-        if stage:
-#            search_string = search_string + ' Stage:' + stage;
-            returnList = returnList.filter(developmental_stage__name__icontains=stage);
-    if 'ventral' in getRequest:
-        ventral = getRequest['ventral'];
-        if ventral:
-#            search_string = search_string + ' Ventral:' + ventral;
-            returnList = returnList.filter(ventral_side__name__iexact=ventral);
-    if 'food' in getRequest:
-        food = getRequest['food'];
-        if food:
-#            search_string = search_string + ' Food:' + food;
-            returnList = returnList.filter(food__name__icontains=food);
-    if 'arena' in getRequest:
-        arena = getRequest['arena'];
-        if arena:
-#            search_string = search_string + ' Arena:' + arena;
-            returnList = returnList.filter(arena__name__icontains=arena);
-    if 'hab' in getRequest:
-        hab = getRequest['hab'];
-        if hab:
-#            search_string = search_string + ' HabTime:' + hab;
-            returnList = returnList.filter(habituation__name__icontains=hab);
-    if 'staff' in getRequest:
-        staff = getRequest['staff'];
-        if staff:
-#            search_string = search_string + ' Experimenter:' + staff;
-            returnList = returnList.filter(experimenter__name__icontains=staff);
+    returnList = processSearchField('strains', 'strain__name__icontains', 
+                                    getRequest, returnList);
+    returnList  = processSearchField('trackers', 'tracker__name__icontains', 
+                                     getRequest, returnList);
+    returnlist = processSearchField('sex', 'sex__name__icontains', 
+                                    getRequest, returnList);
+    returnList = processSearchField('dev', 'developmental_stage__name__icontains', 
+                                    getRequest, returnList);
+    returnList = processSearchField('ventral', 'ventral_side__name__icontains', 
+                                    getRequest, returnList);
+    returnList = processSearchField('food', 'food__name__icontains', 
+                                    getRequest, returnList);
+    returnList = processSearchField('arena', 'arena__name__icontains', 
+                                    getRequest, returnList);
+    returnList = processSearchField('habituation', 'habituation__name__icontains', 
+                                    getRequest, returnList);
+    returnList = processSearchField('experimenter', 'experimenter__name__icontains', 
+                                    getRequest, returnList);
+
     return returnList;
     
 
@@ -206,7 +187,7 @@ def index(request):
     # Parameters for Search
     results_count = 0;
     results_list = None;
-#    search_string = '';
+
     if request.method == "GET":
         if (len(request.GET.keys()) > 0):
             results_list = processSearchConfiguration(request.GET, 
