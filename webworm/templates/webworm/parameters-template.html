@@ -1,0 +1,21 @@
+<div id="parametersSearchContent">
+  <p><b>Parameters and Ranges</b></p>
+  <table id="parameters" class="table table-striped table-bordered table-responsive">
+    <thead>
+      <tr>
+	<th>Name</th>
+	<th>Minimum</th>
+	<th>Maximum</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for name, min, max in param_list %}
+      <tr>
+	<td>{{ name }}</td>
+	<td>{{ min }}</td>
+	<td>{{ max }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
