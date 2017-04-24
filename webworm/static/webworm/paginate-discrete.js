@@ -1,5 +1,3 @@
-// *CWL* - A lot of hardcodes to get an early prototype working. 
-//        Can be refactored to be better parameterized. Please fix.
 var discreteMap = [
 		   'strains',
 		   'trackers',
