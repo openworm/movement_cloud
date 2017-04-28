@@ -1,0 +1,25 @@
+{
+  "features": [ { "name": "length",
+                  "desc": "the length of the worm's midline" },
+                { "name": "area",
+                  "desc": "the area of the worm" },
+                { "name": "midbody_bend_mean_abs",
+                  "desc": "the absolute value of the worm's midbody bend angle" },
+                { "name": "max_amplitude",
+                  "desc": "the maximum distance between the points on the worm body that are farthest from the line connecting the head and the tail" },
+                { "name": "head_tip_speed_abs",
+                  "desc": "the absolute value of the worm's head speed (will capture some contribution from the high frequency 'foraging' motion of the worm's head)" },
+                { "name": "midbody_speed_abs",
+                  "desc": "the absolute value of the worm's midbody speed" },
+                { "name": "path_range",
+                  "desc": "the farthest distance recorded between the worm's staring point and any point on its trajectory during the recording" },
+                { "name": "forward_motion_frequency",
+                  "desc": "the frequency of forward motion bouts" },
+                { "name": "paused_motion_frequency",
+                  "desc": "the frequency of pauses (where the worm doesn't move much)" },
+                { "name": "nosuchname",
+                  "desc": "Non-Existent entry for Testing Purposes." },
+                { "name": "backward_motion_frequency",
+                  "desc": "the frequency of reversals (where the worm moves backward for some time)" }
+              ]
+}
