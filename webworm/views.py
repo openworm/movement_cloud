@@ -9,7 +9,27 @@ from django.db.models import Max
 from .models import *
 from .forms import *
 
+import json
+
+coreFeatures = {};
+
 # Support functions
+
+def loadCoreFeatures(featureFields, context):
+    global coreFeatures;
+    coreFeatures = json.loads(open('webworm/defaultCoreFeatures.json').read());
+    # Check that the features are in the database
+    allFeaturesList = [f.name for f in featureFields];
+    coreList = coreFeatures['features'];
+    presentList = [];
+    missingList = [];
+    for feature in coreList:
+        if feature['name'] in allFeaturesList:
+            presentList.append(feature);
+        else:
+            missingList.append(feature);
+    context['presentFeatures'] = presentList;
+    context['missingFeatures'] = missingList;
 
 def getFieldCounts(experiments, fieldName, fieldList, nullNameString):
     counts = {};
@@ -30,7 +50,29 @@ def processSearchField(key, db_filter, getRequest, experimentsList):
                 exec('returnList =  returnList | experimentsList.filter(' + db_filter + '=searchTerm);');
     return returnList;
 
-def processSearchConfiguration(getRequest, experimentsList):
+def processSearchParameters(getRequest, featuresObjects, experimentsList):
+    returnList = experimentsList;
+    # This is pretty painful, and requires us to traverse the request list for keys
+    #   instead of a forward search. Still looks more efficient than traversing
+    #   all 700+ parameters.
+    for key in getRequest.keys():
+        name = '';
+        if key.endswith('_minParam'):
+            name = key[:-9];
+            minVal = getRequest[key];
+            print "*****"
+            print name;
+            print minVal;
+            exec('eliminatedFeatures = featuresObjects.filter('+ name +'__lt=minVal);');
+            returnList.exclude(id__in = [x.experiment_id for x in eliminatedFeatures_set()]);
+#            exec('returnList =  returnList.select_related("'+name+'").filter(' + name + '__gte=minVal);');
+        elif key.endswith('_maxParam'):
+            name = key[:-9];
+            maxVal = getRequest[key];
+#            exec('returnList =  returnList.select_related("'+name+'").filter(' + name + '__lte=maxVal);');
+    return returnList;
+
+def processSearchConfiguration(getRequest, experimentsList, featuresObjects):
     # Sane defaults
     exact = 'off';
     case_sen = 'off';
@@ -78,10 +120,10 @@ def processSearchConfiguration(getRequest, experimentsList):
                                     getRequest, returnList);
     returnList = processSearchField('experimenter', 'experimenter__name__icontains', 
                                     getRequest, returnList);
+    returnList = processSearchParameters(getRequest, featuresObjects, returnList);
 
     return returnList;
     
-
 def createParametersMetadata(featuresFields, featuresObjects, context):
     # This is clunky, there has to be a better way to do this.
     parameter_field_list = tuple(x for x in featuresFields
@@ -188,10 +230,14 @@ def index(request):
     results_count = 0;
     results_list = None;
 
+    # Get Core Parameters from JSON file
+    loadCoreFeatures(featuresFields, context);
+
     if request.method == "GET":
         if (len(request.GET.keys()) > 0):
             results_list = processSearchConfiguration(request.GET, 
-                                                      Experiments.objects.order_by('base_name'));
+                                                      Experiments.objects.order_by('base_name'),
+                                                      featuresObjects);
             results_count = results_list.count();
 
     context['db_experiment_count'] = db_experiment_count;
