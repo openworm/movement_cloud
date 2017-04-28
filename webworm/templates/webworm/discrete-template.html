@@ -1,44 +1,51 @@
 <div id="discreteFieldsContentPane">
-
+  <h4>Filter Experiments by Discrete Values - Click rows to Select</h4>
+  <hr>
   <!-- Row 1 Strains and Trackers -->
   <div class="row">
     <div class="col-sm-6">
-      <p><b>Strains Summary</b></p>
-      <table id="sum_strains" class="table table-striped table-bordered table-responsive">
-	<thead>
-	  <tr>
-	    <th>Name</th>
-	    <th>Num Experiments</th>
-	  </tr>
-	</thead>
-	<tbody>
-	  {% for name, count in strain_counts %}
-	  <tr>
-	    <td>{{ name }}</td>
-	    <td>{{ count }}</td>
-	  </tr>
-	  {% endfor %}
-	</tbody>
-      </table>
+      <h4>Strains Summary</h4>
+      <a href="#sum_strains_panel" class="btn btn-info" data-toggle="collapse">Toggle Strains</a>
+      <div id="sum_strains_panel" class="collapse">
+	<table id="sum_strains" class="table table-striped table-bordered table-responsive">
+	  <thead>
+	    <tr>
+	      <th>Name</th>
+	      <th>Num Experiments</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	    {% for name, count in strain_counts %}
+	    <tr>
+	      <td>{{ name }}</td>
+	      <td>{{ count }}</td>
+	    </tr>
+	    {% endfor %}
+	  </tbody>
+	</table>
+      </div>
     </div>
     <div class="col-sm-6">
-      <p><b>Trackers Summary</b></p>
-      <table id="sum_trackers" class="table table-striped table-bordered table-responsive">
-	<thead>
-	  <tr>
-	    <th>Name</th>
-	    <th>Num Experiments</th>
-	  </tr>
-	</thead>
-	<tbody>
-	  {% for name, count in trackers_counts %}
-	  <tr>
-	    <td>{{ name }}</td>
-	    <td>{{ count }}</td>
-	  </tr>
-	  {% endfor %}
-	</tbody>
-      </table>
+      <h4>Trackers Summary</h4>
+      <a href="#sum_trackers_panel" class="btn btn-info" data-toggle="collapse">Toggle Trackers</a>
+      <div id="sum_trackers_panel" class="collapse">
+	<table id="sum_trackers" class="table table-striped table-bordered table-responsive">
+	  <thead>
+	    <tr>
+	      <th>Name</th>
+	      <th>Num Experiments</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	    {% for name, count in trackers_counts %}
+	    <tr>
+	      <td>{{ name }}</td>
+	      <td>{{ count }}</td>
+	    </tr>
+	    {% endfor %}
+	  </tbody>
+	</table>
+      </div>
     </div>
   </div>
   <hr>
@@ -46,42 +53,48 @@
   <!-- Row 2 Sex and Development Stages -->
   <div class="row">
     <div class="col-sm-6">
-      <p><b>Sex Summary</b></p>
-      <table id="sum_sex" class="table table-striped table-bordered table-responsive">
-	<thead>
-	  <tr>
-	    <th>Name</th>
-	    <th>Num Experiments</th>
-	  </tr>
-	</thead>
-	<tbody>
-	  {% for name, count in sex_counts %}
-	  <tr>
-	    <td>{{ name }}</td>
-	    <td>{{ count }}</td>
-	  </tr>
-	  {% endfor %}
-      </tbody>
-      </table>
+      <h4>Sex Summary</h4>
+      <a href="#sum_sex_panel" class="btn btn-info" data-toggle="collapse">Toggle Sex</a>
+      <div id="sum_sex_panel" class="collapse">
+	<table id="sum_sex" class="table table-striped table-bordered table-responsive">
+	  <thead>
+	    <tr>
+	      <th>Name</th>
+	      <th>Num Experiments</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	    {% for name, count in sex_counts %}
+	    <tr>
+	      <td>{{ name }}</td>
+	      <td>{{ count }}</td>
+	    </tr>
+	    {% endfor %}
+	  </tbody>
+	</table>
+      </div>
     </div>
     <div class="col-sm-6">
-      <p><b>Development Stages Summary</b></p>
-      <table id="sum_dev" class="table table-striped table-bordered table-responsive">
-	<thead>
-	  <tr>
-	    <th>Name</th>
-	    <th>Num Experiments</th>
-	  </tr>
-	</thead>
-	<tbody>
-	  {% for name, count in dev_stage_counts %}
-	  <tr>
-	    <td>{{ name }}</td>
-	    <td>{{ count }}</td>
-	  </tr>
-	  {% endfor %}
-      </tbody>
-      </table>
+      <h4>Development Stages Summary</h4>
+      <a href="#sum_dev_panel" class="btn btn-info" data-toggle="collapse">Toggle Development Stages</a>
+      <div id="sum_dev_panel" class="collapse">
+	<table id="sum_dev" class="table table-striped table-bordered table-responsive">
+	  <thead>
+	    <tr>
+	      <th>Name</th>
+	      <th>Num Experiments</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	    {% for name, count in dev_stage_counts %}
+	    <tr>
+	      <td>{{ name }}</td>
+	      <td>{{ count }}</td>
+	    </tr>
+	    {% endfor %}
+	  </tbody>
+	</table>
+      </div>
     </div>
   </div>
   <hr>
@@ -89,42 +102,48 @@
   <!-- Row 3  Ventral Sides and Food -->
   <div class="row">
     <div class="col-sm-6">
-      <p><b>Ventral Sides Summary</b></p>
-      <table id="sum_ventral" class="table table-striped table-bordered table-responsive">
-	<thead>
-	  <tr>
-	    <th>Name</th>
-	    <th>Num Experiments</th>
-	  </tr>
-	</thead>
-	<tbody>
-	  {% for name, count in ventral_counts %}
-	  <tr>
-	    <td>{{ name }}</td>
-	    <td>{{ count }}</td>
-	  </tr>
-	  {% endfor %}
-      </tbody>
-      </table>
+      <h4>Ventral Sides Summary</h4>
+      <a href="#sum_ventral_panel" class="btn btn-info" data-toggle="collapse">Toggle Ventral Sides</a>
+      <div id="sum_ventral_panel" class="collapse">
+	<table id="sum_ventral" class="table table-striped table-bordered table-responsive">
+	  <thead>
+	    <tr>
+	      <th>Name</th>
+	      <th>Num Experiments</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	    {% for name, count in ventral_counts %}
+	    <tr>
+	      <td>{{ name }}</td>
+	      <td>{{ count }}</td>
+	    </tr>
+	    {% endfor %}
+	  </tbody>
+	</table>
+      </div>
     </div>
     <div class="col-sm-6">
-      <p><b>Food Summary</b></p>
-      <table id="sum_food" class="table table-striped table-bordered table-responsive">
-	<thead>
-	  <tr>
-	    <th>Name</th>
-	    <th>Num Experiments</th>
-	  </tr>
-	</thead>
-	<tbody>
-	  {% for name, count in food_counts %}
-	  <tr>
-	    <td>{{ name }}</td>
-	    <td>{{ count }}</td>
-	  </tr>
-	  {% endfor %}
-      </tbody>
-      </table>
+      <h4>Food Summary</h4>
+      <a href="#sum_food_panel" class="btn btn-info" data-toggle="collapse">Toggle Food</a>
+      <div id="sum_food_panel" class="collapse">
+	<table id="sum_food" class="table table-striped table-bordered table-responsive">
+	  <thead>
+	    <tr>
+	      <th>Name</th>
+	      <th>Num Experiments</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	    {% for name, count in food_counts %}
+	    <tr>
+	      <td>{{ name }}</td>
+	      <td>{{ count }}</td>
+	    </tr>
+	    {% endfor %}
+	  </tbody>
+	</table>
+      </div>
     </div>
   </div>
   <hr>
@@ -132,42 +151,48 @@
   <!-- Row 4 Arena and Habituation -->
   <div class="row">
     <div class="col-sm-6">
-      <p><b>Arena Summary</b></p>
-      <table id="sum_arena" class="table table-striped table-bordered table-responsive">
-	<thead>
-	  <tr>
-	    <th>Name</th>
-	    <th>Num Experiments</th>
-	  </tr>
-	</thead>
-	<tbody>
-	  {% for name, count in arena_counts %}
-	  <tr>
-	    <td>{{ name }}</td>
-	    <td>{{ count }}</td>
-	  </tr>
-	  {% endfor %}
-      </tbody>
-      </table>
+      <h4>Arena Summary</h4>
+      <a href="#sum_arena_panel" class="btn btn-info" data-toggle="collapse">Toggle Arena</a>
+      <div id="sum_arena_panel" class="collapse">
+	<table id="sum_arena" class="table table-striped table-bordered table-responsive">
+	  <thead>
+	    <tr>
+	      <th>Name</th>
+	      <th>Num Experiments</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	    {% for name, count in arena_counts %}
+	    <tr>
+	      <td>{{ name }}</td>
+	      <td>{{ count }}</td>
+	    </tr>
+	    {% endfor %}
+	  </tbody>
+	</table>
+      </div>
     </div>
     <div class="col-sm-6">
-      <p><b>Habituation Summary</b></p>
-      <table id="sum_habituation" class="table table-striped table-bordered table-responsive">
-	<thead>
-	  <tr>
-	    <th>Name</th>
-	    <th>Num Experiments</th>
-	  </tr>
-	</thead>
-	<tbody>
-	  {% for name, count in habit_counts %}
-	  <tr>
-	    <td>{{ name }}</td>
-	    <td>{{ count }}</td>
-	  </tr>
-	  {% endfor %}
-      </tbody>
-      </table>
+      <h4>Habituation Summary</h4>
+      <a href="#sum_habituation_panel" class="btn btn-info" data-toggle="collapse">Toggle Habituation</a>
+      <div id="sum_habituation_panel" class="collapse">
+	<table id="sum_habituation" class="table table-striped table-bordered table-responsive">
+	  <thead>
+	    <tr>
+	      <th>Name</th>
+	      <th>Num Experiments</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	    {% for name, count in habit_counts %}
+	    <tr>
+	      <td>{{ name }}</td>
+	      <td>{{ count }}</td>
+	    </tr>
+	    {% endfor %}
+	  </tbody>
+	</table>
+      </div>
     </div>
   </div>
   <hr>
@@ -175,23 +200,26 @@
   <!-- Row 5 Experimenters  -->
   <div class="row">
     <div class="col-sm-6">
-      <p><b>Experimenters Summary</b></p>
-      <table id="sum_experimenter" class="table table-striped table-bordered table-responsive">
-	<thead>
-	  <tr>
-	    <th>Name</th>
-	    <th>Num Experiments</th>
-	  </tr>
-	</thead>
-	<tbody>
-	  {% for name, count in experimenter_counts %}
-	  <tr>
-	    <td>{{ name }}</td>
-	    <td>{{ count }}</td>
-	  </tr>
-	  {% endfor %}
-	</tbody>
-      </table>
+      <h4>Experimenters Summary</h4>
+      <a href="#sum_experimenter_panel" class="btn btn-info" data-toggle="collapse">Toggle Experimenters</a>
+      <div id="sum_experimenter_panel" class="collapse">
+	<table id="sum_experimenter" class="table table-striped table-bordered table-responsive">
+	  <thead>
+	    <tr>
+	      <th>Name</th>
+	      <th>Num Experiments</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	    {% for name, count in experimenter_counts %}
+	    <tr>
+	      <td>{{ name }}</td>
+	      <td>{{ count }}</td>
+	    </tr>
+	    {% endfor %}
+	  </tbody>
+	</table>
+      </div>
     </div>
   </div>
   <hr>

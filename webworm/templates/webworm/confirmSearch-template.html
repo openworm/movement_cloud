@@ -1,25 +1,41 @@
+<input type="hidden" id="strainsInputList" name="strains" value=""/>
+<input type="hidden" id="trackersInputList" name="trackers" value=""/>
+<input type="hidden" id="sexInputList" name="sex" value=""/>
+<input type="hidden" id="devInputList" name="dev" value=""/>
+<input type="hidden" id="ventralInputList" name="ventral" value=""/>
+<input type="hidden" id="foodInputList" name="food" value=""/>
+<input type="hidden" id="arenaInputList" name="arena" value=""/>
+<input type="hidden" id="habituationInputList" name="habituation" value=""/>
+<input type="hidden" id="experimenterInputList" name="experimenter" value=""/>
 <div id="confirmSearchContentPane">
   <!-- Set by $(#<name>InputList).value="" -->
-  <input type="hidden" id="strainsInputList" name="strains" value="">
-  <input type="hidden" id="trackersInputList" name="trackers" value="">
-  <input type="hidden" id="sexInputList" name="sex" value="">
-  <input type="hidden" id="devInputList" name="dev" value="">
-  <input type="hidden" id="ventralInputList" name="ventral" value="">
-  <input type="hidden" id="foodInputList" name="food" value="">
-  <input type="hidden" id="arenaInputList" name="arena" value="">
-  <input type="hidden" id="habituationInputList" name="habituation" value="">
-  <input type="hidden" id="experimenterInputList" name="experimenter" value="">
-  <div class="row">
-    <div class="col-sm-6">
-      <h4>Confirmation of Search Configuration</h4>
-    </div>
-    <div class="col-sm-3">
-      <button type="submit" class="btn btn-danger">Submit Search</button>
-    </div>
-    <hr>
+  <div>
+    <h3>Confirmation of Search Configuration</h3>
+    <button type="submit" class="btn btn-danger">Submit Search</button>
   </div>
-  <div class="row" id="parametersConfirm">
-    <p><b>Parameters Selected</b></p>
+  <hr>
+  <div id="rangedFieldConfirm">
+    <h4>Ranged Fields Selected</h4>
+    <div class="row">
+      <div class="col-sm-6">
+	<p><b>Min Experiment date:</b> {{min_date}} </p>
+      </div>
+      <div class="col-sm-6">
+	<p><b>Max Experiment date:</b> {{max_date}} </p>
+      </div>
+    </div>
+    <div class="row">
+      <label class="col-sm-3" for="start_date">Start Date (yyyy-mm-dd):</label>
+      <input class="col-sm-3" type="date" 
+	     name="start_date" class="form-control" id="start_date"></input>
+      <label class="col-sm-3" for="end_date">End Date (yyyy-mm-dd):</label>
+      <input class="col-sm-3" type="date" 
+	     name="end_date" class="form-control" id="end_date"></input>
+    </div>
+  </div>
+  <hr>
+  <div id="parametersConfirm">
+    <h4>Parameters Selected</h4>
     <table id="confirmParameters" class="table table-striped table-bordered table-responsive">
       <thead>
 	<tr>
@@ -34,10 +50,10 @@
       <tbody>
       </tbody>
     </table>
-    <hr>
   </div>
-  <div class="row" id="discreteFieldConfirm">
-    <p><b>Discrete Fields Selected</b></p>
+  <hr>
+  <div id="discreteFieldConfirm">
+    <h4>Discrete Fields Selected</h4>
     <!-- *CWL* Tentative Ugly hard code for non-dynamic display. Please fix. -->
     <div class="row">
       <div class="col-sm-3">
@@ -135,24 +151,6 @@
 	</table>
       </div>
     </div>
-    <hr>
   </div>
-  <div class="row" id="rangedFieldConfirm">
-    <p><b>Ranged Fields Selected</b></p>
-    <div class="col-sm-6">
-      <p><b>Min Experiment date:</b> {{min_date}} </p>
-    </div>
-    <div class="col-sm-6">
-      <p><b>Max Experiment date:</b> {{max_date}} </p>
-    </div>
-    <div class="row">
-      <label class="col-sm-3" for="start_date">Start Date (yyyy-mm-dd):</label>
-      <input class="col-sm-3" type="date" 
-	     name="start_date" class="form-control" id="start_date"></input>
-      <label class="col-sm-3" for="end_date">End Date (yyyy-mm-dd):</label>
-      <input class="col-sm-3" type="date" 
-	     name="end_date" class="form-control" id="end_date"></input>
-    </div>
-    <hr>
-  </div>
+  <hr>
 </div>
