@@ -25,7 +25,7 @@ SECRET_KEY = 'f*t-t*9z#6b4&h0u@d)_c!k*kw-$_i55@cvb+_)=*98dy!p0yg'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['movement.openworm.org']
 
 
 # Application definition
