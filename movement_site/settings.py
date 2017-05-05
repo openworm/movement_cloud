@@ -25,7 +25,7 @@ SECRET_KEY = 'f*t-t*9z#6b4&h0u@d)_c!k*kw-$_i55@cvb+_)=*98dy!p0yg'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['movement.openworm.org']
 
 
 # Application definition
@@ -80,6 +80,12 @@ DATABASES = {
         'OPTIONS': {
             'read_default_file': '/etc/mysql/my.cnf'
         },
+    },
+    'mrc_db4_link_for_django': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'mrc_db4',
+        'USER': 'django_mysql',
+        'PASSWORD': 'unchained'
     }
 }
 
