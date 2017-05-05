@@ -1,6 +1,11 @@
 var selectedResultsIndices = {};
 var hiddenResultsIndex = 12;
 
+var confirmResultsTable;
+function processResults() {
+    // Empty for now.
+}
+
 $(document).ready(function() {
 	var resultsTable = $('#results').DataTable( {
 		dom: 'Blfrtip',
@@ -13,7 +18,7 @@ $(document).ready(function() {
 		},
 	    });
 
-	var confirmResultsTable = $('#confirmResults').DataTable( {
+	confirmResultsTable = $('#confirmResults').DataTable( {
 		"columnDefs": [
 	           {
 		       "targets":[hiddenResultsIndex],
