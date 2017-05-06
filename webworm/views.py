@@ -60,9 +60,9 @@ def processSearchParameters(getRequest, featuresObjects, experimentsList):
         if key.endswith('_minParam'):
             name = key[:-9];
             minVal = getRequest[key];
-            print "*****"
-            print name;
-            print minVal;
+            print("*****");
+            print(name);
+            print(minVal);
             exec('eliminatedFeatures = featuresObjects.filter('+ name +'__lt=minVal);');
             returnList.exclude(id__in = [x.experiment_id for x in eliminatedFeatures_set()]);
 #            exec('returnList =  returnList.select_related("'+name+'").filter(' + name + '__gte=minVal);');
