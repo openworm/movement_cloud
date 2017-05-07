@@ -85,7 +85,10 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'mrc_db4',
         'USER': 'django_mysql',
-        'PASSWORD': 'unchained'
+        'PASSWORD': 'unchained',
+        'OPTIONS': {
+            'read_default_file': '/etc/mysql/my.cnf'
+        }
     }
 }
 
