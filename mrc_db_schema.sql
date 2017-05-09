@@ -1307,11 +1307,11 @@ CREATE TABLE `ventral_sides` (
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
 /*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = latin1 */;
-/*!50001 SET character_set_results     = latin1 */;
-/*!50001 SET collation_connection      = latin1_swedish_ci */;
+/*!50001 SET character_set_client      = utf8 */;
+/*!50001 SET character_set_results     = utf8 */;
+/*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`ajaver`@`localhost` SQL SECURITY DEFINER */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
 /*!50001 VIEW `experiments_full` AS select `e`.`id` AS `id`,`e`.`base_name` AS `base_name`,`e`.`date` AS `date`,`e`.`original_video` AS `original_video`,`e`.`original_video_sizeMB` AS `original_video_sizeMB`,`s`.`name` AS `strain`,`s`.`genotype` AS `genotype`,`a`.`name` AS `allele`,`g`.`name` AS `gene`,`c`.`name` AS `chromosome`,`t`.`name` AS `tracker`,`sex`.`name` AS `sex`,`ds`.`name` AS `developmental_stage`,`vs`.`name` AS `ventral_side`,`f`.`name` AS `food`,`h`.`name` AS `habituation`,`experimenters`.`name` AS `experimenter`,`arenas`.`name` AS `arena` from ((((((((((((`experiments` `e` left join `strains` `s` on((`e`.`strain_id` = `s`.`id`))) left join `alleles` `a` on((`s`.`allele_id` = `a`.`id`))) left join `genes` `g` on((`s`.`gene_id` = `g`.`id`))) left join `chromosomes` `c` on((`s`.`chromosome_id` = `c`.`id`))) left join `trackers` `t` on((`e`.`tracker_id` = `t`.`id`))) left join `sexes` `sex` on((`e`.`sex_id` = `sex`.`id`))) left join `developmental_stages` `ds` on((`e`.`developmental_stage_id` = `ds`.`id`))) left join `ventral_sides` `vs` on((`e`.`ventral_side_id` = `vs`.`id`))) left join `foods` `f` on((`e`.`food_id` = `f`.`id`))) left join `habituations` `h` on((`e`.`habituation_id` = `h`.`id`))) left join `experimenters` on((`e`.`experimenter_id` = `experimenters`.`id`))) left join `arenas` on((`e`.`arena_id` = `arenas`.`id`))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -1326,4 +1326,4 @@ CREATE TABLE `ventral_sides` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-05-09  8:22:38
+-- Dump completed on 2017-05-09  9:54:41
