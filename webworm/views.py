@@ -42,13 +42,37 @@ def getFieldCounts(experiments, fieldName, fieldList, nullNameString):
     return sorted(counts.items());
 
 def processSearchField(key, db_filter, getRequest, experimentsList):
-    returnList = Experiments.objects.none();
+    # *CWL* This deals with a bizzarre difference in the way exec() behaves between
+    #  Python 2 and Python 3 with regard to local variable assignment inside the
+    #  call to exec() I do not yet fully understand. Quite by accident, I discovered
+    #  that while direct assignment fails, modification to a list construct works.
+    #
+    #  As a result this code works, but with the caveat that I have misgivings about
+    #  this as the intended idiom in Python 3 to execute dynamic code driven by
+    #  variables (in our case - "db_filter" which is a variable string but needed to 
+    #  be code text when applied to a function parameter.)
+    returnList = [Experiments.objects.none()];
     if key in getRequest:
         searchList = getRequest[key].split(',');
         if searchList:
-            for searchTerm in searchList:
-                exec('returnList =  returnList | experimentsList.filter(' + db_filter + '=searchTerm);');
-    return returnList;
+            # *CWL* Django creates null lists as [''] which translates into python
+            #   as a single empty-string entry. Unfortunately this translates into
+            #   a huge performance hit if processed naively, because attempting to
+            #   filter on an empty search term is expensive, even though it is
+            #   essentially a null operation. This conditional checks for it, and
+            #   turns it into essentially a null operation.
+            if (len(searchList) == 1) and (searchList[0] == ''):
+                returnList[0] = experimentsList;
+            else:
+                for searchTerm in searchList:
+                    # *CWL* This check may not actually be necessary, but is included
+                    #   in case a search term in a non-trivial list is actually
+                    #   an empty-string. In this case rather than permit a DB filter
+                    #   operation which translates to an expensive null operation, 
+                    #   we ignore it.
+                    if searchTerm != '':
+                        exec('returnList[0] = returnList[0] | experimentsList.filter(' + db_filter + '=searchTerm);');
+    return returnList[0];
 
 def processSearchParameters(getRequest, featuresObjects, experimentsList):
     returnList = experimentsList;
@@ -60,9 +84,6 @@ def processSearchParameters(getRequest, featuresObjects, experimentsList):
         if key.endswith('_minParam'):
             name = key[:-9];
             minVal = getRequest[key];
-            print("*****");
-            print(name);
-            print(minVal);
             exec('eliminatedFeatures = featuresObjects.filter('+ name +'__lt=minVal);');
             returnList.exclude(id__in = [x.experiment_id for x in eliminatedFeatures_set()]);
 #            exec('returnList =  returnList.select_related("'+name+'").filter(' + name + '__gte=minVal);');
