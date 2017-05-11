@@ -900,7 +900,7 @@ class Sexes(models.Model):
 
 class Strains(models.Model):
     name = models.CharField(unique=True, max_length=100, blank=True, null=True)
-    genotype = models.CharField(max_length=200, blank=True, null=True)
+    description = models.CharField(max_length=200, blank=True, null=True)
     gene = models.ForeignKey(Genes, models.DO_NOTHING)
     allele = models.ForeignKey(Alleles, models.DO_NOTHING)
     chromosome_id = models.IntegerField()
