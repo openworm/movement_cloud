@@ -205,6 +205,13 @@ function create_crossfilter(data_rows) {
             text: "Work Days",
             order: 1
         },
+        someDays: {
+            state: false,
+            name: "dayType",
+            text: "Some Days",
+            order: 3,
+            last: true
+        }
     };
 
     /*
@@ -309,6 +316,14 @@ function create_crossfilter(data_rows) {
             var dayType = elem.property("value");
             switch (dayType) {
                 case "allDays":
+                case "someDays":
+                    workDays.forEach(function(day) {
+                        days[day].state = true;
+                    })
+                    weekendDays.forEach(function(day) {
+                        days[day].state = true;
+                    })
+                    break;
                 case "workDays":
                     workDays.forEach(function(day) {
                         days[day].state = true;
@@ -369,8 +384,8 @@ function create_crossfilter(data_rows) {
             return (days[c].state) ? p + 1 : p
         }, 0);
 
-        // BoE: determine day type
-        var dayType;
+        // Determine day type
+        var dayType = "someDays";
         if ((workDayCount + weekendDayCount) == 7) dayType = "allDays"
         else if (workDayCount == 5 && weekendDayCount == 0) dayType = "workDays"
         else if (workDayCount == 0 && weekendDayCount == 2) dayType = "weekendDays"
