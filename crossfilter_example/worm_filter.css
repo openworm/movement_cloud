@@ -125,14 +125,14 @@ h1, h2 {
   width: 100px;
 }
 
-#results-list div.distance,
-#results-list div.delay {
+#results-list div.user_field2,
+#results-list div.user_field1 {
   width: 160px;
   padding-right: 10px;
   text-align: right;
 }
 
-#results-list .early {
+#results-list .positive {
   color: green;
 }
 

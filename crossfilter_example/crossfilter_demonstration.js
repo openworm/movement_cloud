@@ -13,6 +13,27 @@ function parseDate(d) {  // (parseDate is like d3.time.format, but faster)
         d.substring(6, 8));
 }
 
+function valueFormatted(d, i) {
+    // Prepare a given value for display
+
+    var cur_item = XFILTER_PARAMS.display_fields[i];
+    var value = d[cur_item.data_field];
+    var value_formatted;
+
+    if("format_string" in cur_item) {
+        value_formatted = 
+            d3.format(cur_item.format_string)(value);
+    } else {
+        value_formatted = value;
+    }
+
+    if("suffix" in cur_item) {
+        value_formatted += cur_item.suffix;
+    }
+
+    return value_formatted;
+}
+
 
 // Ensure at least 790px height if running in an iframe (bl.ocks)
 // http://bl.ocks.org/mbostock/1093025
@@ -20,14 +41,14 @@ d3.select(self.frameElement).transition().duration(500).style("height",
                                                               "790px");
 
 // Get the data
-d3.csv(CROSSFILTER_PARAMETERS.data_file, function(error, data_rows) {
+d3.csv(XFILTER_PARAMS.data_file, function(error, data_rows) {
     if (error) {
         console.log(error);
     }
 
     // Set the titles in the report
-    document.title = CROSSFILTER_PARAMETERS.report_title;
-    report_title.innerHTML = CROSSFILTER_PARAMETERS.report_title;
+    document.title = XFILTER_PARAMS.report_title;
+    report_title.innerHTML = XFILTER_PARAMS.report_title;
 
     // Create the crossfilter
     create_crossfilter(data_rows);
@@ -55,9 +76,13 @@ function create_crossfilter(data_rows) {
     data_rows.forEach(function(d, i) {
         d.index = i;
         d.date = parseDate(d.date);
-        d.delay = +d.delay;
-        d.distance = +d.distance;
-        d.selected = false; // BoE add
+        if(XFILTER_PARAMS.display_fields[2].data_type == "numeric") {
+            d.delay = +d.delay
+        }
+        if(XFILTER_PARAMS.display_fields[3].data_type == "numeric") {
+            d.distance = +d.distance
+        }
+        d.selected = false;
     });
 
     // Create the crossfilter for the relevant dimensions and groups.
@@ -80,13 +105,14 @@ function create_crossfilter(data_rows) {
 
     // USER DIMENSION 1
     // delay dimension
+    var cur_item = XFILTER_PARAMS.display_fields[2];
     var delay = data_xfilter.dimension(function(d) {
-        return d.delay;
+        return d[cur_item.data_field];
     }); // delay dim
     var delays = delay.group(function(d) {
-        return Math.floor(d / 10) * 10;
+        return Math.floor(d / cur_item.bucket_width) * cur_item.bucket_width;
     }); // delay group
-    delays.groupId = "delays";
+    delays.groupId = cur_item.data_field + "s";  // e.g. "delays"
 
     // USER DIMENSION 2
     // distances dimension
@@ -94,7 +120,7 @@ function create_crossfilter(data_rows) {
         return d.distance;
     }); // distance dim
     var distances = distance.group(function(d) {
-        return Math.floor(d / 50) * 50;
+        return Math.floor(d / 10) * 10;
     }); // distance group
     distances.groupId = "distances";
 
@@ -556,26 +582,6 @@ function create_crossfilter(data_rows) {
     // Initial render
     renderAll();
 
-    // BoE debug...
-    var sum = dates.all().reduce(function(p, c, i, a) {
-        return {
-            value: p.value + c.value
-        };
-    })
-    //console.log("sum", sum.value);
-
-    // BoE debug...
-    //var groups = [dates, hours, delays, distances]
-    //groups.forEach(function(group) {
-    //    var grp = group.group;
-    //    var sum = group.all().reduce(function(p, c, i, a) {
-    //        return {
-    //            value: p.value + c.value
-    //        }
-    //    })
-    //    //console.log("sum: ", sum, "grp", grp)
-    //})
-
     // Renders the specified chart or list.
     function render(method) {
         // "method" is the "d" value of data binding to chart above,
@@ -655,6 +661,8 @@ function create_crossfilter(data_rows) {
     // Results list
     function resultsList(div) {
 
+        var format = "", value = "";
+
         var resultsByDate = nestByDate.entries(date.top(10));
 
         div.each(function() {
@@ -690,31 +698,21 @@ function create_crossfilter(data_rows) {
                 });
 
             results_row_all.append("div")
-                .attr("class", "origin")
-                .text(function(d) {
-                    return d.origin;
-                });
+                .attr("class", "display_field" + toString(0 + 1))
+                .text(function(d) { return valueFormatted(d, 0)});
 
             results_row_all.append("div")
-                .attr("class", "destination")
-                .text(function(d) {
-                    return d.destination;
-                });
+                .attr("class", "display_field" + toString(1 + 1))
+                .text(function(d) { return valueFormatted(d, 1)});
 
             results_row_all.append("div")
-                .attr("class", "distance")
-                .text(function(d) {
-                    return formatNumber(d.distance) + " mi.";
-                });
+                .attr("class", "user_field2")
+                .text(function(d) { return valueFormatted(d, 3)});
 
             results_row_all.append("div")
-                .attr("class", "delay")
-                .classed("early", function(d) {
-                    return d.delay < 0;
-                })
-                .text(function(d) {
-                    return formatChange(d.delay) + " min.";
-                });
+                .attr("class", "user_field1")
+                .classed("positive", function(d) { return d[XFILTER_PARAMS.display_fields[2].data_field] > 0; })
+                .text(function(d) { return valueFormatted(d, 2)});
 
             results_row.exit().remove();
 
