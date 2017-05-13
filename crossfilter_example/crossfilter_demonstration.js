@@ -60,17 +60,12 @@ function create_crossfilter(data_rows) {
     var selected = [];
 
     // Various formatters.
-    var formatNumber = d3.format(",d"),
+    var formatWholeNumber = d3.format(",d"),
         formatChange = d3.format("+,d"),
         formatDate = d3.time.format("%B %d, %Y"),
         formatDateWithDay = d3.time.format("%a %B %d, %Y"),
         formatTime = d3.time.format("%I:%M %p");
 
-    // A nest operator, for grouping the selected data list.
-    var nestByDate = d3.nest()
-        .key(function(d) {
-            return d3.time.day(d.date);
-        });
 
     // A little coercion, since the CSV is untyped.
     data_rows.forEach(function(d, i) {
@@ -451,7 +446,7 @@ function create_crossfilter(data_rows) {
         .style("margin-bottom", "20px")
         .style("margin-bottom", "10px")
         .html("<span>Dataset View – Each of the " +
-              formatNumber(data_xfilter.size()) +
+              formatWholeNumber(data_xfilter.size()) +
               " pixels represents a data record " +
               "(White = Selected, Black = Not Selected, " +
               "Red = Out of Bounds)</span><br>" +
@@ -577,7 +572,7 @@ function create_crossfilter(data_rows) {
 
     // Render the total
     d3.selectAll("#total")
-        .text(formatNumber(data_xfilter.size()));
+        .text(formatWholeNumber(data_xfilter.size()));
 
     // Initial render
     renderAll();
@@ -599,7 +594,7 @@ function create_crossfilter(data_rows) {
         // chart function from barChart
         chart.each(render); 
         list.each(render);
-        d3.select("#active").text(formatNumber(all.value()));
+        d3.select("#active").text(formatWholeNumber(all.value()));
 
         // Update the "selected" array, which holds
         // the currently selected (in-filter) items
@@ -634,8 +629,6 @@ function create_crossfilter(data_rows) {
         })
     }
 
-    
-
 
     // This (window.resetAll) isn't used, therefore
     //    repurposed this to reset all filters by JavaScript
@@ -660,10 +653,12 @@ function create_crossfilter(data_rows) {
 
     // Results list
     function resultsList(div) {
-
-        var format = "", value = "";
-
-        var resultsByDate = nestByDate.entries(date.top(10));
+        // Nest the results by date
+        var resultsByDate = d3.nest().key(function(d) {
+            return d3.time.day(d.date);
+            })
+            // Limit results shown to at most max_results
+            .entries(date.top(XFILTER_PARAMS.max_results));
 
         div.each(function() {
             var date = d3.select(this).selectAll(".date")
