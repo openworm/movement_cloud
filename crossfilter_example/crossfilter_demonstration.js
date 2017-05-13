@@ -386,12 +386,14 @@ function create_crossfilter(data_rows) {
                                      
     // DATASET VIEW
     // Create canvas element that holds one record per canvas pixel
-    var canvasWidth = d3.select("body").property("clientWidth") - 10,
-        canvasHeight = Math.ceil(data_xfilter.size() / canvasWidth),
-        canvas,
-        ctx,
-        canvasDiv,
-        currentLabel;
+
+    // Make the width 2 * the square root of the total data size, so the box is
+    // at most 1:2 rectangle.  Squish the box so it's a thin vertical
+    // rectangle if the client window width is smaller than this, though.
+    var canvasWidth = Math.min(d3.select("body").property("clientWidth"),
+                               2 * Math.ceil(Math.sqrt(data_xfilter.size())));
+    var canvasHeight = Math.ceil(data_xfilter.size() / canvasWidth);
+    var canvas, ctx, canvasDiv, currentLabel;
 
     selected = date.top(Infinity);
 
@@ -407,7 +409,14 @@ function create_crossfilter(data_rows) {
         .attr("class", "title")
         .style("margin-bottom", "20px")
         .style("margin-bottom", "10px")
-        .html("<span>Dataset View – Each of the " + formatNumber(data_xfilter.size()) + " pixels represents a data record (White = Selected, Black = Not Selected, Red = Out of Bounds)</span><br><span style='font-style: italic; font-size: 14px; color: red;'>Move the mouse over the canvas below to see individual data records</span>");
+        .html("<span>Dataset View – Each of the " +
+              formatNumber(data_xfilter.size()) +
+              " pixels represents a data record " +
+              "(White = Selected, Black = Not Selected, " +
+              "Red = Out of Bounds)</span><br>" +
+              "<span style='font-style: italic; font-size: 14px;" +
+              "color: red;'>Move the mouse over the canvas below to see " +
+              "individual data records</span>");
 
     // Add canvas element and mouse handler
     canvas = canvasDiv
@@ -425,13 +434,15 @@ function create_crossfilter(data_rows) {
                 y = Math.round(mouse[1]),
                 index = y * canvasWidth + x;
 
-            // BoE: event handler delivers mouse mousemove events outside the canvas sometimes (don't know why);
-            //     therefore, ensure that only valid x and y values are processed
+            // Event handler delivers mouse mousemove events outside the
+            // canvas sometimes (don't know why); therefore, ensure that only
+            // valid x and y values are processed
             if (x < 0 || x > canvasWidth - 1 || y < 0 || y > canvasHeight - 1) {
                 currentLabel.html("&nbsp;");
                 return;
             }
-            // then check if the index is out of bounds (the right part of the last row is NOT part of the dataset)        
+            // then check if the index is out of bounds
+            // (the right part of the last row is NOT part of the dataset)        
             if (index > data_xfilter.size() - 1) {
                 currentLabel.html("&nbsp;");
                 return;
@@ -539,16 +550,16 @@ function create_crossfilter(data_rows) {
     //console.log("sum", sum.value);
 
     // BoE debug...
-    var groups = [dates, hours, delays, distances]
-    groups.forEach(function(group) {
-        var grp = group.group;
-        var sum = group.all().reduce(function(p, c, i, a) {
-            return {
-                value: p.value + c.value
-            }
-        })
-        //console.log("sum: ", sum, "grp", grp)
-    })
+    //var groups = [dates, hours, delays, distances]
+    //groups.forEach(function(group) {
+    //    var grp = group.group;
+    //    var sum = group.all().reduce(function(p, c, i, a) {
+    //        return {
+    //            value: p.value + c.value
+    //        }
+    //    })
+    //    //console.log("sum: ", sum, "grp", grp)
+    //})
 
     // Renders the specified chart or list.
     function render(method) {
