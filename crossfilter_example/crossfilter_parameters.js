@@ -10,4 +10,11 @@ var XFILTER_PARAMS = {
     "report_title": "Worm Crossfilter Demonstration",
 
     "max_results": 15,
+    
+    "worm_petri_dish": {
+        "width": 500,
+        "height": 400,
+        "MAX_WORMS_VISUALIZED": 100,
+        "m": 12
+    }
 }

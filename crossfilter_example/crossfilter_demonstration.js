@@ -34,11 +34,100 @@ function valueFormatted(d, i) {
     return value_formatted;
 }
 
-
 // Ensure at least 790px height if running in an iframe (bl.ocks)
 // http://bl.ocks.org/mbostock/1093025
 d3.select(self.frameElement).transition().duration(500).style("height",
                                                               "790px");
+
+// WORM PETRI DISH VISUALIZATION CODE
+//////////////
+var num_worms_visualized = 10;
+
+var spermatozoa = d3.range(XFILTER_PARAMS.worm_petri_dish.MAX_WORMS_VISUALIZED).map(function() {
+    var x = Math.random() * XFILTER_PARAMS.worm_petri_dish.width,
+        y = Math.random() * XFILTER_PARAMS.worm_petri_dish.height;
+    return {
+        vx: Math.random() * 2 - 1,
+        vy: Math.random() * 2 - 1,
+        path: d3.range(XFILTER_PARAMS.worm_petri_dish.m).map(function() {
+            return [x, y];
+        }),
+        count: 0
+    };
+});
+
+var svg = d3.select("#wormVisualization").selectAll("svg")
+    .attr("width", XFILTER_PARAMS.worm_petri_dish.width)
+    .attr("height", XFILTER_PARAMS.worm_petri_dish.height);
+
+var g = svg.selectAll("g")
+    .data(spermatozoa)
+    .enter().append("g");
+
+var head = g.append("ellipse")
+    .attr("rx", 6.5)
+    .attr("ry", 4);
+
+g.append("path")
+    .datum(function(d) {
+        return d.path.slice(0, 3);
+    })
+    .attr("class", "mid");
+
+g.append("path")
+    .datum(function(d) {
+        return d.path;
+    })
+    .attr("class", "tail");
+
+var tail = g.selectAll("path");
+
+d3.timer(function() {
+    console.log("time step.", num_worms_visualized);
+    for (var i = -1; ++i < num_worms_visualized;) {
+        var spermatozoon = spermatozoa[i],
+            path = spermatozoon.path,
+            dx = spermatozoon.vx,
+            dy = spermatozoon.vy,
+            x = path[0][0] += dx,
+            y = path[0][1] += dy,
+            speed = Math.sqrt(dx * dx + dy * dy),
+            count = speed * 10,
+            k1 = -5 - speed / 3;
+
+        // Bounce off the walls.
+        if (x < 0 || x > XFILTER_PARAMS.worm_petri_dish.width) {
+            spermatozoon.vx *= -1;
+        }
+        if (y < 0 || y > XFILTER_PARAMS.worm_petri_dish.height) {
+            spermatozoon.vy *= -1;
+        }
+
+        // Swim!
+        for (var j = 0; ++j < XFILTER_PARAMS.worm_petri_dish.m;) {
+            var vx = x - path[j][0],
+                vy = y - path[j][1],
+                k2 = Math.sin(((spermatozoon.count += count) + j * 3) / 300) / speed;
+            path[j][0] = (x += dx / speed * k1) - dy * k2;
+            path[j][1] = (y += dy / speed * k1) + dx * k2;
+            speed = Math.sqrt((dx = vx) * dx + (dy = vy) * dy);
+        }
+    }
+
+    head.attr("transform", headTransform);
+    tail.attr("d", tailPath);
+});
+
+function headTransform(d) {
+    return "translate(" + d.path[0] + ")rotate(" + Math.atan2(d.vy, d.vx) * (180 / Math.PI) + ")";
+}
+
+function tailPath(d) {
+    return "M" + d.join("L");
+}
+//////////////
+
+
 
 // Get the data
 d3.csv(XFILTER_PARAMS.data_file, function(error, data_rows) {
@@ -298,21 +387,16 @@ function create_crossfilter(data_rows) {
         .data(checkboxData)
         .enter().append("span")
         .attr("class", "checkbox")
-    //.style("margin-right", "10px")
 
     // Add checkbox to each span
     checkboxSpan
         .append("input")
-        //.attr("type", "checkbox")
-        //.attr("name", function(d) { return d.name })
         .attr({
             type: "checkbox",
             name: function(d) {
                 return d.name
             }
         })
-        //.property("value", function(d) { return d.value })
-        //.property("checked", function(d) { return d.state })
         .property({
             value: function(d) {
                 return d.value
@@ -372,7 +456,6 @@ function create_crossfilter(data_rows) {
         .property("checked", function(d, i, a) {
             var elem = d3.select(this);
             var day = elem.property("value");
-            //console.log("elem", elem, "day", day, days[day])
             return days[day].state;
         })
         .on("change", function() {
@@ -389,7 +472,7 @@ function create_crossfilter(data_rows) {
     // Update the state of the day selection radio buttons and checkboxes
     // (called after "change" events from those elements)
     function updateDaySelection() {
-        // BoE: update checkboxes
+        // Update checkboxes
         d3.selectAll("input[type=checkbox][name=days]")
             .property("checked", function(d, i, a) {
                 var elem = d3.select(this);
@@ -411,7 +494,7 @@ function create_crossfilter(data_rows) {
         else if (workDayCount == 5 && weekendDayCount == 0) dayType = "workDays"
         else if (workDayCount == 0 && weekendDayCount == 2) dayType = "weekendDays"
 
-        // BoE: set the selected radio button
+        // Set the selected radio button
         d3.selectAll("input[type=radio][value=" + dayType + "]").property("checked", true);
 
         // Create/update day number filter
@@ -429,41 +512,29 @@ function create_crossfilter(data_rows) {
     var canvasWidth = Math.min(d3.select("body").property("clientWidth"),
                                2 * Math.ceil(Math.sqrt(data_xfilter.size())));
     var canvasHeight = Math.ceil(data_xfilter.size() / canvasWidth);
-    var canvas, ctx, canvasDiv, currentLabel;
+    var canvas, ctx, currentLabel;
 
     selected = date.top(Infinity);
 
     // Get reference to canvas div
-    canvasDiv = d3.select("#canvasDiv")
-        .style("padding", "2px")
-        .style("width", "100%")
-        .style("margin-bottom", "20px")
+    var datasetviewDiv = d3.select("#datasetview");
+    console.log(datasetviewDiv);
+        //.style("padding", "2px")
+        //.style("width", "100%")
+        //.style("margin-bottom", "20px")
 
     // Add div to hold description of canvas content
-    canvasDiv
-        .append("div")
-        .attr("class", "title")
-        .style("margin-bottom", "20px")
-        .style("margin-bottom", "10px")
+    datasetviewDiv.select(".title")
         .html("<span>Dataset View – Each of the " +
               formatWholeNumber(data_xfilter.size()) +
-              " pixels represents a data record " +
-              "(White = Selected, Black = Not Selected, " +
-              "Red = Out of Bounds)</span><br>" +
-              "<span style='font-style: italic; font-size: 14px;" +
-              "color: red;'>Move the mouse over the canvas below to see " +
-              "individual data records</span>");
+              " pixels represents a data record.</span>")
 
     // Add canvas element and mouse handler
-    canvas = canvasDiv
-        .append("canvas")
+    canvas = datasetviewDiv.selectAll("canvas")
         .attr("width", canvasWidth)
         .attr("height", canvasHeight)
         .style("width", canvasWidth + "px")
         .style("height", canvasHeight + "px")
-        .style("border", "1px solid lightgray")
-        .style("display", "block")
-        .style("cursor", "crosshair")
         .on("mousemove", function() {
             var mouse = d3.mouse(canvas.node()),
                 x = Math.round(mouse[0]),
@@ -501,7 +572,7 @@ function create_crossfilter(data_rows) {
         })
 
     // Create label for mousemove
-    currentLabel = canvasDiv.append("label").html("&nbsp;");
+    currentLabel = datasetviewDiv.append("label").html("&nbsp;");
 
     // Get context to canvas elem
     ctx = canvas.node().getContext('2d');
@@ -595,6 +666,11 @@ function create_crossfilter(data_rows) {
         chart.each(render); 
         list.each(render);
         d3.select("#active").text(formatWholeNumber(all.value()));
+
+        // Change the number of worms visualized to either the number of results
+        // or the maximum the dish will hold, whichever is smaller.
+        num_worms_visualized = Math.min(all.value(), XFILTER_PARAMS.worm_petri_dish.MAX_WORMS_VISUALIZED);
+        console.log("set num_worms_visualized to", num_worms_visualized)
 
         // Update the "selected" array, which holds
         // the currently selected (in-filter) items

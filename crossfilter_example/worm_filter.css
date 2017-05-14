@@ -100,6 +100,23 @@ h1, h2 {
   width: 920px;
 }
 
+#datasetview {
+    padding: 2px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+#datasetview .title {
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+#datasetview canvas {
+    border: 1px solid lightgray;
+    display: block;
+    cursor: crosshair;
+}
+
 #results-list {
   min-height: 1024px;
 }
@@ -137,8 +154,6 @@ h1, h2 {
 }
 
 aside {
-  position: absolute;
-  left: 740px;
   font-size: smaller;
   width: 220px;
 }
@@ -159,3 +174,36 @@ label.selected {
 label.notSelected {
   color: lightgray;
 }
+
+ellipse {
+  fill: #000;
+  stroke-width: 1px;
+}
+
+path.mid {
+  fill: none;
+  stroke: #000;
+  stroke-linecap: round;
+  stroke-width: 4px;
+}
+
+path.tail {
+  fill: none;
+  stroke: #000;
+  stroke-linecap: round;
+  stroke-width: 2px;
+}
+
+#wormvisualization svg {
+    style: outline: thin solid grey;
+    stroke: #000;
+    fill: none;
+    stoke-width: 4;
+}
+
+
+
+
+
+
+
