@@ -83,7 +83,6 @@ g.append("path")
 var tail = g.selectAll("path");
 
 d3.timer(function() {
-    console.log("time step.", num_worms_visualized);
     for (var i = -1; ++i < num_worms_visualized;) {
         var spermatozoon = spermatozoa[i],
             path = spermatozoon.path,
@@ -518,10 +517,6 @@ function create_crossfilter(data_rows) {
 
     // Get reference to canvas div
     var datasetviewDiv = d3.select("#datasetview");
-    console.log(datasetviewDiv);
-        //.style("padding", "2px")
-        //.style("width", "100%")
-        //.style("margin-bottom", "20px")
 
     // Add div to hold description of canvas content
     datasetviewDiv.select(".title")
@@ -670,7 +665,6 @@ function create_crossfilter(data_rows) {
         // Change the number of worms visualized to either the number of results
         // or the maximum the dish will hold, whichever is smaller.
         num_worms_visualized = Math.min(all.value(), XFILTER_PARAMS.worm_petri_dish.MAX_WORMS_VISUALIZED);
-        console.log("set num_worms_visualized to", num_worms_visualized)
 
         // Update the "selected" array, which holds
         // the currently selected (in-filter) items
