@@ -41,6 +41,8 @@ d3.select(self.frameElement).transition().duration(500).style("height",
 
 // WORM PETRI DISH VISUALIZATION CODE
 //////////////
+var wcon_path;
+
 var num_worms_visualized = 10;
 
 var spermatozoa = d3.range(XFILTER_PARAMS.worm_petri_dish.MAX_WORMS_VISUALIZED).map(function() {
@@ -128,21 +130,33 @@ function tailPath(d) {
 
 
 
-// Get the data
-d3.csv(XFILTER_PARAMS.data_file, function(error, data_rows) {
-    if (error) {
-        console.log(error);
-    }
+// Get the data (both the worms data and one WCON file)
+d3.csv(XFILTER_PARAMS.data_file, function(error1, data_rows) {
+    d3.json("smaller.wcon", function(error2, wcon_obj) {
 
-    // Set the titles in the report
-    document.title = XFILTER_PARAMS.report_title;
-    report_title.innerHTML = XFILTER_PARAMS.report_title;
+        if (error1) { console.log(error1); }
+        if (error2) { console.log(error2); }
 
-    // Create the crossfilter
-    create_crossfilter(data_rows);
+        // Set the titles in the report
+        document.title = XFILTER_PARAMS.report_title;
+        report_title.innerHTML = XFILTER_PARAMS.report_title;
+    
+        load_wcon_path(wcon_obj);
+        
+        // Create the crossfilter
+        create_crossfilter(data_rows);
+    })
 });
 
+function load_wcon_path(wcon_obj) {
+    wcon_path = wcon_obj;
+    var wcon_path_x = wcon_obj.data[0].x[0];
+    var wcon_path_y = wcon_obj.data[0].y[0];
 
+
+}
+    
+    
 function create_crossfilter(data_rows) {
     // Array that holds the currently selected "in-filter" selected records
     var selected = [];
