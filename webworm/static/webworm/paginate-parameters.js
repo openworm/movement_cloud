@@ -86,10 +86,12 @@ $(document).ready(function() {
 			    data.push(maxValue);
 			    data.push('<p><label for="' + labelMinElement + '">From:</label>' +
 				      '<input type="text" id="' + labelMinElement + '" readonly' + 
+				      ' name="' + paramName + '_minInput" value=""' +
 				      ' style="border:0; color:#f6931f; font-weight:bold;">' +
 				      '</p>' +
 				      '<p><label for="' + labelMaxElement + '">To:</label>' +
 				      '<input type="text" id="' + labelMaxElement + '" readonly' + 
+				      ' name="' + paramName + '_maxInput" value=""' +
 				      ' style="border:0; color:#f6931f; font-weight:bold;">' +
 				      '</p>' +
 				      '<div id="' + sliderElement + '"></div>');
