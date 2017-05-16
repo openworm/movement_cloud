@@ -71,7 +71,8 @@ def processSearchField(key, db_filter, getRequest, experimentsList):
                     #   operation which translates to an expensive null operation, 
                     #   we ignore it.
                     if searchTerm != '':
-                        exec('returnList[0] = returnList[0] | experimentsList.filter(' + db_filter + '=searchTerm);');
+                        exec('returnList[0] = returnList[0] | experimentsList.filter(' + 
+                             db_filter + '=searchTerm);');
     return returnList[0];
 
 def processSearchParameters(getRequest, featuresObjects, experimentsList):
@@ -123,23 +124,23 @@ def processSearchConfiguration(getRequest, experimentsList, featuresObjects):
         end = getRequest['end_date'];
         if end:
             returnList = returnList.filter(date__lte=end);
-    returnList = processSearchField('strains', 'strain__name__icontains', 
+    returnList = processSearchField('strains', 'strain__name__exact', 
                                     getRequest, returnList);
-    returnList  = processSearchField('trackers', 'tracker__name__icontains', 
+    returnList = processSearchField('trackers', 'tracker__name__exact', 
                                      getRequest, returnList);
-    returnlist = processSearchField('sex', 'sex__name__icontains', 
+    returnlist = processSearchField('sex', 'sex__name__exact', 
                                     getRequest, returnList);
-    returnList = processSearchField('dev', 'developmental_stage__name__icontains', 
+    returnList = processSearchField('dev', 'developmental_stage__name__exact', 
                                     getRequest, returnList);
-    returnList = processSearchField('ventral', 'ventral_side__name__icontains', 
+    returnList = processSearchField('ventral', 'ventral_side__name__exact', 
                                     getRequest, returnList);
-    returnList = processSearchField('food', 'food__name__icontains', 
+    returnList = processSearchField('food', 'food__name__exact', 
                                     getRequest, returnList);
-    returnList = processSearchField('arena', 'arena__name__icontains', 
+    returnList = processSearchField('arena', 'arena__name__exact', 
                                     getRequest, returnList);
-    returnList = processSearchField('habituation', 'habituation__name__icontains', 
+    returnList = processSearchField('habituation', 'habituation__name__exact', 
                                     getRequest, returnList);
-    returnList = processSearchField('experimenter', 'experimenter__name__icontains', 
+    returnList = processSearchField('experimenter', 'experimenter__name__exact', 
                                     getRequest, returnList);
     returnList = processSearchParameters(getRequest, featuresObjects, returnList);
 

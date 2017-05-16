@@ -11,7 +11,7 @@ from django.db import models
 
 
 class Alleles(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
 
     class Meta:
         managed = False
@@ -19,7 +19,7 @@ class Alleles(models.Model):
 
 
 class Arenas(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
 
     class Meta:
         managed = False
@@ -27,7 +27,7 @@ class Arenas(models.Model):
 
 
 class Chromosomes(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
 
     class Meta:
         managed = False
@@ -35,7 +35,7 @@ class Chromosomes(models.Model):
 
 
 class DevelopmentalStages(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
 
     class Meta:
         managed = False
@@ -43,7 +43,7 @@ class DevelopmentalStages(models.Model):
 
 
 class ExitFlags(models.Model):
-    checkpoint = models.CharField(unique=True, max_length=20, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=30)
     description = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
@@ -52,7 +52,7 @@ class ExitFlags(models.Model):
 
 
 class Experimenters(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
 
     class Meta:
         managed = False
@@ -60,7 +60,7 @@ class Experimenters(models.Model):
 
 
 class Experiments(models.Model):
-    base_name = models.CharField(unique=True, max_length=200, blank=True, null=True)
+    base_name = models.CharField(unique=True, max_length=200)
     date = models.DateTimeField(blank=True, null=True)
     strain = models.ForeignKey('Strains', models.DO_NOTHING, blank=True, null=True)
     tracker = models.ForeignKey('Trackers', models.DO_NOTHING, blank=True, null=True)
@@ -71,9 +71,12 @@ class Experiments(models.Model):
     arena = models.ForeignKey(Arenas, models.DO_NOTHING, blank=True, null=True)
     habituation = models.ForeignKey('Habituations', models.DO_NOTHING, blank=True, null=True)
     experimenter = models.ForeignKey(Experimenters, models.DO_NOTHING, blank=True, null=True)
-#    original_video = models.CharField(unique=True, max_length=700)
     original_video = models.CharField(unique=True, max_length=255)
     original_video_sizemb = models.FloatField(db_column='original_video_sizeMB', blank=True, null=True)  # Field name made lowercase.
+    exit_flag = models.ForeignKey(ExitFlags, models.DO_NOTHING)
+    results_dir = models.CharField(max_length=200, blank=True, null=True)
+    youtube_id = models.CharField(max_length=40, blank=True, null=True)
+    zenodo_id = models.CharField(max_length=40, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -81,7 +84,7 @@ class Experiments(models.Model):
 
 
 class FeaturesMeans(models.Model):
-    experiment_id = models.BigIntegerField(unique=True, blank=True, null=True)
+    experiment = models.ForeignKey(Experiments, models.DO_NOTHING, unique=True, blank=True, null=True)
     worm_index = models.FloatField(blank=True, null=True)
     n_frames = models.FloatField(blank=True, null=True)
     n_valid_skel = models.FloatField(blank=True, null=True)
@@ -819,7 +822,7 @@ class FeaturesMeans(models.Model):
 
 
 class Foods(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
 
     class Meta:
         managed = False
@@ -827,7 +830,7 @@ class Foods(models.Model):
 
 
 class Genes(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
 
     class Meta:
         managed = False
@@ -835,19 +838,15 @@ class Genes(models.Model):
 
 
 class Habituations(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
 
     class Meta:
         managed = False
         db_table = 'habituations'
 
 
-class ProgressAnalysis(models.Model):
+class ResultsSummary(models.Model):
     experiment = models.ForeignKey(Experiments, models.DO_NOTHING, primary_key=True)
-    exit_flag = models.ForeignKey(ExitFlags, models.DO_NOTHING)
-    mask_file = models.CharField(max_length=700, blank=True, null=True)
-    skeletons_file = models.CharField(max_length=700, blank=True, null=True)
-    features_file = models.CharField(max_length=700, blank=True, null=True)
     n_valid_frames = models.IntegerField(blank=True, null=True)
     n_missing_frames = models.IntegerField(blank=True, null=True)
     n_segmented_skeletons = models.IntegerField(blank=True, null=True)
@@ -858,15 +857,16 @@ class ProgressAnalysis(models.Model):
     last_skel_frame = models.IntegerField(blank=True, null=True)
     fps = models.FloatField(blank=True, null=True)
     total_time = models.FloatField(blank=True, null=True)
+    mask_file_sizemb = models.FloatField(db_column='mask_file_sizeMB', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         managed = False
-        db_table = 'progress_analysis'
+        db_table = 'results_summary'
 
 
 class SegwormComparisons(models.Model):
     experiment = models.ForeignKey(Experiments, models.DO_NOTHING)
-    segworm_feature = models.ForeignKey('SegwormFeatures', models.DO_NOTHING)
+    segworm_feature = models.ForeignKey('SegwormInfo', models.DO_NOTHING)
     n_mutual_skeletons = models.IntegerField(blank=True, null=True)
     error_05th = models.FloatField(blank=True, null=True)
     error_50th = models.FloatField(blank=True, null=True)
@@ -877,9 +877,9 @@ class SegwormComparisons(models.Model):
         db_table = 'segworm_comparisons'
 
 
-class SegwormFeatures(models.Model):
+class SegwormInfo(models.Model):
     segworm_file = models.CharField(max_length=700, blank=True, null=True)
-    experiment = models.ForeignKey(Experiments, models.DO_NOTHING)
+    experiment = models.ForeignKey(Experiments, models.DO_NOTHING, blank=True, null=True)
     fps = models.FloatField(blank=True, null=True)
     total_time = models.FloatField(blank=True, null=True)
     n_segworm_skeletons = models.IntegerField(blank=True, null=True)
@@ -887,11 +887,11 @@ class SegwormFeatures(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'segworm_features'
+        db_table = 'segworm_info'
 
 
 class Sexes(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
 
     class Meta:
         managed = False
@@ -899,7 +899,7 @@ class Sexes(models.Model):
 
 
 class Strains(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
     description = models.CharField(max_length=200, blank=True, null=True)
     gene = models.ForeignKey(Genes, models.DO_NOTHING)
     allele = models.ForeignKey(Alleles, models.DO_NOTHING)
@@ -911,7 +911,7 @@ class Strains(models.Model):
 
 
 class Trackers(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
 
     class Meta:
         managed = False
@@ -919,7 +919,7 @@ class Trackers(models.Model):
 
 
 class VentralSides(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
 
     class Meta:
         managed = False
