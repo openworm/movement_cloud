@@ -16,6 +16,13 @@ import time
 
 coreFeatures = {};
 
+# Global variables to control expensive operations as a tentative measure
+#  These ought to be populated only once. If the database changes, Django
+#  automatically refreshes the call into views.py, so these should get
+#  regenerated as well.
+param_min_list = [];
+param_max_list = [];
+
 # Support functions
 
 def loadCoreFeatures(featureFields, context):
@@ -172,34 +179,38 @@ def createParametersMetadata(featuresFields, featuresObjects, context):
 #    pt0 = time.time();
 #    param_jsgrid_name_list = [{"Parameter Name":x.name} for x in parameter_field_list];
 
-    param_min_list = [];
+    # Compute only if not previously computed
+    global param_min_list;
+    if not param_min_list:
     # *CWL* Hardcoding the name of the dictionary returned has to be the ugliest hack!
-    for field_min in parameter_field_list:
-        minval = featuresObjects.aggregate(Min(field_min.name)).get(field_min.name+'__min');
-        if (minval == None):
-            param_min_list.append("None");
-        else:
-            param_min_list.append(minval);
-#    pt1 = time.time();
-#    print("------GET FEATURES MIN ---------");
-#    print(pt1-pt0);
-#    pt0 = time.time();
+        for field_min in parameter_field_list:
+            minval = featuresObjects.aggregate(Min(field_min.name)).get(field_min.name+'__min');
+            if (minval == None):
+                param_min_list.append("None");
+            else:
+                param_min_list.append(minval);
+        #    pt1 = time.time();
+        #    print("------GET FEATURES MIN ---------");
+        #    print(pt1-pt0);
+        #    pt0 = time.time();
 
-    param_max_list = [];
-    for field_max in parameter_field_list:
-        maxval = featuresObjects.aggregate(Max(field_max.name)).get(field_max.name+'__max');
-#        pt1 = time.time();
-#        print("------ FIND FIELD MAX ---------");
-#        print(pt1-pt0);
-#        pt0 = time.time();
-        if (maxval == None):
-            param_max_list.append("None");
-        else:
-            param_max_list.append(maxval);
-#    pt1 = time.time();
-#    print("------GET FEATURES MAX ---------");
-#    print(pt1-pt0);
-#    pt0 = time.time();
+    # Compute only if not previously computed
+    global param_max_list;
+    if not param_max_list:
+        for field_max in parameter_field_list:
+            maxval = featuresObjects.aggregate(Max(field_max.name)).get(field_max.name+'__max');
+            #        pt1 = time.time();
+            #        print("------ FIND FIELD MAX ---------");
+            #        print(pt1-pt0);
+            #        pt0 = time.time();
+            if (maxval == None):
+                param_max_list.append("None");
+            else:
+                param_max_list.append(maxval);
+        #    pt1 = time.time();
+        #    print("------GET FEATURES MAX ---------");
+        #    print(pt1-pt0);
+        #    pt0 = time.time();
 
     param_tuple_list = zip(param_name_list, param_min_list, param_max_list);
     context['param_list'] = param_tuple_list;
