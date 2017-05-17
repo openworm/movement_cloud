@@ -11,6 +11,9 @@ from .forms import *
 
 import json
 
+# For performance debugging only
+import time
+
 coreFeatures = {};
 
 # Support functions
@@ -147,6 +150,7 @@ def processSearchConfiguration(getRequest, experimentsList, featuresObjects):
     return returnList;
     
 def createParametersMetadata(featuresFields, featuresObjects, context):
+#    pt0 = time.time();
     # This is clunky, there has to be a better way to do this.
     parameter_field_list = tuple(x for x in featuresFields
                                  if (x.name != "id") and 
@@ -156,11 +160,19 @@ def createParametersMetadata(featuresFields, featuresObjects, context):
                                  (x.name != "n_valid_skel") and
                                  (x.name != "first_frame")
                                  );
+#    pt1 = time.time();
+#    print("------GET FEATURES LIST ---------");
+#    print(pt1-pt0);
+#    pt0 = time.time();
+
     param_name_list = [x.name for x in parameter_field_list];
+#    pt1 = time.time();
+#    print("------GET FEATURES NAMES ---------");
+#    print(pt1-pt0);
+#    pt0 = time.time();
 #    param_jsgrid_name_list = [{"Parameter Name":x.name} for x in parameter_field_list];
 
     param_min_list = [];
-#    param_jsgrid_min_list = [];
     # *CWL* Hardcoding the name of the dictionary returned has to be the ugliest hack!
     for field_min in parameter_field_list:
         minval = featuresObjects.aggregate(Min(field_min.name)).get(field_min.name+'__min');
@@ -168,18 +180,35 @@ def createParametersMetadata(featuresFields, featuresObjects, context):
             param_min_list.append("None");
         else:
             param_min_list.append(minval);
+#    pt1 = time.time();
+#    print("------GET FEATURES MIN ---------");
+#    print(pt1-pt0);
+#    pt0 = time.time();
 
     param_max_list = [];
     for field_max in parameter_field_list:
         maxval = featuresObjects.aggregate(Max(field_max.name)).get(field_max.name+'__max');
+#        pt1 = time.time();
+#        print("------ FIND FIELD MAX ---------");
+#        print(pt1-pt0);
+#        pt0 = time.time();
         if (maxval == None):
             param_max_list.append("None");
         else:
             param_max_list.append(maxval);
+#    pt1 = time.time();
+#    print("------GET FEATURES MAX ---------");
+#    print(pt1-pt0);
+#    pt0 = time.time();
 
     param_tuple_list = zip(param_name_list, param_min_list, param_max_list);
     context['param_list'] = param_tuple_list;
     context['parameter_name_list'] = param_name_list;
+ #   pt1 = time.time();
+ #   print("------FEATURES ZIP ---------");
+ #   print(pt1-pt0);
+ #  pt0 = time.time();
+    
 
 def createDiscreteFieldMetadata(experiments, context):
     experiments_count = experiments.count();
@@ -232,6 +261,8 @@ def createDiscreteFieldMetadata(experiments, context):
 # Create your views here.
 
 def index(request):
+#    tstart = time.time();
+#    t0 = tstart;
     form = SearchForm();
     context = {};
 
@@ -240,10 +271,29 @@ def index(request):
     db_experiment_count = experiments_list.count();
 
     createDiscreteFieldMetadata(experiments_list, context);
+#    t1 = time.time();
+#    print("***** CREATE DISCRETE META ******");
+#    print(t1-t0);
+#    t0 = time.time();
 
     featuresFields = FeaturesMeans._meta.get_fields();
+#    t1 = time.time();
+#    print("***** GET FEATURES FIELDS ******");
+#    print(t1-t0);
+#    t0 = time.time();
+
     featuresObjects = FeaturesMeans.objects.all();
+#    t1 = time.time();
+#    print("***** GET FEATURES OBJECTS ******");
+#    print(t1-t0);
+#    t0 = time.time();
+
     createParametersMetadata(featuresFields, featuresObjects, context);
+#    t1 = time.time();
+#    print("***** CREATE FEATURES META ******");
+#    print(t1-t0);
+#    t0 = time.time();
+
 
     experiment_date_min = experiments_list.aggregate(Min('date')).get('date__min');
     experiment_date_max = experiments_list.aggregate(Max('date')).get('date__max');
@@ -253,7 +303,14 @@ def index(request):
     results_list = None;
 
     # Get Core Parameters from JSON file
-    loadCoreFeatures(featuresFields, context);
+    #   *CWL* deprecated by data stored in database
+    #    loadCoreFeatures(featuresFields, context);
+    coreFeaturesObjects = Features.objects.all();
+    isCore = coreFeaturesObjects.filter(is_core_feature__exact="1");
+    presentList = [];
+    for coreFeature in isCore:
+        presentList.append({'name':coreFeature.name,'desc':coreFeature.description});
+    context['presentFeatures'] = presentList;
 
     if request.method == "GET":
         if (len(request.GET.keys()) > 0):
@@ -269,6 +326,9 @@ def index(request):
     context['max_date'] = experiment_date_max;
 #    context['search_string'] = search_string;
     context['form'] = form;
+#    t1 = time.time();
+#    print("***** TOTAL ******");
+#    print(t1-tstart);
     return render(request, 'webworm/index.html', context);
 
 # *CWL* - Consolidated into a single page.
