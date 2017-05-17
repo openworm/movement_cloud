@@ -38,16 +38,21 @@
 	<td>{{ experiment.arena.name|default_if_none:"None" }}</td>
 	<td>{{ experiment.habituation.name|default_if_none:"None" }}</td>
 	<td>{{ experiment.experimenter.name|default_if_none:"Unknown" }}</td>
-	<td><a href="https://sandbox.zenodo.org/record/71862#.WQtPdMklFE5" target="_blank">Zenodo Entry</a></td>
+	{% if experiment.zenodo_id == None %}
+	<td>No Zenodo Data Found</td>
+	{% else %}
+	<td><a href="{{ experiment.zenodo_id }}" target="_blank">Zenodo Entry</a></td>
+	{% endif %}
+	{% if experiment.youtube_id == None %}
+	<td>No Video Link Found</td>
+	{% else %}
 	<td>
-	  <!-- Proof of concept established to work. To reduce bandwidth consumption 
-	       due to accidents in tests, replace this with a plain stub link.
-	    -->
-	  <iframe width="240" height="135" src="https://www.youtube.com/embed/xBf1_xnk0i8" frameborder="0" allowfullscreen></iframe>
-	  <!--
-	  <a href="#">Blank Stub Link</a>
-	  -->
+	  {% if experiment.original_video_sizemb != None %}
+	  <p>Video size (MB): {{ experiment.original_video_sizemb }}</p>
+	  {% endif %}
+	  <iframe width="240" height="135" src="https://www.youtube.com/embed/{{ experiment.youtube_id }}" frameborder="0" allowfullscreen></iframe>
 	</td>
+	{% endif %}
       </tr>
       {% endfor %}
     </tbody>
