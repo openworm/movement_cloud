@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container" id="master">
 
-  <ul class="nav nav-tabs">
+  <ul class="nav nav-tabs" id="tabsUL">
     <li class="active"><a data-toggle="tab" href="#searchPane">Search Tools</a></li>
     <li><a data-toggle="tab" href="#resultsPane">Results</a></li>
  </ul>
@@ -32,6 +32,12 @@
 </div>
 
 {% load static %}
+<script type="text/javascript"> 
+  if ({{ results_count }} > 0) {
+    $('#tabsUL a[href="#resultsPane"]').trigger('click');
+  }
+</script>
+
 <script src="{% static "webworm/paginate-discrete.js" %}"></script>
 <script src="{% static "webworm/paginate-parameters.js" %}"></script>
 <script src="{% static "webworm/paginate-results.js" %}"></script>
