@@ -86,23 +86,21 @@ def processSearchField(key, db_filter, getRequest, experimentsList):
     return returnList[0];
 
 def processSearchParameters(getRequest, featuresObjects, experimentsList):
-    returnList = experimentsList;
+    returnList = [experimentsList];
     # This is pretty painful, and requires us to traverse the request list for keys
     #   instead of a forward search. Still looks more efficient than traversing
     #   all 700+ parameters.
     for key in getRequest.keys():
         name = '';
-        if key.endswith('_minParam'):
+        if key.endswith('_minInput'):
             name = key[:-9];
             minVal = getRequest[key];
-            exec('eliminatedFeatures = featuresObjects.filter('+ name +'__lt=minVal);');
-            returnList.exclude(id__in = [x.experiment_id for x in eliminatedFeatures_set()]);
-#            exec('returnList =  returnList.select_related("'+name+'").filter(' + name + '__gte=minVal);');
-        elif key.endswith('_maxParam'):
+            exec('returnList[0] = returnList[0].filter(featuresmeans__' + name + '__gte=minVal);');
+        elif key.endswith('_maxInput'):
             name = key[:-9];
             maxVal = getRequest[key];
-#            exec('returnList =  returnList.select_related("'+name+'").filter(' + name + '__lte=maxVal);');
-    return returnList;
+            exec('returnList[0] = returnList[0].filter(featuresmeans__' + name + '__lte=maxVal);');
+    return returnList[0];
 
 def processSearchConfiguration(getRequest, experimentsList, featuresObjects):
     # Sane defaults
