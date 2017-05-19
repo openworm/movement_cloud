@@ -23,7 +23,7 @@ function barChart() {
 
         y.domain([0, group.top(1)[0].value]);
 
-        div.each(function () {
+        div.each(function() {
             const div = d3.select(this);
             let g = div.select('g');
 
@@ -34,38 +34,38 @@ function barChart() {
                     .attr('class', 'reset')
                     .text('reset')
                     .style('display', 'none');
-                
+
                 g = div.append('svg')
                     .attr('width', width + margin.left + margin.right)
                     .attr('height', height + margin.top + margin.bottom)
                     .append('g')
-                      .attr('transform', `translate(${margin.left},${margin.top})`);
-                
+                        .attr('transform', `translate(${margin.left},${margin.top})`);
+
                 g.append('clipPath')
                     .attr('id', `clip-${id}`)
                     .append('rect')
-                      .attr('width', width)
-                      .attr('height', height);
-                
+                        .attr('width', width)
+                        .attr('height', height);
+
                 g.selectAll('.bar')
                     .data(['background', 'foreground'])
                     .enter().append('path')
-                      .attr('class', d => `${d} bar`)
-                      .datum(group.all());
-                
+                        .attr('class', d => `${d} bar`)
+                        .datum(group.all());
+
                 g.selectAll('.foreground.bar')
                     .attr('clip-path', `url(#clip-${id})`);
-                
+
                 g.append('g')
                     .attr('class', 'axis')
                     .attr('transform', `translate(0,${height})`)
                     .call(axis);
-                
+
                 // Initialize the brush component with pretty resize handles.
                 gBrush = g.append('g')
                     .attr('class', 'brush')
                     .call(brush);
-                
+
                 gBrush.selectAll('.handle--custom')
                     .data([{ type: 'w' }, { type: 'e' }])
                     .enter().append('path')
@@ -79,16 +79,16 @@ function barChart() {
             if (brushDirty !== false) {
                 const filterVal = brushDirty;
                 brushDirty = false;
-            
+
                 div.select('.title a').style('display', d3.brushSelection(div) ? null : 'none');
-            
+
                 if (!filterVal) {
                     g.call(brush);
-            
+
                     g.selectAll(`#clip-${id} rect`)
                         .attr('x', 0)
                         .attr('width', width);
-            
+
                     g.selectAll('.brush-handle').style('display', 'none');
                     renderAll();
                 } else {
@@ -96,7 +96,7 @@ function barChart() {
                     brush.move(gBrush, range);
                 }
             }
-    
+
             g.selectAll('.bar').attr('d', barPath);
         });  // div.each
 
@@ -111,7 +111,7 @@ function barChart() {
             }
             return path.join('');
         }
-    
+
         function resizePath(d) {
             const e = +(d.type === 'e');
             const x = e ? 1 : -1;
@@ -120,56 +120,59 @@ function barChart() {
         }
     } // function chart(div)
 
-    brush.on('start.chart', function () {
+    brush.on('start.chart', function() {
         const div = d3.select(this.parentNode.parentNode.parentNode);
         div.select('.title a').style('display', null);
     });
 
-    brush.on('brush.chart', function () {
+    brush.on('brush.chart', function() {
         const g = d3.select(this.parentNode);
         const brushRange = d3.event.selection || d3.brushSelection(this); // attempt to read brush range
         const xRange = x && x.range(); // attempt to read range from x scale
         let activeRange = brushRange || xRange; // default to x range if no brush range available
-    
+
         const hasRange = activeRange &&
                          activeRange.length === 2 &&
                          !isNaN(activeRange[0]) &&
                          !isNaN(activeRange[1]);
-    
+
         if (!hasRange) return; // quit early if we don't have a valid range
-    
+
         // calculate current brush extents using x scale
         let extents = activeRange.map(x.invert);
-    
+
         // if rounding fn supplied, then snap to rounded extents
         // and move brush rect to reflect rounded range bounds if it was set by user interaction
         if (round) {
             extents = extents.map(round);
             activeRange = extents.map(x);
-    
-            if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'mousemove') {
+
+            if (
+                d3.event.sourceEvent &&
+                d3.event.sourceEvent.type === 'mousemove'
+            ) {
                 d3.select(this).call(brush.move, activeRange);
             }
         }
-    
+
         // move brush handles to start and end of range
         g.selectAll('.brush-handle')
             .style('display', null)
             .attr('transform', (d, i) => `translate(${activeRange[i]}, 0)`);
-    
+
         // resize sliding window to reflect updated range
         g.select(`#clip-${id} rect`)
             .attr('x', activeRange[0])
             .attr('width', activeRange[1] - activeRange[0]);
-    
+
         // filter the active dimension to the range extents
         dimension.filterRange(extents);
-    
+
         // re-render the other charts accordingly
         renderAll();
     }); // brush.on  brush.chart
 
-    brush.on('end.chart', function () {
+    brush.on('end.chart', function() {
         // Reset corresponding filter if the brush selection was cleared
         // (e.g. user "clicked off" the active range)
         if (!d3.brushSelection(this)) {
@@ -177,50 +180,50 @@ function barChart() {
         }
     });
 
-    chart.margin = function (_) {
+    chart.margin = function(_) {
         if (!arguments.length) return margin;
         margin = _;
         return chart;
     };
-    
-    chart.x = function (_) {
+
+    chart.x = function(_) {
         if (!arguments.length) return x;
         x = _;
         axis.scale(x);
         return chart;
     };
-    
-    chart.y = function (_) {
+
+    chart.y = function(_) {
         if (!arguments.length) return y;
         y = _;
         return chart;
     };
-    
-    chart.dimension = function (_) {
+
+    chart.dimension = function(_) {
         if (!arguments.length) return dimension;
         dimension = _;
         return chart;
     };
-    
+
     chart.filter = _ => {
         if (!_) dimension.filterAll();
         brushDirty = _;
         return chart;
     };
-    
-    chart.group = function (_) {
+
+    chart.group = function(_) {
         if (!arguments.length) return group;
         group = _;
         return chart;
     };
-    
-    chart.round = function (_) {
+
+    chart.round = function(_) {
         if (!arguments.length) return round;
         round = _;
         return chart;
     };
-    
+
     chart.gBrush = () => gBrush;
-    
+
     return chart;
 } // function barChart
