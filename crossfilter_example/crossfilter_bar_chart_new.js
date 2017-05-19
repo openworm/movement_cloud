@@ -1,6 +1,15 @@
 // d3.js v4 bar chart for crossfilter
 
 function barChart(brushMovedEventHandler) {
+    /* Create a bar chart
+
+    Parameters: brushMovedEventHandler
+        A function that will be called when the brush moves.
+
+    Returns: chart object
+    */
+
+    // DEBUG: these next two lines seem like they could be written better.
     if (!barChart.id) barChart.id = 0;
     const id = barChart.id++;
 

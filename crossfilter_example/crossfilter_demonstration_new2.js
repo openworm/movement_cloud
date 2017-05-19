@@ -49,6 +49,11 @@ function create_crossfilter(flights) {
         let result_row_list;
         let chart_DOM_elements;
 
+        // Renders the specified chart or list.
+        function render(method) {
+            d3.select(this).call(method);
+        }
+
         // Re-rendering function, which we will later set to be trigged
         // whenever the brush moves and other events like that
         function renderAll() {
@@ -107,19 +112,13 @@ function create_crossfilter(flights) {
         // Render the initial lists.
         result_row_list = d3.selectAll('.result_row_list')
             .data([flightList]);
-    
+
         // Render the total.
         d3.selectAll('#total')
             .text(formatNumber(flight.size()));
     
         renderAll();
-    
-        // Renders the specified chart or list.
-        function render(method) {
-            d3.select(this).call(method);
-        }
-
-        
+            
         window.filter = filters => {
             filters.forEach((d, i) => {
                 charts[i].filter(d);
@@ -130,6 +129,9 @@ function create_crossfilter(flights) {
         window.reset = i => {
             charts[i].filter(null);
             console.log("reset fired!");
+            // DEBUG: somehow if you click reset, the results list does
+            // not get refreshed.  Strange because we are calling renderAll
+            // here...
             renderAll();
         };
     
