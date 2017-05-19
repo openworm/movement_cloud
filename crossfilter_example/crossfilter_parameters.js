@@ -14,7 +14,7 @@ var XFILTER_PARAMS = {
     "worm_petri_dish": {
         "width": 500,
         "height": 400,
-        "MAX_WORMS_VISUALIZED": 100,
+        "MAX_WORMS_VISUALIZED": 15,
         "m": 12
     }
 }
