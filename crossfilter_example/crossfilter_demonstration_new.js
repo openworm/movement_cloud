@@ -9,11 +9,21 @@ function parseDate(d) {
         d.substring(6, 8));
 }
 
+
 // Various formatters.
 const formatNumber = d3.format(',d');
 const formatChange = d3.format('+,d');
 const formatDate = d3.timeFormat('%B %d, %Y');
 const formatTime = d3.timeFormat('%I:%M %p');
+
+
+// Whenever the brush moves, re-rendering everything.
+function renderAll() {
+    chart.each(render);
+    list.each(render);
+    d3.select('#active').text(formatNumber(all.value()));
+}
+
 
 // (It's CSV, but GitHub Pages only gzip's JSON at the moment.)
 d3.csv(XFILTER_PARAMS.data_file, (error, flights) => {
@@ -131,7 +141,7 @@ function create_crossfilter(flights) {
                 .merge(date);
 
             // DEBUG: flight is used twice (another time to be the crossfilter
-            // object.  this is confusing
+            // object.  this is confusing)
             const flight = date.order().selectAll('.flight')
                 .data(d => d.values, d => d.index);
             
@@ -164,6 +174,6 @@ function create_crossfilter(flights) {
             flightEnter.merge(flight);
             
             flight.order();
-        } // div.each
+        }) // div.each
     } // function flightList(div)
 } // function create_crossfilter 
