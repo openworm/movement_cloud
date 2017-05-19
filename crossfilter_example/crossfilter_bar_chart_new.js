@@ -1,6 +1,6 @@
 // d3.js v4 bar chart for crossfilter
 
-function barChart() {
+function barChart(brushMovedEventHandler) {
     if (!barChart.id) barChart.id = 0;
     const id = barChart.id++;
 
@@ -19,7 +19,10 @@ function barChart() {
         const width = x.range()[1];
         const height = y.range()[0];
 
-        brush.extent([[0, 0], [width, height]]);
+        brush.extent([[0, 0], [width, height]])
+            // attach an event handler so if the brush moves,
+            // the passed function is called, refreshing global elements
+            .on("start brush end", brushMovedEventHandler);
 
         y.domain([0, group.top(1)[0].value]);
 
@@ -83,6 +86,8 @@ function barChart() {
                 div.select('.title a').style('display', d3.brushSelection(div) ? null : 'none');
 
                 if (!filterVal) {
+                    // DEBUG: the outer condition is that brushdirty !==false,
+                    // so this will never be reached.
                     g.call(brush);
 
                     g.selectAll(`#clip-${id} rect`)
@@ -90,7 +95,6 @@ function barChart() {
                         .attr('width', width);
 
                     g.selectAll('.brush-handle').style('display', 'none');
-                    renderAll();
                 } else {
                     const range = filterVal.map(x);
                     brush.move(gBrush, range);
@@ -167,9 +171,6 @@ function barChart() {
 
         // filter the active dimension to the range extents
         dimension.filterRange(extents);
-
-        // re-render the other charts accordingly
-        renderAll();
     }); // brush.on  brush.chart
 
     brush.on('end.chart', function() {

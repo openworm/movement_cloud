@@ -41,53 +41,71 @@ function create_crossfilter(flights) {
         const dates = date.group(d3.timeDay);
         const hour = flight.dimension(d => d.date.getHours() + d.date.getMinutes() / 60);
         const hours = hour.group(Math.floor);
-        const delay = flight.dimension(d => Math.max(-60, Math.min(149, d.delay)));
+        const delay = flight.dimension(d => d.delay);
         const delays = delay.group(d => Math.floor(d / 10) * 10);
-        const distance = flight.dimension(d => Math.min(1999, d.distance));
+        const distance = flight.dimension(d => d.distance);
         const distances = distance.group(d => Math.floor(d / 50) * 50);
     
-        const charts = [
+        let result_row_list;
+        let chart_DOM_elements;
+
+        // Re-rendering function, which we will later set to be trigged
+        // whenever the brush moves and other events like that
+        function renderAll() {
+            chart_DOM_elements.each(render);
+            result_row_list.each(render);
+            d3.select('#active').text(formatNumber(all.value()));
+        }
+
+        const charts = [    
+            barChart(renderAll)
+                .dimension(hour)
+                .group(hours)
+                .x(d3.scaleLinear()
+                    .domain([0, 24])
+                    .rangeRound([0, 10 * 24])),
     
-            barChart()
-            .dimension(hour)
-            .group(hours)
-            .x(d3.scaleLinear()
-                .domain([0, 24])
-                .rangeRound([0, 10 * 24])),
+            barChart(renderAll)
+                .dimension(delay)
+                .group(delays)
+                .x(d3.scaleLinear()
+                    .domain([-60, 150])
+                    .rangeRound([0, 10 * 21])),
     
-            barChart()
-            .dimension(delay)
-            .group(delays)
-            .x(d3.scaleLinear()
-                .domain([-60, 150])
-                .rangeRound([0, 10 * 21])),
+            barChart(renderAll)
+                .dimension(distance)
+                .group(distances)
+                .x(d3.scaleLinear()
+                    .domain([0, 2000])
+                    .rangeRound([0, 10 * 40])),
     
-            barChart()
-            .dimension(distance)
-            .group(distances)
-            .x(d3.scaleLinear()
-                .domain([0, 2000])
-                .rangeRound([0, 10 * 40])),
-    
-            barChart()
-            .dimension(date)
-            .group(dates)
-            .round(d3.timeDay.round)
-            .x(d3.scaleTime()
-                .domain([new Date(2001, 0, 1), new Date(2001, 3, 1)])
-                .rangeRound([0, 10 * 90]))
-            .filter([new Date(2001, 1, 1), new Date(2001, 2, 1)]),
-    
+            barChart(renderAll)
+                .dimension(date)
+                .group(dates)
+                .round(d3.timeDay.round)
+                .x(d3.scaleTime()
+                    .domain([new Date(2001, 0, 1), new Date(2001, 3, 1)])
+                    .rangeRound([0, 10 * 90]))
+                .filter([new Date(2001, 1, 1), new Date(2001, 2, 1)]),    
         ];
     
         // Given our array of charts, which we assume are in the same order as the
         // .chart elements in the DOM, bind the charts to the DOM and render them.
         // We also listen to the chart's brush events to update the display.
-        const chart = d3.selectAll('.chart')
-            .data(charts);
+        chart_DOM_elements = d3.selectAll('.chart')
+            .data(charts)
+                .each(function(chart) { console.log(chart); });
+
+/*
+                    chart
+                        .on("start brush end", function() {
+                            renderAll();
+                        })
+                });
+*/
     
         // Render the initial lists.
-        const list = d3.selectAll('.list')
+        result_row_list = d3.selectAll('.result_row_list')
             .data([flightList]);
     
         // Render the total.
@@ -100,13 +118,7 @@ function create_crossfilter(flights) {
         function render(method) {
             d3.select(this).call(method);
         }
-    
-        // Whenever the brush moves, re-rendering everything.
-        function renderAll() {
-            chart.each(render);
-            list.each(render);
-            d3.select('#active').text(formatNumber(all.value()));
-        }
+
         
         window.filter = filters => {
             filters.forEach((d, i) => {
@@ -117,6 +129,7 @@ function create_crossfilter(flights) {
     
         window.reset = i => {
             charts[i].filter(null);
+            console.log("reset fired!");
             renderAll();
         };
     
