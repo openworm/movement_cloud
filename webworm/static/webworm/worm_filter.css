@@ -1,0 +1,177 @@
+#body {
+  position: relative;
+}
+
+#body > p {
+  line-height: 1.5em;
+  width: 640px;
+  text-rendering: optimizeLegibility;
+}
+
+#charts {
+  padding: 10px 0;
+}
+
+.chart {
+  display: inline-block;
+  height: 151px;
+  margin-bottom: 20px;
+}
+
+.reset {
+  padding-left: 1em;
+  font-size: smaller;
+  color: #ccc;
+}
+
+.background.bar {
+  fill: #ccc;
+}
+
+.foreground.bar {
+  fill: steelblue;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis text {
+  font: 10px sans-serif;
+}
+
+.brush rect.extent {
+  fill: steelblue;
+  fill-opacity: .125;
+}
+
+.brush .resize path {
+  fill: #eee;
+  stroke: #666;
+}
+
+#hour-chart {
+  width: 260px;
+}
+
+#delay-chart {
+  width: 230px;
+}
+
+#distance-chart {
+  width: 420px;
+}
+
+#date-chart {
+  width: 920px;
+}
+
+#datasetview {
+    padding: 2px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+#datasetview .title {
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+#datasetview canvas {
+    border: 1px solid lightgray;
+    display: block;
+    cursor: crosshair;
+}
+
+#results-list {
+  min-height: 1024px;
+}
+
+#results-list .date,
+#results-list .day {
+  margin-bottom: .4em;
+}
+
+#results-list .results_list_row {
+  line-height: 1.5em;
+  background: #eee;
+  width: 640px;
+  margin-bottom: 1px;
+}
+
+#results-list .time {
+  color: #999;
+}
+
+#results-list .results_list_row div {
+  display: inline-block;
+  width: 100px;
+}
+
+#results-list div.user_field2,
+#results-list div.user_field1 {
+  width: 160px;
+  padding-right: 10px;
+  text-align: right;
+}
+
+#results-list .positive {
+  color: green;
+}
+
+aside {
+  font-size: smaller;
+  width: 220px;
+}
+
+fieldset {
+  margin-bottom: 20px; 
+  border: 1px solid lightgray;
+}
+
+fieldset > label, 
+span > label {
+  margin-right: 10px;
+  font-size: 12px;
+}
+label.selected {
+  color: black;
+}
+label.notSelected {
+  color: lightgray;
+}
+
+ellipse {
+  fill: #000;
+  stroke-width: 1px;
+}
+
+path.mid {
+  fill: none;
+  stroke: #000;
+  stroke-linecap: round;
+  stroke-width: 4px;
+}
+
+path.tail {
+  fill: none;
+  stroke: #000;
+  stroke-linecap: round;
+  stroke-width: 2px;
+}
+
+#wormvisualization svg {
+    style: outline: thin solid grey;
+    stroke: #000;
+    fill: none;
+    stoke-width: 4;
+}
+
+
+
+
+
+
+

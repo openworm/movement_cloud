@@ -11,7 +11,17 @@ from .forms import *
 
 import json
 
+# For performance debugging only
+import time
+
 coreFeatures = {};
+
+# Global variables to control expensive operations as a tentative measure
+#  These ought to be populated only once. If the database changes, Django
+#  automatically refreshes the call into views.py, so these should get
+#  regenerated as well.
+param_min_list = [];
+param_max_list = [];
 
 # Support functions
 
@@ -42,35 +52,55 @@ def getFieldCounts(experiments, fieldName, fieldList, nullNameString):
     return sorted(counts.items());
 
 def processSearchField(key, db_filter, getRequest, experimentsList):
-    returnList = Experiments.objects.none();
+    # *CWL* This deals with a bizzarre difference in the way exec() behaves between
+    #  Python 2 and Python 3 with regard to local variable assignment inside the
+    #  call to exec() I do not yet fully understand. Quite by accident, I discovered
+    #  that while direct assignment fails, modification to a list construct works.
+    #
+    #  As a result this code works, but with the caveat that I have misgivings about
+    #  this as the intended idiom in Python 3 to execute dynamic code driven by
+    #  variables (in our case - "db_filter" which is a variable string but needed to 
+    #  be code text when applied to a function parameter.)
+    returnList = [Experiments.objects.none()];
     if key in getRequest:
         searchList = getRequest[key].split(',');
         if searchList:
-            for searchTerm in searchList:
-                exec('returnList =  returnList | experimentsList.filter(' + db_filter + '=searchTerm);');
-    return returnList;
+            # *CWL* Django creates null lists as [''] which translates into python
+            #   as a single empty-string entry. Unfortunately this translates into
+            #   a huge performance hit if processed naively, because attempting to
+            #   filter on an empty search term is expensive, even though it is
+            #   essentially a null operation. This conditional checks for it, and
+            #   turns it into essentially a null operation.
+            if (len(searchList) == 1) and (searchList[0] == ''):
+                returnList[0] = experimentsList;
+            else:
+                for searchTerm in searchList:
+                    # *CWL* This check may not actually be necessary, but is included
+                    #   in case a search term in a non-trivial list is actually
+                    #   an empty-string. In this case rather than permit a DB filter
+                    #   operation which translates to an expensive null operation, 
+                    #   we ignore it.
+                    if searchTerm != '':
+                        exec('returnList[0] = returnList[0] | experimentsList.filter(' + 
+                             db_filter + '=searchTerm);');
+    return returnList[0];
 
 def processSearchParameters(getRequest, featuresObjects, experimentsList):
-    returnList = experimentsList;
+    returnList = [experimentsList];
     # This is pretty painful, and requires us to traverse the request list for keys
     #   instead of a forward search. Still looks more efficient than traversing
     #   all 700+ parameters.
     for key in getRequest.keys():
         name = '';
-        if key.endswith('_minParam'):
+        if key.endswith('_minInput'):
             name = key[:-9];
             minVal = getRequest[key];
-            print("*****");
-            print(name);
-            print(minVal);
-            exec('eliminatedFeatures = featuresObjects.filter('+ name +'__lt=minVal);');
-            returnList.exclude(id__in = [x.experiment_id for x in eliminatedFeatures_set()]);
-#            exec('returnList =  returnList.select_related("'+name+'").filter(' + name + '__gte=minVal);');
-        elif key.endswith('_maxParam'):
+            exec('returnList[0] = returnList[0].filter(featuresmeans__' + name + '__gte=minVal);');
+        elif key.endswith('_maxInput'):
             name = key[:-9];
             maxVal = getRequest[key];
-#            exec('returnList =  returnList.select_related("'+name+'").filter(' + name + '__lte=maxVal);');
-    return returnList;
+            exec('returnList[0] = returnList[0].filter(featuresmeans__' + name + '__lte=maxVal);');
+    return returnList[0];
 
 def processSearchConfiguration(getRequest, experimentsList, featuresObjects):
     # Sane defaults
@@ -102,29 +132,30 @@ def processSearchConfiguration(getRequest, experimentsList, featuresObjects):
         end = getRequest['end_date'];
         if end:
             returnList = returnList.filter(date__lte=end);
-    returnList = processSearchField('strains', 'strain__name__icontains', 
+    returnList = processSearchField('strains', 'strain__name__exact', 
                                     getRequest, returnList);
-    returnList  = processSearchField('trackers', 'tracker__name__icontains', 
+    returnList = processSearchField('trackers', 'tracker__name__exact', 
                                      getRequest, returnList);
-    returnlist = processSearchField('sex', 'sex__name__icontains', 
+    returnlist = processSearchField('sex', 'sex__name__exact', 
                                     getRequest, returnList);
-    returnList = processSearchField('dev', 'developmental_stage__name__icontains', 
+    returnList = processSearchField('dev', 'developmental_stage__name__exact', 
                                     getRequest, returnList);
-    returnList = processSearchField('ventral', 'ventral_side__name__icontains', 
+    returnList = processSearchField('ventral', 'ventral_side__name__exact', 
                                     getRequest, returnList);
-    returnList = processSearchField('food', 'food__name__icontains', 
+    returnList = processSearchField('food', 'food__name__exact', 
                                     getRequest, returnList);
-    returnList = processSearchField('arena', 'arena__name__icontains', 
+    returnList = processSearchField('arena', 'arena__name__exact', 
                                     getRequest, returnList);
-    returnList = processSearchField('habituation', 'habituation__name__icontains', 
+    returnList = processSearchField('habituation', 'habituation__name__exact', 
                                     getRequest, returnList);
-    returnList = processSearchField('experimenter', 'experimenter__name__icontains', 
+    returnList = processSearchField('experimenter', 'experimenter__name__exact', 
                                     getRequest, returnList);
     returnList = processSearchParameters(getRequest, featuresObjects, returnList);
 
     return returnList;
     
 def createParametersMetadata(featuresFields, featuresObjects, context):
+#    pt0 = time.time();
     # This is clunky, there has to be a better way to do this.
     parameter_field_list = tuple(x for x in featuresFields
                                  if (x.name != "id") and 
@@ -134,30 +165,59 @@ def createParametersMetadata(featuresFields, featuresObjects, context):
                                  (x.name != "n_valid_skel") and
                                  (x.name != "first_frame")
                                  );
+#    pt1 = time.time();
+#    print("------GET FEATURES LIST ---------");
+#    print(pt1-pt0);
+#    pt0 = time.time();
+
     param_name_list = [x.name for x in parameter_field_list];
+#    pt1 = time.time();
+#    print("------GET FEATURES NAMES ---------");
+#    print(pt1-pt0);
+#    pt0 = time.time();
 #    param_jsgrid_name_list = [{"Parameter Name":x.name} for x in parameter_field_list];
 
-    param_min_list = [];
-#    param_jsgrid_min_list = [];
+    # Compute only if not previously computed
+    global param_min_list;
+    if not param_min_list:
     # *CWL* Hardcoding the name of the dictionary returned has to be the ugliest hack!
-    for field_min in parameter_field_list:
-        minval = featuresObjects.aggregate(Min(field_min.name)).get(field_min.name+'__min');
-        if (minval == None):
-            param_min_list.append("None");
-        else:
-            param_min_list.append(minval);
+        for field_min in parameter_field_list:
+            minval = featuresObjects.aggregate(Min(field_min.name)).get(field_min.name+'__min');
+            if (minval == None):
+                param_min_list.append("None");
+            else:
+                param_min_list.append(minval);
+        #    pt1 = time.time();
+        #    print("------GET FEATURES MIN ---------");
+        #    print(pt1-pt0);
+        #    pt0 = time.time();
 
-    param_max_list = [];
-    for field_max in parameter_field_list:
-        maxval = featuresObjects.aggregate(Max(field_max.name)).get(field_max.name+'__max');
-        if (maxval == None):
-            param_max_list.append("None");
-        else:
-            param_max_list.append(maxval);
+    # Compute only if not previously computed
+    global param_max_list;
+    if not param_max_list:
+        for field_max in parameter_field_list:
+            maxval = featuresObjects.aggregate(Max(field_max.name)).get(field_max.name+'__max');
+            #        pt1 = time.time();
+            #        print("------ FIND FIELD MAX ---------");
+            #        print(pt1-pt0);
+            #        pt0 = time.time();
+            if (maxval == None):
+                param_max_list.append("None");
+            else:
+                param_max_list.append(maxval);
+        #    pt1 = time.time();
+        #    print("------GET FEATURES MAX ---------");
+        #    print(pt1-pt0);
+        #    pt0 = time.time();
 
     param_tuple_list = zip(param_name_list, param_min_list, param_max_list);
     context['param_list'] = param_tuple_list;
     context['parameter_name_list'] = param_name_list;
+ #   pt1 = time.time();
+ #   print("------FEATURES ZIP ---------");
+ #   print(pt1-pt0);
+ #  pt0 = time.time();
+    
 
 def createDiscreteFieldMetadata(experiments, context):
     experiments_count = experiments.count();
@@ -210,6 +270,8 @@ def createDiscreteFieldMetadata(experiments, context):
 # Create your views here.
 
 def index(request):
+#    tstart = time.time();
+#    t0 = tstart;
     form = SearchForm();
     context = {};
 
@@ -218,10 +280,29 @@ def index(request):
     db_experiment_count = experiments_list.count();
 
     createDiscreteFieldMetadata(experiments_list, context);
+#    t1 = time.time();
+#    print("***** CREATE DISCRETE META ******");
+#    print(t1-t0);
+#    t0 = time.time();
 
     featuresFields = FeaturesMeans._meta.get_fields();
+#    t1 = time.time();
+#    print("***** GET FEATURES FIELDS ******");
+#    print(t1-t0);
+#    t0 = time.time();
+
     featuresObjects = FeaturesMeans.objects.all();
+#    t1 = time.time();
+#    print("***** GET FEATURES OBJECTS ******");
+#    print(t1-t0);
+#    t0 = time.time();
+
     createParametersMetadata(featuresFields, featuresObjects, context);
+#    t1 = time.time();
+#    print("***** CREATE FEATURES META ******");
+#    print(t1-t0);
+#    t0 = time.time();
+
 
     experiment_date_min = experiments_list.aggregate(Min('date')).get('date__min');
     experiment_date_max = experiments_list.aggregate(Max('date')).get('date__max');
@@ -231,7 +312,14 @@ def index(request):
     results_list = None;
 
     # Get Core Parameters from JSON file
-    loadCoreFeatures(featuresFields, context);
+    #   *CWL* deprecated by data stored in database
+    #    loadCoreFeatures(featuresFields, context);
+    coreFeaturesObjects = Features.objects.all();
+    isCore = coreFeaturesObjects.filter(is_core_feature__exact="1");
+    presentList = [];
+    for coreFeature in isCore:
+        presentList.append({'name':coreFeature.name,'desc':coreFeature.description});
+    context['presentFeatures'] = presentList;
 
     if request.method == "GET":
         if (len(request.GET.keys()) > 0):
@@ -247,6 +335,9 @@ def index(request):
     context['max_date'] = experiment_date_max;
 #    context['search_string'] = search_string;
     context['form'] = form;
+#    t1 = time.time();
+#    print("***** TOTAL ******");
+#    print(t1-tstart);
     return render(request, 'webworm/index.html', context);
 
 # *CWL* - Consolidated into a single page.
