@@ -11,7 +11,7 @@ from django.db import models
 
 
 class Alleles(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
 
     class Meta:
         managed = False
@@ -19,15 +19,81 @@ class Alleles(models.Model):
 
 
 class Arenas(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
 
     class Meta:
         managed = False
         db_table = 'arenas'
 
 
+class AuthGroup(models.Model):
+    name = models.CharField(unique=True, max_length=80)
+
+    class Meta:
+        managed = False
+        db_table = 'auth_group'
+
+
+class AuthGroupPermissions(models.Model):
+    group = models.ForeignKey(AuthGroup, models.DO_NOTHING)
+    permission = models.ForeignKey('AuthPermission', models.DO_NOTHING)
+
+    class Meta:
+        managed = False
+        db_table = 'auth_group_permissions'
+        unique_together = (('group', 'permission'),)
+
+
+class AuthPermission(models.Model):
+    name = models.CharField(max_length=255)
+    content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING)
+    codename = models.CharField(max_length=100)
+
+    class Meta:
+        managed = False
+        db_table = 'auth_permission'
+        unique_together = (('content_type', 'codename'),)
+
+
+class AuthUser(models.Model):
+    password = models.CharField(max_length=128)
+    last_login = models.DateTimeField(blank=True, null=True)
+    is_superuser = models.IntegerField()
+    username = models.CharField(unique=True, max_length=150)
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
+    email = models.CharField(max_length=254)
+    is_staff = models.IntegerField()
+    is_active = models.IntegerField()
+    date_joined = models.DateTimeField()
+
+    class Meta:
+        managed = False
+        db_table = 'auth_user'
+
+
+class AuthUserGroups(models.Model):
+    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
+    group = models.ForeignKey(AuthGroup, models.DO_NOTHING)
+
+    class Meta:
+        managed = False
+        db_table = 'auth_user_groups'
+        unique_together = (('user', 'group'),)
+
+
+class AuthUserUserPermissions(models.Model):
+    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
+    permission = models.ForeignKey(AuthPermission, models.DO_NOTHING)
+
+    class Meta:
+        managed = False
+        db_table = 'auth_user_user_permissions'
+        unique_together = (('user', 'permission'),)
+
+
 class Chromosomes(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
 
     class Meta:
         managed = False
@@ -35,15 +101,59 @@ class Chromosomes(models.Model):
 
 
 class DevelopmentalStages(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
 
     class Meta:
         managed = False
         db_table = 'developmental_stages'
 
 
+class DjangoAdminLog(models.Model):
+    action_time = models.DateTimeField()
+    object_id = models.TextField(blank=True, null=True)
+    object_repr = models.CharField(max_length=200)
+    action_flag = models.SmallIntegerField()
+    change_message = models.TextField()
+    content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING, blank=True, null=True)
+    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
+
+    class Meta:
+        managed = False
+        db_table = 'django_admin_log'
+
+
+class DjangoContentType(models.Model):
+    app_label = models.CharField(max_length=100)
+    model = models.CharField(max_length=100)
+
+    class Meta:
+        managed = False
+        db_table = 'django_content_type'
+        unique_together = (('app_label', 'model'),)
+
+
+class DjangoMigrations(models.Model):
+    app = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
+    applied = models.DateTimeField()
+
+    class Meta:
+        managed = False
+        db_table = 'django_migrations'
+
+
+class DjangoSession(models.Model):
+    session_key = models.CharField(primary_key=True, max_length=40)
+    session_data = models.TextField()
+    expire_date = models.DateTimeField()
+
+    class Meta:
+        managed = False
+        db_table = 'django_session'
+
+
 class ExitFlags(models.Model):
-    checkpoint = models.CharField(unique=True, max_length=20, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=30)
     description = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
@@ -52,7 +162,7 @@ class ExitFlags(models.Model):
 
 
 class Experimenters(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
 
     class Meta:
         managed = False
@@ -60,7 +170,7 @@ class Experimenters(models.Model):
 
 
 class Experiments(models.Model):
-    base_name = models.CharField(unique=True, max_length=200, blank=True, null=True)
+    base_name = models.CharField(unique=True, max_length=200)
     date = models.DateTimeField(blank=True, null=True)
     strain = models.ForeignKey('Strains', models.DO_NOTHING, blank=True, null=True)
     tracker = models.ForeignKey('Trackers', models.DO_NOTHING, blank=True, null=True)
@@ -71,17 +181,31 @@ class Experiments(models.Model):
     arena = models.ForeignKey(Arenas, models.DO_NOTHING, blank=True, null=True)
     habituation = models.ForeignKey('Habituations', models.DO_NOTHING, blank=True, null=True)
     experimenter = models.ForeignKey(Experimenters, models.DO_NOTHING, blank=True, null=True)
-#    original_video = models.CharField(unique=True, max_length=700)
+    # *CWL* Manual change made from 700 to 255 here because of complaints from MySQL
     original_video = models.CharField(unique=True, max_length=255)
     original_video_sizemb = models.FloatField(db_column='original_video_sizeMB', blank=True, null=True)  # Field name made lowercase.
+    exit_flag = models.ForeignKey(ExitFlags, models.DO_NOTHING)
+    results_dir = models.CharField(max_length=200, blank=True, null=True)
+    youtube_id = models.CharField(max_length=40, blank=True, null=True)
+    zenodo_id = models.CharField(max_length=40, blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'experiments'
 
 
+class Features(models.Model):
+    name = models.CharField(unique=True, max_length=50, blank=True, null=True)
+    description = models.CharField(max_length=200, blank=True, null=True)
+    is_core_feature = models.TextField(blank=True, null=True)  # This field type is a guess.
+
+    class Meta:
+        managed = False
+        db_table = 'features'
+
+
 class FeaturesMeans(models.Model):
-    experiment_id = models.BigIntegerField(unique=True, blank=True, null=True)
+    experiment = models.ForeignKey(Experiments, models.DO_NOTHING, unique=True, blank=True, null=True)
     worm_index = models.FloatField(blank=True, null=True)
     n_frames = models.FloatField(blank=True, null=True)
     n_valid_skel = models.FloatField(blank=True, null=True)
@@ -91,41 +215,41 @@ class FeaturesMeans(models.Model):
     midbody_dwelling = models.FloatField(blank=True, null=True)
     tail_dwelling = models.FloatField(blank=True, null=True)
     length = models.FloatField(blank=True, null=True)
-    length_foward = models.FloatField(blank=True, null=True)
+    length_forward = models.FloatField(blank=True, null=True)
     length_paused = models.FloatField(blank=True, null=True)
     length_backward = models.FloatField(blank=True, null=True)
     head_width = models.FloatField(blank=True, null=True)
-    head_width_foward = models.FloatField(blank=True, null=True)
+    head_width_forward = models.FloatField(blank=True, null=True)
     head_width_paused = models.FloatField(blank=True, null=True)
     head_width_backward = models.FloatField(blank=True, null=True)
     midbody_width = models.FloatField(blank=True, null=True)
-    midbody_width_foward = models.FloatField(blank=True, null=True)
+    midbody_width_forward = models.FloatField(blank=True, null=True)
     midbody_width_paused = models.FloatField(blank=True, null=True)
     midbody_width_backward = models.FloatField(blank=True, null=True)
     tail_width = models.FloatField(blank=True, null=True)
-    tail_width_foward = models.FloatField(blank=True, null=True)
+    tail_width_forward = models.FloatField(blank=True, null=True)
     tail_width_paused = models.FloatField(blank=True, null=True)
     tail_width_backward = models.FloatField(blank=True, null=True)
     area = models.FloatField(blank=True, null=True)
-    area_foward = models.FloatField(blank=True, null=True)
+    area_forward = models.FloatField(blank=True, null=True)
     area_paused = models.FloatField(blank=True, null=True)
     area_backward = models.FloatField(blank=True, null=True)
     area_length_ratio = models.FloatField(blank=True, null=True)
-    area_length_ratio_foward = models.FloatField(blank=True, null=True)
+    area_length_ratio_forward = models.FloatField(blank=True, null=True)
     area_length_ratio_paused = models.FloatField(blank=True, null=True)
     area_length_ratio_backward = models.FloatField(blank=True, null=True)
     width_length_ratio = models.FloatField(blank=True, null=True)
-    width_length_ratio_foward = models.FloatField(blank=True, null=True)
+    width_length_ratio_forward = models.FloatField(blank=True, null=True)
     width_length_ratio_paused = models.FloatField(blank=True, null=True)
     width_length_ratio_backward = models.FloatField(blank=True, null=True)
     head_bend_mean = models.FloatField(blank=True, null=True)
     head_bend_mean_abs = models.FloatField(blank=True, null=True)
     head_bend_mean_neg = models.FloatField(blank=True, null=True)
     head_bend_mean_pos = models.FloatField(blank=True, null=True)
-    head_bend_mean_foward = models.FloatField(blank=True, null=True)
-    head_bend_mean_foward_abs = models.FloatField(blank=True, null=True)
-    head_bend_mean_foward_neg = models.FloatField(blank=True, null=True)
-    head_bend_mean_foward_pos = models.FloatField(blank=True, null=True)
+    head_bend_mean_forward = models.FloatField(blank=True, null=True)
+    head_bend_mean_forward_abs = models.FloatField(blank=True, null=True)
+    head_bend_mean_forward_neg = models.FloatField(blank=True, null=True)
+    head_bend_mean_forward_pos = models.FloatField(blank=True, null=True)
     head_bend_mean_paused = models.FloatField(blank=True, null=True)
     head_bend_mean_paused_abs = models.FloatField(blank=True, null=True)
     head_bend_mean_paused_neg = models.FloatField(blank=True, null=True)
@@ -138,10 +262,10 @@ class FeaturesMeans(models.Model):
     neck_bend_mean_abs = models.FloatField(blank=True, null=True)
     neck_bend_mean_neg = models.FloatField(blank=True, null=True)
     neck_bend_mean_pos = models.FloatField(blank=True, null=True)
-    neck_bend_mean_foward = models.FloatField(blank=True, null=True)
-    neck_bend_mean_foward_abs = models.FloatField(blank=True, null=True)
-    neck_bend_mean_foward_neg = models.FloatField(blank=True, null=True)
-    neck_bend_mean_foward_pos = models.FloatField(blank=True, null=True)
+    neck_bend_mean_forward = models.FloatField(blank=True, null=True)
+    neck_bend_mean_forward_abs = models.FloatField(blank=True, null=True)
+    neck_bend_mean_forward_neg = models.FloatField(blank=True, null=True)
+    neck_bend_mean_forward_pos = models.FloatField(blank=True, null=True)
     neck_bend_mean_paused = models.FloatField(blank=True, null=True)
     neck_bend_mean_paused_abs = models.FloatField(blank=True, null=True)
     neck_bend_mean_paused_neg = models.FloatField(blank=True, null=True)
@@ -154,10 +278,10 @@ class FeaturesMeans(models.Model):
     midbody_bend_mean_abs = models.FloatField(blank=True, null=True)
     midbody_bend_mean_neg = models.FloatField(blank=True, null=True)
     midbody_bend_mean_pos = models.FloatField(blank=True, null=True)
-    midbody_bend_mean_foward = models.FloatField(blank=True, null=True)
-    midbody_bend_mean_foward_abs = models.FloatField(blank=True, null=True)
-    midbody_bend_mean_foward_neg = models.FloatField(blank=True, null=True)
-    midbody_bend_mean_foward_pos = models.FloatField(blank=True, null=True)
+    midbody_bend_mean_forward = models.FloatField(blank=True, null=True)
+    midbody_bend_mean_forward_abs = models.FloatField(blank=True, null=True)
+    midbody_bend_mean_forward_neg = models.FloatField(blank=True, null=True)
+    midbody_bend_mean_forward_pos = models.FloatField(blank=True, null=True)
     midbody_bend_mean_paused = models.FloatField(blank=True, null=True)
     midbody_bend_mean_paused_abs = models.FloatField(blank=True, null=True)
     midbody_bend_mean_paused_neg = models.FloatField(blank=True, null=True)
@@ -170,10 +294,10 @@ class FeaturesMeans(models.Model):
     hips_bend_mean_abs = models.FloatField(blank=True, null=True)
     hips_bend_mean_neg = models.FloatField(blank=True, null=True)
     hips_bend_mean_pos = models.FloatField(blank=True, null=True)
-    hips_bend_mean_foward = models.FloatField(blank=True, null=True)
-    hips_bend_mean_foward_abs = models.FloatField(blank=True, null=True)
-    hips_bend_mean_foward_neg = models.FloatField(blank=True, null=True)
-    hips_bend_mean_foward_pos = models.FloatField(blank=True, null=True)
+    hips_bend_mean_forward = models.FloatField(blank=True, null=True)
+    hips_bend_mean_forward_abs = models.FloatField(blank=True, null=True)
+    hips_bend_mean_forward_neg = models.FloatField(blank=True, null=True)
+    hips_bend_mean_forward_pos = models.FloatField(blank=True, null=True)
     hips_bend_mean_paused = models.FloatField(blank=True, null=True)
     hips_bend_mean_paused_abs = models.FloatField(blank=True, null=True)
     hips_bend_mean_paused_neg = models.FloatField(blank=True, null=True)
@@ -186,10 +310,10 @@ class FeaturesMeans(models.Model):
     tail_bend_mean_abs = models.FloatField(blank=True, null=True)
     tail_bend_mean_neg = models.FloatField(blank=True, null=True)
     tail_bend_mean_pos = models.FloatField(blank=True, null=True)
-    tail_bend_mean_foward = models.FloatField(blank=True, null=True)
-    tail_bend_mean_foward_abs = models.FloatField(blank=True, null=True)
-    tail_bend_mean_foward_neg = models.FloatField(blank=True, null=True)
-    tail_bend_mean_foward_pos = models.FloatField(blank=True, null=True)
+    tail_bend_mean_forward = models.FloatField(blank=True, null=True)
+    tail_bend_mean_forward_abs = models.FloatField(blank=True, null=True)
+    tail_bend_mean_forward_neg = models.FloatField(blank=True, null=True)
+    tail_bend_mean_forward_pos = models.FloatField(blank=True, null=True)
     tail_bend_mean_paused = models.FloatField(blank=True, null=True)
     tail_bend_mean_paused_abs = models.FloatField(blank=True, null=True)
     tail_bend_mean_paused_neg = models.FloatField(blank=True, null=True)
@@ -202,10 +326,10 @@ class FeaturesMeans(models.Model):
     head_bend_sd_abs = models.FloatField(blank=True, null=True)
     head_bend_sd_neg = models.FloatField(blank=True, null=True)
     head_bend_sd_pos = models.FloatField(blank=True, null=True)
-    head_bend_sd_foward = models.FloatField(blank=True, null=True)
-    head_bend_sd_foward_abs = models.FloatField(blank=True, null=True)
-    head_bend_sd_foward_neg = models.FloatField(blank=True, null=True)
-    head_bend_sd_foward_pos = models.FloatField(blank=True, null=True)
+    head_bend_sd_forward = models.FloatField(blank=True, null=True)
+    head_bend_sd_forward_abs = models.FloatField(blank=True, null=True)
+    head_bend_sd_forward_neg = models.FloatField(blank=True, null=True)
+    head_bend_sd_forward_pos = models.FloatField(blank=True, null=True)
     head_bend_sd_paused = models.FloatField(blank=True, null=True)
     head_bend_sd_paused_abs = models.FloatField(blank=True, null=True)
     head_bend_sd_paused_neg = models.FloatField(blank=True, null=True)
@@ -218,10 +342,10 @@ class FeaturesMeans(models.Model):
     neck_bend_sd_abs = models.FloatField(blank=True, null=True)
     neck_bend_sd_neg = models.FloatField(blank=True, null=True)
     neck_bend_sd_pos = models.FloatField(blank=True, null=True)
-    neck_bend_sd_foward = models.FloatField(blank=True, null=True)
-    neck_bend_sd_foward_abs = models.FloatField(blank=True, null=True)
-    neck_bend_sd_foward_neg = models.FloatField(blank=True, null=True)
-    neck_bend_sd_foward_pos = models.FloatField(blank=True, null=True)
+    neck_bend_sd_forward = models.FloatField(blank=True, null=True)
+    neck_bend_sd_forward_abs = models.FloatField(blank=True, null=True)
+    neck_bend_sd_forward_neg = models.FloatField(blank=True, null=True)
+    neck_bend_sd_forward_pos = models.FloatField(blank=True, null=True)
     neck_bend_sd_paused = models.FloatField(blank=True, null=True)
     neck_bend_sd_paused_abs = models.FloatField(blank=True, null=True)
     neck_bend_sd_paused_neg = models.FloatField(blank=True, null=True)
@@ -234,10 +358,10 @@ class FeaturesMeans(models.Model):
     midbody_bend_sd_abs = models.FloatField(blank=True, null=True)
     midbody_bend_sd_neg = models.FloatField(blank=True, null=True)
     midbody_bend_sd_pos = models.FloatField(blank=True, null=True)
-    midbody_bend_sd_foward = models.FloatField(blank=True, null=True)
-    midbody_bend_sd_foward_abs = models.FloatField(blank=True, null=True)
-    midbody_bend_sd_foward_neg = models.FloatField(blank=True, null=True)
-    midbody_bend_sd_foward_pos = models.FloatField(blank=True, null=True)
+    midbody_bend_sd_forward = models.FloatField(blank=True, null=True)
+    midbody_bend_sd_forward_abs = models.FloatField(blank=True, null=True)
+    midbody_bend_sd_forward_neg = models.FloatField(blank=True, null=True)
+    midbody_bend_sd_forward_pos = models.FloatField(blank=True, null=True)
     midbody_bend_sd_paused = models.FloatField(blank=True, null=True)
     midbody_bend_sd_paused_abs = models.FloatField(blank=True, null=True)
     midbody_bend_sd_paused_neg = models.FloatField(blank=True, null=True)
@@ -250,10 +374,10 @@ class FeaturesMeans(models.Model):
     hips_bend_sd_abs = models.FloatField(blank=True, null=True)
     hips_bend_sd_neg = models.FloatField(blank=True, null=True)
     hips_bend_sd_pos = models.FloatField(blank=True, null=True)
-    hips_bend_sd_foward = models.FloatField(blank=True, null=True)
-    hips_bend_sd_foward_abs = models.FloatField(blank=True, null=True)
-    hips_bend_sd_foward_neg = models.FloatField(blank=True, null=True)
-    hips_bend_sd_foward_pos = models.FloatField(blank=True, null=True)
+    hips_bend_sd_forward = models.FloatField(blank=True, null=True)
+    hips_bend_sd_forward_abs = models.FloatField(blank=True, null=True)
+    hips_bend_sd_forward_neg = models.FloatField(blank=True, null=True)
+    hips_bend_sd_forward_pos = models.FloatField(blank=True, null=True)
     hips_bend_sd_paused = models.FloatField(blank=True, null=True)
     hips_bend_sd_paused_abs = models.FloatField(blank=True, null=True)
     hips_bend_sd_paused_neg = models.FloatField(blank=True, null=True)
@@ -266,10 +390,10 @@ class FeaturesMeans(models.Model):
     tail_bend_sd_abs = models.FloatField(blank=True, null=True)
     tail_bend_sd_neg = models.FloatField(blank=True, null=True)
     tail_bend_sd_pos = models.FloatField(blank=True, null=True)
-    tail_bend_sd_foward = models.FloatField(blank=True, null=True)
-    tail_bend_sd_foward_abs = models.FloatField(blank=True, null=True)
-    tail_bend_sd_foward_neg = models.FloatField(blank=True, null=True)
-    tail_bend_sd_foward_pos = models.FloatField(blank=True, null=True)
+    tail_bend_sd_forward = models.FloatField(blank=True, null=True)
+    tail_bend_sd_forward_abs = models.FloatField(blank=True, null=True)
+    tail_bend_sd_forward_neg = models.FloatField(blank=True, null=True)
+    tail_bend_sd_forward_pos = models.FloatField(blank=True, null=True)
     tail_bend_sd_paused = models.FloatField(blank=True, null=True)
     tail_bend_sd_paused_abs = models.FloatField(blank=True, null=True)
     tail_bend_sd_paused_neg = models.FloatField(blank=True, null=True)
@@ -279,41 +403,41 @@ class FeaturesMeans(models.Model):
     tail_bend_sd_backward_neg = models.FloatField(blank=True, null=True)
     tail_bend_sd_backward_pos = models.FloatField(blank=True, null=True)
     max_amplitude = models.FloatField(blank=True, null=True)
-    max_amplitude_foward = models.FloatField(blank=True, null=True)
+    max_amplitude_forward = models.FloatField(blank=True, null=True)
     max_amplitude_paused = models.FloatField(blank=True, null=True)
     max_amplitude_backward = models.FloatField(blank=True, null=True)
     amplitude_ratio = models.FloatField(blank=True, null=True)
-    amplitude_ratio_foward = models.FloatField(blank=True, null=True)
+    amplitude_ratio_forward = models.FloatField(blank=True, null=True)
     amplitude_ratio_paused = models.FloatField(blank=True, null=True)
     amplitude_ratio_backward = models.FloatField(blank=True, null=True)
     primary_wavelength = models.FloatField(blank=True, null=True)
-    primary_wavelength_foward = models.FloatField(blank=True, null=True)
+    primary_wavelength_forward = models.FloatField(blank=True, null=True)
     primary_wavelength_paused = models.FloatField(blank=True, null=True)
     primary_wavelength_backward = models.FloatField(blank=True, null=True)
     secondary_wavelength = models.FloatField(blank=True, null=True)
-    secondary_wavelength_foward = models.FloatField(blank=True, null=True)
+    secondary_wavelength_forward = models.FloatField(blank=True, null=True)
     secondary_wavelength_paused = models.FloatField(blank=True, null=True)
     secondary_wavelength_backward = models.FloatField(blank=True, null=True)
     track_length = models.FloatField(blank=True, null=True)
-    track_length_foward = models.FloatField(blank=True, null=True)
+    track_length_forward = models.FloatField(blank=True, null=True)
     track_length_paused = models.FloatField(blank=True, null=True)
     track_length_backward = models.FloatField(blank=True, null=True)
     eccentricity = models.FloatField(blank=True, null=True)
-    eccentricity_foward = models.FloatField(blank=True, null=True)
+    eccentricity_forward = models.FloatField(blank=True, null=True)
     eccentricity_paused = models.FloatField(blank=True, null=True)
     eccentricity_backward = models.FloatField(blank=True, null=True)
     bend_count = models.FloatField(blank=True, null=True)
-    bend_count_foward = models.FloatField(blank=True, null=True)
+    bend_count_forward = models.FloatField(blank=True, null=True)
     bend_count_paused = models.FloatField(blank=True, null=True)
     bend_count_backward = models.FloatField(blank=True, null=True)
     tail_to_head_orientation = models.FloatField(blank=True, null=True)
     tail_to_head_orientation_abs = models.FloatField(blank=True, null=True)
     tail_to_head_orientation_neg = models.FloatField(blank=True, null=True)
     tail_to_head_orientation_pos = models.FloatField(blank=True, null=True)
-    tail_to_head_orientation_foward = models.FloatField(blank=True, null=True)
-    tail_to_head_orientation_foward_abs = models.FloatField(blank=True, null=True)
-    tail_to_head_orientation_foward_neg = models.FloatField(blank=True, null=True)
-    tail_to_head_orientation_foward_pos = models.FloatField(blank=True, null=True)
+    tail_to_head_orientation_forward = models.FloatField(blank=True, null=True)
+    tail_to_head_orientation_forward_abs = models.FloatField(blank=True, null=True)
+    tail_to_head_orientation_forward_neg = models.FloatField(blank=True, null=True)
+    tail_to_head_orientation_forward_pos = models.FloatField(blank=True, null=True)
     tail_to_head_orientation_paused = models.FloatField(blank=True, null=True)
     tail_to_head_orientation_paused_abs = models.FloatField(blank=True, null=True)
     tail_to_head_orientation_paused_neg = models.FloatField(blank=True, null=True)
@@ -326,10 +450,10 @@ class FeaturesMeans(models.Model):
     head_orientation_abs = models.FloatField(blank=True, null=True)
     head_orientation_neg = models.FloatField(blank=True, null=True)
     head_orientation_pos = models.FloatField(blank=True, null=True)
-    head_orientation_foward = models.FloatField(blank=True, null=True)
-    head_orientation_foward_abs = models.FloatField(blank=True, null=True)
-    head_orientation_foward_neg = models.FloatField(blank=True, null=True)
-    head_orientation_foward_pos = models.FloatField(blank=True, null=True)
+    head_orientation_forward = models.FloatField(blank=True, null=True)
+    head_orientation_forward_abs = models.FloatField(blank=True, null=True)
+    head_orientation_forward_neg = models.FloatField(blank=True, null=True)
+    head_orientation_forward_pos = models.FloatField(blank=True, null=True)
     head_orientation_paused = models.FloatField(blank=True, null=True)
     head_orientation_paused_abs = models.FloatField(blank=True, null=True)
     head_orientation_paused_neg = models.FloatField(blank=True, null=True)
@@ -342,10 +466,10 @@ class FeaturesMeans(models.Model):
     tail_orientation_abs = models.FloatField(blank=True, null=True)
     tail_orientation_neg = models.FloatField(blank=True, null=True)
     tail_orientation_pos = models.FloatField(blank=True, null=True)
-    tail_orientation_foward = models.FloatField(blank=True, null=True)
-    tail_orientation_foward_abs = models.FloatField(blank=True, null=True)
-    tail_orientation_foward_neg = models.FloatField(blank=True, null=True)
-    tail_orientation_foward_pos = models.FloatField(blank=True, null=True)
+    tail_orientation_forward = models.FloatField(blank=True, null=True)
+    tail_orientation_forward_abs = models.FloatField(blank=True, null=True)
+    tail_orientation_forward_neg = models.FloatField(blank=True, null=True)
+    tail_orientation_forward_pos = models.FloatField(blank=True, null=True)
     tail_orientation_paused = models.FloatField(blank=True, null=True)
     tail_orientation_paused_abs = models.FloatField(blank=True, null=True)
     tail_orientation_paused_neg = models.FloatField(blank=True, null=True)
@@ -358,10 +482,10 @@ class FeaturesMeans(models.Model):
     eigen_projection_1_abs = models.FloatField(blank=True, null=True)
     eigen_projection_1_neg = models.FloatField(blank=True, null=True)
     eigen_projection_1_pos = models.FloatField(blank=True, null=True)
-    eigen_projection_1_foward = models.FloatField(blank=True, null=True)
-    eigen_projection_1_foward_abs = models.FloatField(blank=True, null=True)
-    eigen_projection_1_foward_neg = models.FloatField(blank=True, null=True)
-    eigen_projection_1_foward_pos = models.FloatField(blank=True, null=True)
+    eigen_projection_1_forward = models.FloatField(blank=True, null=True)
+    eigen_projection_1_forward_abs = models.FloatField(blank=True, null=True)
+    eigen_projection_1_forward_neg = models.FloatField(blank=True, null=True)
+    eigen_projection_1_forward_pos = models.FloatField(blank=True, null=True)
     eigen_projection_1_paused = models.FloatField(blank=True, null=True)
     eigen_projection_1_paused_abs = models.FloatField(blank=True, null=True)
     eigen_projection_1_paused_neg = models.FloatField(blank=True, null=True)
@@ -374,10 +498,10 @@ class FeaturesMeans(models.Model):
     eigen_projection_2_abs = models.FloatField(blank=True, null=True)
     eigen_projection_2_neg = models.FloatField(blank=True, null=True)
     eigen_projection_2_pos = models.FloatField(blank=True, null=True)
-    eigen_projection_2_foward = models.FloatField(blank=True, null=True)
-    eigen_projection_2_foward_abs = models.FloatField(blank=True, null=True)
-    eigen_projection_2_foward_neg = models.FloatField(blank=True, null=True)
-    eigen_projection_2_foward_pos = models.FloatField(blank=True, null=True)
+    eigen_projection_2_forward = models.FloatField(blank=True, null=True)
+    eigen_projection_2_forward_abs = models.FloatField(blank=True, null=True)
+    eigen_projection_2_forward_neg = models.FloatField(blank=True, null=True)
+    eigen_projection_2_forward_pos = models.FloatField(blank=True, null=True)
     eigen_projection_2_paused = models.FloatField(blank=True, null=True)
     eigen_projection_2_paused_abs = models.FloatField(blank=True, null=True)
     eigen_projection_2_paused_neg = models.FloatField(blank=True, null=True)
@@ -390,10 +514,10 @@ class FeaturesMeans(models.Model):
     eigen_projection_3_abs = models.FloatField(blank=True, null=True)
     eigen_projection_3_neg = models.FloatField(blank=True, null=True)
     eigen_projection_3_pos = models.FloatField(blank=True, null=True)
-    eigen_projection_3_foward = models.FloatField(blank=True, null=True)
-    eigen_projection_3_foward_abs = models.FloatField(blank=True, null=True)
-    eigen_projection_3_foward_neg = models.FloatField(blank=True, null=True)
-    eigen_projection_3_foward_pos = models.FloatField(blank=True, null=True)
+    eigen_projection_3_forward = models.FloatField(blank=True, null=True)
+    eigen_projection_3_forward_abs = models.FloatField(blank=True, null=True)
+    eigen_projection_3_forward_neg = models.FloatField(blank=True, null=True)
+    eigen_projection_3_forward_pos = models.FloatField(blank=True, null=True)
     eigen_projection_3_paused = models.FloatField(blank=True, null=True)
     eigen_projection_3_paused_abs = models.FloatField(blank=True, null=True)
     eigen_projection_3_paused_neg = models.FloatField(blank=True, null=True)
@@ -406,10 +530,10 @@ class FeaturesMeans(models.Model):
     eigen_projection_4_abs = models.FloatField(blank=True, null=True)
     eigen_projection_4_neg = models.FloatField(blank=True, null=True)
     eigen_projection_4_pos = models.FloatField(blank=True, null=True)
-    eigen_projection_4_foward = models.FloatField(blank=True, null=True)
-    eigen_projection_4_foward_abs = models.FloatField(blank=True, null=True)
-    eigen_projection_4_foward_neg = models.FloatField(blank=True, null=True)
-    eigen_projection_4_foward_pos = models.FloatField(blank=True, null=True)
+    eigen_projection_4_forward = models.FloatField(blank=True, null=True)
+    eigen_projection_4_forward_abs = models.FloatField(blank=True, null=True)
+    eigen_projection_4_forward_neg = models.FloatField(blank=True, null=True)
+    eigen_projection_4_forward_pos = models.FloatField(blank=True, null=True)
     eigen_projection_4_paused = models.FloatField(blank=True, null=True)
     eigen_projection_4_paused_abs = models.FloatField(blank=True, null=True)
     eigen_projection_4_paused_neg = models.FloatField(blank=True, null=True)
@@ -422,10 +546,10 @@ class FeaturesMeans(models.Model):
     eigen_projection_5_abs = models.FloatField(blank=True, null=True)
     eigen_projection_5_neg = models.FloatField(blank=True, null=True)
     eigen_projection_5_pos = models.FloatField(blank=True, null=True)
-    eigen_projection_5_foward = models.FloatField(blank=True, null=True)
-    eigen_projection_5_foward_abs = models.FloatField(blank=True, null=True)
-    eigen_projection_5_foward_neg = models.FloatField(blank=True, null=True)
-    eigen_projection_5_foward_pos = models.FloatField(blank=True, null=True)
+    eigen_projection_5_forward = models.FloatField(blank=True, null=True)
+    eigen_projection_5_forward_abs = models.FloatField(blank=True, null=True)
+    eigen_projection_5_forward_neg = models.FloatField(blank=True, null=True)
+    eigen_projection_5_forward_pos = models.FloatField(blank=True, null=True)
     eigen_projection_5_paused = models.FloatField(blank=True, null=True)
     eigen_projection_5_paused_abs = models.FloatField(blank=True, null=True)
     eigen_projection_5_paused_neg = models.FloatField(blank=True, null=True)
@@ -438,10 +562,10 @@ class FeaturesMeans(models.Model):
     eigen_projection_6_abs = models.FloatField(blank=True, null=True)
     eigen_projection_6_neg = models.FloatField(blank=True, null=True)
     eigen_projection_6_pos = models.FloatField(blank=True, null=True)
-    eigen_projection_6_foward = models.FloatField(blank=True, null=True)
-    eigen_projection_6_foward_abs = models.FloatField(blank=True, null=True)
-    eigen_projection_6_foward_neg = models.FloatField(blank=True, null=True)
-    eigen_projection_6_foward_pos = models.FloatField(blank=True, null=True)
+    eigen_projection_6_forward = models.FloatField(blank=True, null=True)
+    eigen_projection_6_forward_abs = models.FloatField(blank=True, null=True)
+    eigen_projection_6_forward_neg = models.FloatField(blank=True, null=True)
+    eigen_projection_6_forward_pos = models.FloatField(blank=True, null=True)
     eigen_projection_6_paused = models.FloatField(blank=True, null=True)
     eigen_projection_6_paused_abs = models.FloatField(blank=True, null=True)
     eigen_projection_6_paused_neg = models.FloatField(blank=True, null=True)
@@ -454,10 +578,10 @@ class FeaturesMeans(models.Model):
     head_tip_speed_abs = models.FloatField(blank=True, null=True)
     head_tip_speed_neg = models.FloatField(blank=True, null=True)
     head_tip_speed_pos = models.FloatField(blank=True, null=True)
-    head_tip_speed_foward = models.FloatField(blank=True, null=True)
-    head_tip_speed_foward_abs = models.FloatField(blank=True, null=True)
-    head_tip_speed_foward_neg = models.FloatField(blank=True, null=True)
-    head_tip_speed_foward_pos = models.FloatField(blank=True, null=True)
+    head_tip_speed_forward = models.FloatField(blank=True, null=True)
+    head_tip_speed_forward_abs = models.FloatField(blank=True, null=True)
+    head_tip_speed_forward_neg = models.FloatField(blank=True, null=True)
+    head_tip_speed_forward_pos = models.FloatField(blank=True, null=True)
     head_tip_speed_paused = models.FloatField(blank=True, null=True)
     head_tip_speed_paused_abs = models.FloatField(blank=True, null=True)
     head_tip_speed_paused_neg = models.FloatField(blank=True, null=True)
@@ -470,10 +594,10 @@ class FeaturesMeans(models.Model):
     head_speed_abs = models.FloatField(blank=True, null=True)
     head_speed_neg = models.FloatField(blank=True, null=True)
     head_speed_pos = models.FloatField(blank=True, null=True)
-    head_speed_foward = models.FloatField(blank=True, null=True)
-    head_speed_foward_abs = models.FloatField(blank=True, null=True)
-    head_speed_foward_neg = models.FloatField(blank=True, null=True)
-    head_speed_foward_pos = models.FloatField(blank=True, null=True)
+    head_speed_forward = models.FloatField(blank=True, null=True)
+    head_speed_forward_abs = models.FloatField(blank=True, null=True)
+    head_speed_forward_neg = models.FloatField(blank=True, null=True)
+    head_speed_forward_pos = models.FloatField(blank=True, null=True)
     head_speed_paused = models.FloatField(blank=True, null=True)
     head_speed_paused_abs = models.FloatField(blank=True, null=True)
     head_speed_paused_neg = models.FloatField(blank=True, null=True)
@@ -486,10 +610,10 @@ class FeaturesMeans(models.Model):
     midbody_speed_abs = models.FloatField(blank=True, null=True)
     midbody_speed_neg = models.FloatField(blank=True, null=True)
     midbody_speed_pos = models.FloatField(blank=True, null=True)
-    midbody_speed_foward = models.FloatField(blank=True, null=True)
-    midbody_speed_foward_abs = models.FloatField(blank=True, null=True)
-    midbody_speed_foward_neg = models.FloatField(blank=True, null=True)
-    midbody_speed_foward_pos = models.FloatField(blank=True, null=True)
+    midbody_speed_forward = models.FloatField(blank=True, null=True)
+    midbody_speed_forward_abs = models.FloatField(blank=True, null=True)
+    midbody_speed_forward_neg = models.FloatField(blank=True, null=True)
+    midbody_speed_forward_pos = models.FloatField(blank=True, null=True)
     midbody_speed_paused = models.FloatField(blank=True, null=True)
     midbody_speed_paused_abs = models.FloatField(blank=True, null=True)
     midbody_speed_paused_neg = models.FloatField(blank=True, null=True)
@@ -502,10 +626,10 @@ class FeaturesMeans(models.Model):
     tail_speed_abs = models.FloatField(blank=True, null=True)
     tail_speed_neg = models.FloatField(blank=True, null=True)
     tail_speed_pos = models.FloatField(blank=True, null=True)
-    tail_speed_foward = models.FloatField(blank=True, null=True)
-    tail_speed_foward_abs = models.FloatField(blank=True, null=True)
-    tail_speed_foward_neg = models.FloatField(blank=True, null=True)
-    tail_speed_foward_pos = models.FloatField(blank=True, null=True)
+    tail_speed_forward = models.FloatField(blank=True, null=True)
+    tail_speed_forward_abs = models.FloatField(blank=True, null=True)
+    tail_speed_forward_neg = models.FloatField(blank=True, null=True)
+    tail_speed_forward_pos = models.FloatField(blank=True, null=True)
     tail_speed_paused = models.FloatField(blank=True, null=True)
     tail_speed_paused_abs = models.FloatField(blank=True, null=True)
     tail_speed_paused_neg = models.FloatField(blank=True, null=True)
@@ -518,10 +642,10 @@ class FeaturesMeans(models.Model):
     tail_tip_speed_abs = models.FloatField(blank=True, null=True)
     tail_tip_speed_neg = models.FloatField(blank=True, null=True)
     tail_tip_speed_pos = models.FloatField(blank=True, null=True)
-    tail_tip_speed_foward = models.FloatField(blank=True, null=True)
-    tail_tip_speed_foward_abs = models.FloatField(blank=True, null=True)
-    tail_tip_speed_foward_neg = models.FloatField(blank=True, null=True)
-    tail_tip_speed_foward_pos = models.FloatField(blank=True, null=True)
+    tail_tip_speed_forward = models.FloatField(blank=True, null=True)
+    tail_tip_speed_forward_abs = models.FloatField(blank=True, null=True)
+    tail_tip_speed_forward_neg = models.FloatField(blank=True, null=True)
+    tail_tip_speed_forward_pos = models.FloatField(blank=True, null=True)
     tail_tip_speed_paused = models.FloatField(blank=True, null=True)
     tail_tip_speed_paused_abs = models.FloatField(blank=True, null=True)
     tail_tip_speed_paused_neg = models.FloatField(blank=True, null=True)
@@ -534,10 +658,10 @@ class FeaturesMeans(models.Model):
     head_tip_motion_direction_abs = models.FloatField(blank=True, null=True)
     head_tip_motion_direction_neg = models.FloatField(blank=True, null=True)
     head_tip_motion_direction_pos = models.FloatField(blank=True, null=True)
-    head_tip_motion_direction_foward = models.FloatField(blank=True, null=True)
-    head_tip_motion_direction_foward_abs = models.FloatField(blank=True, null=True)
-    head_tip_motion_direction_foward_neg = models.FloatField(blank=True, null=True)
-    head_tip_motion_direction_foward_pos = models.FloatField(blank=True, null=True)
+    head_tip_motion_direction_forward = models.FloatField(blank=True, null=True)
+    head_tip_motion_direction_forward_abs = models.FloatField(blank=True, null=True)
+    head_tip_motion_direction_forward_neg = models.FloatField(blank=True, null=True)
+    head_tip_motion_direction_forward_pos = models.FloatField(blank=True, null=True)
     head_tip_motion_direction_paused = models.FloatField(blank=True, null=True)
     head_tip_motion_direction_paused_abs = models.FloatField(blank=True, null=True)
     head_tip_motion_direction_paused_neg = models.FloatField(blank=True, null=True)
@@ -550,10 +674,10 @@ class FeaturesMeans(models.Model):
     head_motion_direction_abs = models.FloatField(blank=True, null=True)
     head_motion_direction_neg = models.FloatField(blank=True, null=True)
     head_motion_direction_pos = models.FloatField(blank=True, null=True)
-    head_motion_direction_foward = models.FloatField(blank=True, null=True)
-    head_motion_direction_foward_abs = models.FloatField(blank=True, null=True)
-    head_motion_direction_foward_neg = models.FloatField(blank=True, null=True)
-    head_motion_direction_foward_pos = models.FloatField(blank=True, null=True)
+    head_motion_direction_forward = models.FloatField(blank=True, null=True)
+    head_motion_direction_forward_abs = models.FloatField(blank=True, null=True)
+    head_motion_direction_forward_neg = models.FloatField(blank=True, null=True)
+    head_motion_direction_forward_pos = models.FloatField(blank=True, null=True)
     head_motion_direction_paused = models.FloatField(blank=True, null=True)
     head_motion_direction_paused_abs = models.FloatField(blank=True, null=True)
     head_motion_direction_paused_neg = models.FloatField(blank=True, null=True)
@@ -566,10 +690,10 @@ class FeaturesMeans(models.Model):
     midbody_motion_direction_abs = models.FloatField(blank=True, null=True)
     midbody_motion_direction_neg = models.FloatField(blank=True, null=True)
     midbody_motion_direction_pos = models.FloatField(blank=True, null=True)
-    midbody_motion_direction_foward = models.FloatField(blank=True, null=True)
-    midbody_motion_direction_foward_abs = models.FloatField(blank=True, null=True)
-    midbody_motion_direction_foward_neg = models.FloatField(blank=True, null=True)
-    midbody_motion_direction_foward_pos = models.FloatField(blank=True, null=True)
+    midbody_motion_direction_forward = models.FloatField(blank=True, null=True)
+    midbody_motion_direction_forward_abs = models.FloatField(blank=True, null=True)
+    midbody_motion_direction_forward_neg = models.FloatField(blank=True, null=True)
+    midbody_motion_direction_forward_pos = models.FloatField(blank=True, null=True)
     midbody_motion_direction_paused = models.FloatField(blank=True, null=True)
     midbody_motion_direction_paused_abs = models.FloatField(blank=True, null=True)
     midbody_motion_direction_paused_neg = models.FloatField(blank=True, null=True)
@@ -582,10 +706,10 @@ class FeaturesMeans(models.Model):
     tail_motion_direction_abs = models.FloatField(blank=True, null=True)
     tail_motion_direction_neg = models.FloatField(blank=True, null=True)
     tail_motion_direction_pos = models.FloatField(blank=True, null=True)
-    tail_motion_direction_foward = models.FloatField(blank=True, null=True)
-    tail_motion_direction_foward_abs = models.FloatField(blank=True, null=True)
-    tail_motion_direction_foward_neg = models.FloatField(blank=True, null=True)
-    tail_motion_direction_foward_pos = models.FloatField(blank=True, null=True)
+    tail_motion_direction_forward = models.FloatField(blank=True, null=True)
+    tail_motion_direction_forward_abs = models.FloatField(blank=True, null=True)
+    tail_motion_direction_forward_neg = models.FloatField(blank=True, null=True)
+    tail_motion_direction_forward_pos = models.FloatField(blank=True, null=True)
     tail_motion_direction_paused = models.FloatField(blank=True, null=True)
     tail_motion_direction_paused_abs = models.FloatField(blank=True, null=True)
     tail_motion_direction_paused_neg = models.FloatField(blank=True, null=True)
@@ -598,10 +722,10 @@ class FeaturesMeans(models.Model):
     tail_tip_motion_direction_abs = models.FloatField(blank=True, null=True)
     tail_tip_motion_direction_neg = models.FloatField(blank=True, null=True)
     tail_tip_motion_direction_pos = models.FloatField(blank=True, null=True)
-    tail_tip_motion_direction_foward = models.FloatField(blank=True, null=True)
-    tail_tip_motion_direction_foward_abs = models.FloatField(blank=True, null=True)
-    tail_tip_motion_direction_foward_neg = models.FloatField(blank=True, null=True)
-    tail_tip_motion_direction_foward_pos = models.FloatField(blank=True, null=True)
+    tail_tip_motion_direction_forward = models.FloatField(blank=True, null=True)
+    tail_tip_motion_direction_forward_abs = models.FloatField(blank=True, null=True)
+    tail_tip_motion_direction_forward_neg = models.FloatField(blank=True, null=True)
+    tail_tip_motion_direction_forward_pos = models.FloatField(blank=True, null=True)
     tail_tip_motion_direction_paused = models.FloatField(blank=True, null=True)
     tail_tip_motion_direction_paused_abs = models.FloatField(blank=True, null=True)
     tail_tip_motion_direction_paused_neg = models.FloatField(blank=True, null=True)
@@ -614,10 +738,10 @@ class FeaturesMeans(models.Model):
     foraging_amplitude_abs = models.FloatField(blank=True, null=True)
     foraging_amplitude_neg = models.FloatField(blank=True, null=True)
     foraging_amplitude_pos = models.FloatField(blank=True, null=True)
-    foraging_amplitude_foward = models.FloatField(blank=True, null=True)
-    foraging_amplitude_foward_abs = models.FloatField(blank=True, null=True)
-    foraging_amplitude_foward_neg = models.FloatField(blank=True, null=True)
-    foraging_amplitude_foward_pos = models.FloatField(blank=True, null=True)
+    foraging_amplitude_forward = models.FloatField(blank=True, null=True)
+    foraging_amplitude_forward_abs = models.FloatField(blank=True, null=True)
+    foraging_amplitude_forward_neg = models.FloatField(blank=True, null=True)
+    foraging_amplitude_forward_pos = models.FloatField(blank=True, null=True)
     foraging_amplitude_paused = models.FloatField(blank=True, null=True)
     foraging_amplitude_paused_abs = models.FloatField(blank=True, null=True)
     foraging_amplitude_paused_neg = models.FloatField(blank=True, null=True)
@@ -630,10 +754,10 @@ class FeaturesMeans(models.Model):
     foraging_speed_abs = models.FloatField(blank=True, null=True)
     foraging_speed_neg = models.FloatField(blank=True, null=True)
     foraging_speed_pos = models.FloatField(blank=True, null=True)
-    foraging_speed_foward = models.FloatField(blank=True, null=True)
-    foraging_speed_foward_abs = models.FloatField(blank=True, null=True)
-    foraging_speed_foward_neg = models.FloatField(blank=True, null=True)
-    foraging_speed_foward_pos = models.FloatField(blank=True, null=True)
+    foraging_speed_forward = models.FloatField(blank=True, null=True)
+    foraging_speed_forward_abs = models.FloatField(blank=True, null=True)
+    foraging_speed_forward_neg = models.FloatField(blank=True, null=True)
+    foraging_speed_forward_pos = models.FloatField(blank=True, null=True)
     foraging_speed_paused = models.FloatField(blank=True, null=True)
     foraging_speed_paused_abs = models.FloatField(blank=True, null=True)
     foraging_speed_paused_neg = models.FloatField(blank=True, null=True)
@@ -646,10 +770,10 @@ class FeaturesMeans(models.Model):
     head_crawling_amplitude_abs = models.FloatField(blank=True, null=True)
     head_crawling_amplitude_neg = models.FloatField(blank=True, null=True)
     head_crawling_amplitude_pos = models.FloatField(blank=True, null=True)
-    head_crawling_amplitude_foward = models.FloatField(blank=True, null=True)
-    head_crawling_amplitude_foward_abs = models.FloatField(blank=True, null=True)
-    head_crawling_amplitude_foward_neg = models.FloatField(blank=True, null=True)
-    head_crawling_amplitude_foward_pos = models.FloatField(blank=True, null=True)
+    head_crawling_amplitude_forward = models.FloatField(blank=True, null=True)
+    head_crawling_amplitude_forward_abs = models.FloatField(blank=True, null=True)
+    head_crawling_amplitude_forward_neg = models.FloatField(blank=True, null=True)
+    head_crawling_amplitude_forward_pos = models.FloatField(blank=True, null=True)
     head_crawling_amplitude_paused = models.FloatField(blank=True, null=True)
     head_crawling_amplitude_paused_abs = models.FloatField(blank=True, null=True)
     head_crawling_amplitude_paused_neg = models.FloatField(blank=True, null=True)
@@ -662,10 +786,10 @@ class FeaturesMeans(models.Model):
     midbody_crawling_amplitude_abs = models.FloatField(blank=True, null=True)
     midbody_crawling_amplitude_neg = models.FloatField(blank=True, null=True)
     midbody_crawling_amplitude_pos = models.FloatField(blank=True, null=True)
-    midbody_crawling_amplitude_foward = models.FloatField(blank=True, null=True)
-    midbody_crawling_amplitude_foward_abs = models.FloatField(blank=True, null=True)
-    midbody_crawling_amplitude_foward_neg = models.FloatField(blank=True, null=True)
-    midbody_crawling_amplitude_foward_pos = models.FloatField(blank=True, null=True)
+    midbody_crawling_amplitude_forward = models.FloatField(blank=True, null=True)
+    midbody_crawling_amplitude_forward_abs = models.FloatField(blank=True, null=True)
+    midbody_crawling_amplitude_forward_neg = models.FloatField(blank=True, null=True)
+    midbody_crawling_amplitude_forward_pos = models.FloatField(blank=True, null=True)
     midbody_crawling_amplitude_paused = models.FloatField(blank=True, null=True)
     midbody_crawling_amplitude_paused_abs = models.FloatField(blank=True, null=True)
     midbody_crawling_amplitude_paused_neg = models.FloatField(blank=True, null=True)
@@ -678,10 +802,10 @@ class FeaturesMeans(models.Model):
     tail_crawling_amplitude_abs = models.FloatField(blank=True, null=True)
     tail_crawling_amplitude_neg = models.FloatField(blank=True, null=True)
     tail_crawling_amplitude_pos = models.FloatField(blank=True, null=True)
-    tail_crawling_amplitude_foward = models.FloatField(blank=True, null=True)
-    tail_crawling_amplitude_foward_abs = models.FloatField(blank=True, null=True)
-    tail_crawling_amplitude_foward_neg = models.FloatField(blank=True, null=True)
-    tail_crawling_amplitude_foward_pos = models.FloatField(blank=True, null=True)
+    tail_crawling_amplitude_forward = models.FloatField(blank=True, null=True)
+    tail_crawling_amplitude_forward_abs = models.FloatField(blank=True, null=True)
+    tail_crawling_amplitude_forward_neg = models.FloatField(blank=True, null=True)
+    tail_crawling_amplitude_forward_pos = models.FloatField(blank=True, null=True)
     tail_crawling_amplitude_paused = models.FloatField(blank=True, null=True)
     tail_crawling_amplitude_paused_abs = models.FloatField(blank=True, null=True)
     tail_crawling_amplitude_paused_neg = models.FloatField(blank=True, null=True)
@@ -694,10 +818,10 @@ class FeaturesMeans(models.Model):
     head_crawling_frequency_abs = models.FloatField(blank=True, null=True)
     head_crawling_frequency_neg = models.FloatField(blank=True, null=True)
     head_crawling_frequency_pos = models.FloatField(blank=True, null=True)
-    head_crawling_frequency_foward = models.FloatField(blank=True, null=True)
-    head_crawling_frequency_foward_abs = models.FloatField(blank=True, null=True)
-    head_crawling_frequency_foward_neg = models.FloatField(blank=True, null=True)
-    head_crawling_frequency_foward_pos = models.FloatField(blank=True, null=True)
+    head_crawling_frequency_forward = models.FloatField(blank=True, null=True)
+    head_crawling_frequency_forward_abs = models.FloatField(blank=True, null=True)
+    head_crawling_frequency_forward_neg = models.FloatField(blank=True, null=True)
+    head_crawling_frequency_forward_pos = models.FloatField(blank=True, null=True)
     head_crawling_frequency_paused = models.FloatField(blank=True, null=True)
     head_crawling_frequency_paused_abs = models.FloatField(blank=True, null=True)
     head_crawling_frequency_paused_neg = models.FloatField(blank=True, null=True)
@@ -710,10 +834,10 @@ class FeaturesMeans(models.Model):
     midbody_crawling_frequency_abs = models.FloatField(blank=True, null=True)
     midbody_crawling_frequency_neg = models.FloatField(blank=True, null=True)
     midbody_crawling_frequency_pos = models.FloatField(blank=True, null=True)
-    midbody_crawling_frequency_foward = models.FloatField(blank=True, null=True)
-    midbody_crawling_frequency_foward_abs = models.FloatField(blank=True, null=True)
-    midbody_crawling_frequency_foward_neg = models.FloatField(blank=True, null=True)
-    midbody_crawling_frequency_foward_pos = models.FloatField(blank=True, null=True)
+    midbody_crawling_frequency_forward = models.FloatField(blank=True, null=True)
+    midbody_crawling_frequency_forward_abs = models.FloatField(blank=True, null=True)
+    midbody_crawling_frequency_forward_neg = models.FloatField(blank=True, null=True)
+    midbody_crawling_frequency_forward_pos = models.FloatField(blank=True, null=True)
     midbody_crawling_frequency_paused = models.FloatField(blank=True, null=True)
     midbody_crawling_frequency_paused_abs = models.FloatField(blank=True, null=True)
     midbody_crawling_frequency_paused_neg = models.FloatField(blank=True, null=True)
@@ -726,10 +850,10 @@ class FeaturesMeans(models.Model):
     tail_crawling_frequency_abs = models.FloatField(blank=True, null=True)
     tail_crawling_frequency_neg = models.FloatField(blank=True, null=True)
     tail_crawling_frequency_pos = models.FloatField(blank=True, null=True)
-    tail_crawling_frequency_foward = models.FloatField(blank=True, null=True)
-    tail_crawling_frequency_foward_abs = models.FloatField(blank=True, null=True)
-    tail_crawling_frequency_foward_neg = models.FloatField(blank=True, null=True)
-    tail_crawling_frequency_foward_pos = models.FloatField(blank=True, null=True)
+    tail_crawling_frequency_forward = models.FloatField(blank=True, null=True)
+    tail_crawling_frequency_forward_abs = models.FloatField(blank=True, null=True)
+    tail_crawling_frequency_forward_neg = models.FloatField(blank=True, null=True)
+    tail_crawling_frequency_forward_pos = models.FloatField(blank=True, null=True)
     tail_crawling_frequency_paused = models.FloatField(blank=True, null=True)
     tail_crawling_frequency_paused_abs = models.FloatField(blank=True, null=True)
     tail_crawling_frequency_paused_neg = models.FloatField(blank=True, null=True)
@@ -739,17 +863,17 @@ class FeaturesMeans(models.Model):
     tail_crawling_frequency_backward_neg = models.FloatField(blank=True, null=True)
     tail_crawling_frequency_backward_pos = models.FloatField(blank=True, null=True)
     path_range = models.FloatField(blank=True, null=True)
-    path_range_foward = models.FloatField(blank=True, null=True)
+    path_range_forward = models.FloatField(blank=True, null=True)
     path_range_paused = models.FloatField(blank=True, null=True)
     path_range_backward = models.FloatField(blank=True, null=True)
     path_curvature = models.FloatField(blank=True, null=True)
     path_curvature_abs = models.FloatField(blank=True, null=True)
     path_curvature_neg = models.FloatField(blank=True, null=True)
     path_curvature_pos = models.FloatField(blank=True, null=True)
-    path_curvature_foward = models.FloatField(blank=True, null=True)
-    path_curvature_foward_abs = models.FloatField(blank=True, null=True)
-    path_curvature_foward_neg = models.FloatField(blank=True, null=True)
-    path_curvature_foward_pos = models.FloatField(blank=True, null=True)
+    path_curvature_forward = models.FloatField(blank=True, null=True)
+    path_curvature_forward_abs = models.FloatField(blank=True, null=True)
+    path_curvature_forward_neg = models.FloatField(blank=True, null=True)
+    path_curvature_forward_pos = models.FloatField(blank=True, null=True)
     path_curvature_paused = models.FloatField(blank=True, null=True)
     path_curvature_paused_abs = models.FloatField(blank=True, null=True)
     path_curvature_paused_neg = models.FloatField(blank=True, null=True)
@@ -819,7 +943,7 @@ class FeaturesMeans(models.Model):
 
 
 class Foods(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
 
     class Meta:
         managed = False
@@ -827,7 +951,7 @@ class Foods(models.Model):
 
 
 class Genes(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
 
     class Meta:
         managed = False
@@ -835,19 +959,15 @@ class Genes(models.Model):
 
 
 class Habituations(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
 
     class Meta:
         managed = False
         db_table = 'habituations'
 
 
-class ProgressAnalysis(models.Model):
+class ResultsSummary(models.Model):
     experiment = models.ForeignKey(Experiments, models.DO_NOTHING, primary_key=True)
-    exit_flag = models.ForeignKey(ExitFlags, models.DO_NOTHING)
-    mask_file = models.CharField(max_length=700, blank=True, null=True)
-    skeletons_file = models.CharField(max_length=700, blank=True, null=True)
-    features_file = models.CharField(max_length=700, blank=True, null=True)
     n_valid_frames = models.IntegerField(blank=True, null=True)
     n_missing_frames = models.IntegerField(blank=True, null=True)
     n_segmented_skeletons = models.IntegerField(blank=True, null=True)
@@ -858,15 +978,16 @@ class ProgressAnalysis(models.Model):
     last_skel_frame = models.IntegerField(blank=True, null=True)
     fps = models.FloatField(blank=True, null=True)
     total_time = models.FloatField(blank=True, null=True)
+    mask_file_sizemb = models.FloatField(db_column='mask_file_sizeMB', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         managed = False
-        db_table = 'progress_analysis'
+        db_table = 'results_summary'
 
 
 class SegwormComparisons(models.Model):
     experiment = models.ForeignKey(Experiments, models.DO_NOTHING)
-    segworm_feature = models.ForeignKey('SegwormFeatures', models.DO_NOTHING)
+    segworm_feature = models.ForeignKey('SegwormInfo', models.DO_NOTHING)
     n_mutual_skeletons = models.IntegerField(blank=True, null=True)
     error_05th = models.FloatField(blank=True, null=True)
     error_50th = models.FloatField(blank=True, null=True)
@@ -877,9 +998,9 @@ class SegwormComparisons(models.Model):
         db_table = 'segworm_comparisons'
 
 
-class SegwormFeatures(models.Model):
+class SegwormInfo(models.Model):
     segworm_file = models.CharField(max_length=700, blank=True, null=True)
-    experiment = models.ForeignKey(Experiments, models.DO_NOTHING)
+    experiment = models.ForeignKey(Experiments, models.DO_NOTHING, blank=True, null=True)
     fps = models.FloatField(blank=True, null=True)
     total_time = models.FloatField(blank=True, null=True)
     n_segworm_skeletons = models.IntegerField(blank=True, null=True)
@@ -887,11 +1008,11 @@ class SegwormFeatures(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'segworm_features'
+        db_table = 'segworm_info'
 
 
 class Sexes(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
 
     class Meta:
         managed = False
@@ -899,8 +1020,8 @@ class Sexes(models.Model):
 
 
 class Strains(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
-    genotype = models.CharField(max_length=200, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
+    description = models.CharField(max_length=200, blank=True, null=True)
     gene = models.ForeignKey(Genes, models.DO_NOTHING)
     allele = models.ForeignKey(Alleles, models.DO_NOTHING)
     chromosome_id = models.IntegerField()
@@ -911,7 +1032,7 @@ class Strains(models.Model):
 
 
 class Trackers(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
 
     class Meta:
         managed = False
@@ -919,7 +1040,7 @@ class Trackers(models.Model):
 
 
 class VentralSides(models.Model):
-    name = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    name = models.CharField(unique=True, max_length=100)
 
     class Meta:
         managed = False

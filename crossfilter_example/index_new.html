@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <title>Crossfilter</title>
+
+        <link rel="stylesheet" href="worm_filter_new.css">
+        <script src="crossfilter_parameters.js"></script>
+
+        <script src="crossfilter.min.js" defer></script>
+        <script src="d3.v4.min.js" defer></script>
+        <script src="babel.min.js" defer></script>
+        <script src="crossfilter_bar_chart_new.js?version=3" defer></script>
+        <script src="crossfilter_demonstration_new2.js?version=3" defer></script>
+    </head>
+</html>
+<body>
+    <div id='charts'>
+        <div id='hour-chart' class='chart'>
+            <div class='title'>Time of Day</div>
+        </div>
+        <div id='delay-chart' class='chart'>
+            <div class='title'>Arrival Delay (min.)</div>
+        </div>
+        <div id='distance-chart' class='chart'>
+            <div class='title'>Distance (mi.)</div>
+        </div>
+        <div id='date-chart' class='chart'>
+            <div class='title'>Date</div>
+        </div>
+    </div>
+    <aside id='totals'>
+        <span id='active'>-</span> of <span id='total'>-</span> flights selected.
+    </aside>
+    <div id='lists'>
+        <div id='flight-list' class='result_row_list'></div>
+    </div>
+</body>
