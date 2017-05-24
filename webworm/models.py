@@ -205,7 +205,7 @@ class Features(models.Model):
 
 
 class FeaturesMeans(models.Model):
-    experiment = models.ForeignKey(Experiments, models.DO_NOTHING, unique=True, blank=True, null=True)
+    experiment = models.OneToOneField(Experiments, models.DO_NOTHING, unique=True, blank=True, null=True)
     worm_index = models.FloatField(blank=True, null=True)
     n_frames = models.FloatField(blank=True, null=True)
     n_valid_skel = models.FloatField(blank=True, null=True)
@@ -967,7 +967,7 @@ class Habituations(models.Model):
 
 
 class ResultsSummary(models.Model):
-    experiment = models.ForeignKey(Experiments, models.DO_NOTHING, primary_key=True)
+    experiment = models.OneToOneField(Experiments, models.DO_NOTHING, primary_key=True)
     n_valid_frames = models.IntegerField(blank=True, null=True)
     n_missing_frames = models.IntegerField(blank=True, null=True)
     n_segmented_skeletons = models.IntegerField(blank=True, null=True)
