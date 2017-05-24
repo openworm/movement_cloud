@@ -1,5 +1,5 @@
 # Restarting the server
 
-First use `htop` to identify the server process (say `1234`), `sudo kill 1234` to kill it, then run:
+First use `htop` to identify the server process (say `1234`), `sudo kill 1234` to kill it, then run (as `ubuntu`):
 
-    nohup sudo python3 manage.py runserver 0.0.0.0:80 & (as ubuntu)
+    nohup sudo python3 manage.py runserver 0.0.0.0:80 &
