@@ -12,9 +12,9 @@ function parseDate(d) {  // (parseDate is like d3.time.format, but faster)
 // Various formatters.
 var formatWholeNumber = d3.format(",d"),
     formatChange = d3.format("+,d"),
-    formatDate = d3.time.format("%B %d, %Y"),
-    formatDateWithDay = d3.time.format("%a %B %d, %Y"),
-    formatTime = d3.time.format("%I:%M %p");
+    formatDate = d3.timeFormat("%B %d, %Y"),
+    formatDateWithDay = d3.timeFormat("%a %B %d, %Y"),
+    formatTime = d3.timeFormat("%I:%M %p");
 
 function valueFormatted(d, i) {
     // Prepare a given value for display
