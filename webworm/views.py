@@ -102,8 +102,21 @@ def processSearchParameters(getRequest, featuresObjects, experimentsList):
             exec('returnList[0] = returnList[0].filter(featuresmeans__' + name + '__lte=maxVal);');
     return returnList[0];
 
+def processFeatures(getRequest, featuresObjects, experimentsList):
+    returnList = [];
+    listOfLists = [];
+    for key in getRequest.keys():
+        name = '';
+        if key.endswith('_isFeature'):
+            name = key[:-10];
+            exec('listOfLists.append(experimentsList.values_list("featuresmeans__' + name +
+                 '"));');
+    returnList = zip(*listOfLists);
+    return returnList;
+
 def processSearchConfiguration(getRequest, experimentsList, featuresObjects):
     # Sane defaults
+#    pt0 = time.time();
     exact = 'off';
     case_sen = 'off';
     returnList = experimentsList;
@@ -111,19 +124,6 @@ def processSearchConfiguration(getRequest, experimentsList, featuresObjects):
         exact = getRequest['exact_match'];
     if 'case_sensitive' in getRequest:
         case_sen = getRequest['case_sensitive'];
-# *CWL* It has been agreed that searching by experiment "name" is not productive.
-#    if 'search_name' in getRequest:
-#        search = getRequest['search_name'];
-#        if search:
-#            search_string = search_string + ' String:' + search;
-#            if exact == 'on' and case_sen == 'on':
-#                experimentsList = experimentsList.filter(base_name__exact=search);
-#            elif exact == 'on' and case_sen == 'off':
-#                experimentsList = experimentsList.filter(base_name__iexact=search);
-#            elif exact == 'off' and case_sen == 'on':
-#                experimentsList = experimentsList.filter(base_name__contains=search);
-#            else: # default 'off' and 'off'
-#                experimentsList = experimentsList.filter(base_name__icontains=search);
     if 'start_date' in getRequest:
         start = getRequest['start_date'];
         if start:
@@ -150,10 +150,28 @@ def processSearchConfiguration(getRequest, experimentsList, featuresObjects):
                                     getRequest, returnList);
     returnList = processSearchField('experimenter', 'experimenter__name__exact', 
                                     getRequest, returnList);
-    returnList = processSearchParameters(getRequest, featuresObjects, returnList);
+#    returnList = processSearchParameters(getRequest, featuresObjects, returnList);
+#    pt1 = time.time();
+#    print("------ PROCESS FIELDS ---------");
+#    print(pt1-pt0);
+#    pt0 = time.time();
 
     return returnList;
+
+def createFeaturesNames(featuresFields, context):
+    # This is clunky, there has to be a better way to do this.
+    parameter_field_list = tuple(x for x in featuresFields
+                                 if (x.name != "id") and 
+                                 (x.name != "experiment_id") and
+                                 (x.name != "worm_index") and
+                                 (x.name != "n_frames") and
+                                 (x.name != "n_valid_skel") and
+                                 (x.name != "first_frame")
+                                 );
+    param_name_list = [x.name for x in parameter_field_list];
+    context['parameter_name_list'] = param_name_list;
     
+
 def createParametersMetadata(featuresFields, featuresObjects, context):
 #    pt0 = time.time();
     # This is clunky, there has to be a better way to do this.
@@ -297,12 +315,13 @@ def index(request):
 #    print(t1-t0);
 #    t0 = time.time();
 
-    createParametersMetadata(featuresFields, featuresObjects, context);
+# *CWL* We no longer need this time-consuming task when using Crossfilter.
+    createFeaturesNames(featuresFields, context);
+#    createParametersMetadata(featuresFields, featuresObjects, context);
 #    t1 = time.time();
 #    print("***** CREATE FEATURES META ******");
 #    print(t1-t0);
 #    t0 = time.time();
-
 
     experiment_date_min = experiments_list.aggregate(Min('date')).get('date__min');
     experiment_date_max = experiments_list.aggregate(Max('date')).get('date__max');
@@ -321,15 +340,22 @@ def index(request):
         presentList.append({'name':coreFeature.name,'desc':coreFeature.description});
     context['presentFeatures'] = presentList;
 
+    filteredList = [];
     if request.method == "GET":
-        if (len(request.GET.keys()) > 0):
+        # Look for crossfilter requests first.
+        if (request.GET.__contains__("crossfilter")):
             results_list = processSearchConfiguration(request.GET, 
                                                       Experiments.objects.order_by('base_name'),
                                                       featuresObjects);
+            filteredList = processFeatures(request.GET, featuresObjects, results_list);
+            dataList = results_list.values_list('date','strain__name','strain__gene__name');
+            filteredList = zip(dataList,filteredList);
             results_count = results_list.count();
 
     context['db_experiment_count'] = db_experiment_count;
-    context['results_list'] = results_list;
+# *CWL* This old operation was ridiculously expensive when all records were selected. 
+#    context['results_list'] = results_list;
+    context['results_list'] = filteredList;
     context['results_count'] = results_count;
     context['min_date'] = experiment_date_min;
     context['max_date'] = experiment_date_max;
