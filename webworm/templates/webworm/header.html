@@ -20,6 +20,7 @@
     <!-- Keeping the last old one used: Buttons + Select + Bootstrap
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs/dt-1.10.13/b-1.2.4/se-1.2.0/datatables.min.css"/>
     -->
+    <link rel="stylesheet" href="{% static 'webworm/worm_style.css' %}" />
     <!-- Crossfilter support -->
     <link rel="stylesheet" href="{% static 'webworm/worm_filter.css' %}" />
 
@@ -39,11 +40,19 @@
 
   <header class="jumbotron subhead" id="overview">
     <div class="container">
-      <h1>Worm Movement Database</h1>
-      <p class="lead">
-	A Prototype implementation of the Worm Movement Database Browser Tool.
-      <p>Total number of experiments in database = {{ db_experiment_count }} </p>
-      </p>
+     <div class="title_with_logo">
+      <table>
+        <tr>
+          <th><img src="{%  static 'logo_small.png' %}" width="128" height="128"></th>
+          <th>
+            <h1>Open Worm Movement Database</h1>
+            <p class="lead">
+              <p>Total number of experiments in database = {{ db_experiment_count }} </p>
+            </p>
+          </th>
+        </tr>
+      </table>
+    </div>
     </div>
   </header>
 
