@@ -4,265 +4,27 @@
 //
 "use strict";
 
-// Parse the date.  Assume it is the year 2001.
-function parseDate(d) {  // (parseDate is like d3.time.format, but faster)
-    return new Date(2001,
-        d.substring(0, 2) - 1,
-        d.substring(2, 4),
-        d.substring(4, 6),
-        d.substring(6, 8));
-}
-
-// Various formatters.
-var formatWholeNumber = d3.format(",d"),
-    formatChange = d3.format("+,d"),
-    formatDate = d3.time.format("%B %d, %Y"),
-    formatDateWithDay = d3.time.format("%a %B %d, %Y"),
-    formatTime = d3.time.format("%I:%M %p");
-
-function valueFormatted(d, i) {
-    // Prepare a given value for display
-
-    var cur_item = XFILTER_PARAMS.display_fields[i];
-    var value = d[cur_item.data_field];
-    var value_formatted;
-
-    if("format_string" in cur_item) {
-        value_formatted = 
-            d3.format(cur_item.format_string)(value);
-    } else {
-        value_formatted = value;
-    }
-
-    if("suffix" in cur_item) {
-        value_formatted += cur_item.suffix;
-    }
-
-    return value_formatted;
-}
-
 // Ensure at least 790px height if running in an iframe (bl.ocks)
 // http://bl.ocks.org/mbostock/1093025
 d3.select(self.frameElement).transition().duration(500).style("height",
                                                               "790px");
 
+// Get the data
+d3.csv(XFILTER_PARAMS.data_file, function(error, data_rows) {
+    if (error) { console.log(error); }
 
-function createDataSetView(data_xfilter_size, date) {
-    // DATASET VIEW
-    // Create canvas element that holds one record per canvas pixel
-    // Make the width 2 * the square root of the total data size, so the box is
-    // at most 1:2 rectangle.  Squish the box so it's a thin vertical
-    // rectangle if the client window width is smaller than this, though.
-    var canvasWidth = Math.min(d3.select("body").property("clientWidth"),
-                               2 * Math.ceil(Math.sqrt(data_xfilter_size)));
-    var canvasHeight = Math.ceil(data_xfilter_size / canvasWidth);
-    var canvas, datasetview_ctx, currentLabel;
+    // Set the titles in the report
+    document.title = XFILTER_PARAMS.report_title;
+    report_title.innerHTML = XFILTER_PARAMS.report_title;
 
-    // Get reference to canvas div
-    var datasetviewDiv = d3.select("#datasetview");
-
-    // Add div to hold description of canvas content
-    datasetviewDiv.select(".title")
-        .html("<span>Dataset View – Each of the " +
-              formatWholeNumber(data_xfilter_size) +
-              " pixels represents a data record.</span>")
-
-    // Add canvas element and mouse handler
-    canvas = datasetviewDiv.selectAll("canvas")
-        .attr("width", canvasWidth)
-        .attr("height", canvasHeight)
-        .style("width", canvasWidth + "px")
-        .style("height", canvasHeight + "px")
-        .on("mousemove", function() {
-            var mouse = d3.mouse(canvas.node()),
-                x = Math.round(mouse[0]),
-                y = Math.round(mouse[1]),
-                index = y * canvasWidth + x;
-
-            // Event handler delivers mouse mousemove events outside the
-            // canvas sometimes (don't know why); therefore, ensure that only
-            // valid x and y values are processed
-            if (x < 0 || x > canvasWidth - 1 || y < 0 || y > canvasHeight - 1) {
-                currentLabel.html("&nbsp;");
-                return;
-            }
-            // then check if the index is out of bounds
-            // (the right part of the last row is NOT part of the dataset)        
-            if (index > data_xfilter_size - 1) {
-                currentLabel.html("&nbsp;");
-                return;
-            }
-
-            var item = data_rows[index],
-                dateText = formatDateWithDay(item.date),
-                timeText = formatTime(item.date);
-
-            var labelText = labelText = "Selected: " + item.selected + ", Date: " + dateText + " " + timeText + ", Delay: ";
-            labelText += item.delay + ", Distance: " + item.distance + ", Route: " + item.origin + "-->" + item.destination + " (idx: " + index + ")";
-            currentLabel
-                .attr("class", function(d) {
-                    return item.selected ? "selected" : "notSelected"
-                })
-                .text(labelText);
-        })
-        .on("mouseleave", function() {
-            currentLabel.html("&nbsp;");
-        })
-
-    // Create label for mousemove
-    currentLabel = datasetviewDiv.append("label").html("&nbsp;");
-
-    // Get context to canvas elem
-    datasetview_ctx = canvas.node().getContext('2d');
-
-    // Provide a callback method to redraw the data set view canvas
-    function redraw_datasetview(selected) {
-        // Clear data set view canvas
-        datasetview_ctx.fillStyle = "rgb(0,0,0)";
-        datasetview_ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
-        // Add red out of bounds pixels 
-        var xSpan = (canvasWidth * canvasHeight) % data_xfilter_size;
-        var x = canvasWidth - xSpan;
-        var y = canvasHeight - 1;
-        datasetview_ctx.fillStyle = "rgb(255, 0, 0)";
-        datasetview_ctx.fillRect(x, y, xSpan, 1);
-
-
-        // Add: draw white pixel for each active element
-        datasetview_ctx.fillStyle = "rgb(255,255,255)";
-        selected.forEach(function(d) {
-            var x = d.index % canvasWidth;
-            var y = Math.floor(d.index / canvasWidth)
-            datasetview_ctx.fillRect(x, y, 1, 1);
-        });
-    }
-
-    return redraw_datasetview;
-}
-
-
-// WORM PETRI DISH VISUALIZATION CODE
-//////////////
-var wcon_path;
-
-var num_worms_visualized = 10;
-
-var spermatozoa = d3.range(XFILTER_PARAMS.worm_petri_dish.MAX_WORMS_VISUALIZED).map(function() {
-    var x = Math.random() * XFILTER_PARAMS.worm_petri_dish.width,
-        y = Math.random() * XFILTER_PARAMS.worm_petri_dish.height;
-    return {
-        vx: Math.random() * 2 - 1,
-        vy: Math.random() * 2 - 1,
-        path: d3.range(XFILTER_PARAMS.worm_petri_dish.m).map(function() {
-            return [x, y];
-        }),
-        count: 0
-    };
+    // Create the crossfilter
+    create_crossfilter(data_rows);
 });
-
-var svg = d3.select("#wormVisualization").selectAll("svg")
-    .attr("width", XFILTER_PARAMS.worm_petri_dish.width)
-    .attr("height", XFILTER_PARAMS.worm_petri_dish.height);
-
-var g = svg.selectAll("g")
-    .data(spermatozoa)
-    .enter().append("g");
-
-var head = g.append("ellipse")
-    .attr("rx", 6.5)
-    .attr("ry", 4);
-
-g.append("path")
-    .datum(function(d) {
-        return d.path.slice(0, 3);
-    })
-    .attr("class", "mid");
-
-g.append("path")
-    .datum(function(d) {
-        return d.path;
-    })
-    .attr("class", "tail");
-
-var tail = g.selectAll("path");
-
-d3.timer(function() {
-    for (var i = -1; ++i < num_worms_visualized;) {
-        var spermatozoon = spermatozoa[i],
-            path = spermatozoon.path,
-            dx = spermatozoon.vx,
-            dy = spermatozoon.vy,
-            x = path[0][0] += dx,
-            y = path[0][1] += dy,
-            speed = Math.sqrt(dx * dx + dy * dy),
-            count = speed * 10,
-            k1 = -5 - speed / 3;
-
-        // Bounce off the walls.
-        if (x < 0 || x > XFILTER_PARAMS.worm_petri_dish.width) {
-            spermatozoon.vx *= -1;
-        }
-        if (y < 0 || y > XFILTER_PARAMS.worm_petri_dish.height) {
-            spermatozoon.vy *= -1;
-        }
-
-        // Swim!
-        for (var j = 0; ++j < XFILTER_PARAMS.worm_petri_dish.m;) {
-            var vx = x - path[j][0],
-                vy = y - path[j][1],
-                k2 = Math.sin(((spermatozoon.count += count) + j * 3) / 300) / speed;
-            path[j][0] = (x += dx / speed * k1) - dy * k2;
-            path[j][1] = (y += dy / speed * k1) + dx * k2;
-            speed = Math.sqrt((dx = vx) * dx + (dy = vy) * dy);
-        }
-    }
-
-    head.attr("transform", headTransform);
-    tail.attr("d", tailPath);
-});
-
-function headTransform(d) {
-    return "translate(" + d.path[0] + ")rotate(" + Math.atan2(d.vy, d.vx) * (180 / Math.PI) + ")";
-}
-
-function tailPath(d) {
-    return "M" + d.join("L");
-}
-//////////////
-
-
-
-// Get the data (both the worms data and one WCON file)
-d3.csv(XFILTER_PARAMS.data_file, function(error1, data_rows) {
-    d3.json("smaller.wcon", function(error2, wcon_obj) {
-
-        if (error1) { console.log(error1); }
-        if (error2) { console.log(error2); }
-
-        // Set the titles in the report
-        document.title = XFILTER_PARAMS.report_title;
-        report_title.innerHTML = XFILTER_PARAMS.report_title;
-    
-        load_wcon_path(wcon_obj);
-        
-        // Create the crossfilter
-        create_crossfilter(data_rows);
-    })
-});
-
-function load_wcon_path(wcon_obj) {
-    wcon_path = wcon_obj;
-    var wcon_path_x = wcon_obj.data[0].x[0];
-    var wcon_path_y = wcon_obj.data[0].y[0];
-
-
-}
     
     
 function create_crossfilter(data_rows) {
     // Array that holds the currently selected "in-filter" selected records
-    var selected = [];
+    var rows_selected = [];
 
     // A little coercion, since the CSV is untyped.
     data_rows.forEach(function(d, i) {
@@ -279,7 +41,7 @@ function create_crossfilter(data_rows) {
 
     // Create the crossfilter for the relevant dimensions and groups.
     var data_xfilter = crossfilter(data_rows);
-    var all = data_xfilter.groupAll();
+    let crossfilter_all = data_xfilter.groupAll();
     var datasetview_ctx;
 
     // date dimension
@@ -612,7 +374,7 @@ function create_crossfilter(data_rows) {
         })
     }    
     
-    selected = date.top(Infinity);
+    rows_selected = date.top(Infinity);
     var redraw_datasetview = createDataSetView(data_xfilter.size(), date); 
 
     var delay_min = d3.min(data_rows, function(d) { return +d.delay});
@@ -703,25 +465,26 @@ function create_crossfilter(data_rows) {
         // chart function from barChart
         chart.each(render); 
         list.each(render);
-        d3.select("#active").text(formatWholeNumber(all.value()));
+        d3.select("#active").text(formatWholeNumber(crossfilter_all.value()));
 
+        let max_worms = XFILTER_PARAMS.worm_petri_dish.MAX_WORMS_VISUALIZED;
         // Change the number of worms visualized to either the number of results
         // or the maximum the dish will hold, whichever is smaller.
-        num_worms_visualized = Math.min(all.value(), XFILTER_PARAMS.worm_petri_dish.MAX_WORMS_VISUALIZED);
+        num_worms_visualized = Math.min(crossfilter_all.value(), max_worms);
 
-        // Update the "selected" array, which holds
+        // Update the "rows_selected" array, which holds
         // the currently selected (in-filter) items
-        selected = date.top(Infinity);
+        rows_selected = date.top(Infinity);
 
         // Set the selected status in the data source ("data_rows")
         data_rows.forEach(function(d) {
             d.selected = false;
         }); // first clear all
-        selected.forEach(function(d) {
+        rows_selected.forEach(function(d) {
             data_rows[d.index].selected = true;
         }) // then set some 
 
-        redraw_datasetview(selected);
+        redraw_datasetview(rows_selected);
     }
 
 
