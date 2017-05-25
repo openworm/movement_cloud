@@ -13,6 +13,13 @@ function parseDate(d) {  // (parseDate is like d3.time.format, but faster)
         d.substring(6, 8));
 }
 
+// Various formatters.
+var formatWholeNumber = d3.format(",d"),
+    formatChange = d3.format("+,d"),
+    formatDate = d3.time.format("%B %d, %Y"),
+    formatDateWithDay = d3.time.format("%a %B %d, %Y"),
+    formatTime = d3.time.format("%I:%M %p");
+
 function valueFormatted(d, i) {
     // Prepare a given value for display
 
@@ -38,6 +45,102 @@ function valueFormatted(d, i) {
 // http://bl.ocks.org/mbostock/1093025
 d3.select(self.frameElement).transition().duration(500).style("height",
                                                               "790px");
+
+
+function createDataSetView(data_xfilter_size, date) {
+    // DATASET VIEW
+    // Create canvas element that holds one record per canvas pixel
+    // Make the width 2 * the square root of the total data size, so the box is
+    // at most 1:2 rectangle.  Squish the box so it's a thin vertical
+    // rectangle if the client window width is smaller than this, though.
+    var canvasWidth = Math.min(d3.select("body").property("clientWidth"),
+                               2 * Math.ceil(Math.sqrt(data_xfilter_size)));
+    var canvasHeight = Math.ceil(data_xfilter_size / canvasWidth);
+    var canvas, datasetview_ctx, currentLabel;
+
+    // Get reference to canvas div
+    var datasetviewDiv = d3.select("#datasetview");
+
+    // Add div to hold description of canvas content
+    datasetviewDiv.select(".title")
+        .html("<span>Dataset View – Each of the " +
+              formatWholeNumber(data_xfilter_size) +
+              " pixels represents a data record.</span>")
+
+    // Add canvas element and mouse handler
+    canvas = datasetviewDiv.selectAll("canvas")
+        .attr("width", canvasWidth)
+        .attr("height", canvasHeight)
+        .style("width", canvasWidth + "px")
+        .style("height", canvasHeight + "px")
+        .on("mousemove", function() {
+            var mouse = d3.mouse(canvas.node()),
+                x = Math.round(mouse[0]),
+                y = Math.round(mouse[1]),
+                index = y * canvasWidth + x;
+
+            // Event handler delivers mouse mousemove events outside the
+            // canvas sometimes (don't know why); therefore, ensure that only
+            // valid x and y values are processed
+            if (x < 0 || x > canvasWidth - 1 || y < 0 || y > canvasHeight - 1) {
+                currentLabel.html("&nbsp;");
+                return;
+            }
+            // then check if the index is out of bounds
+            // (the right part of the last row is NOT part of the dataset)        
+            if (index > data_xfilter_size - 1) {
+                currentLabel.html("&nbsp;");
+                return;
+            }
+
+            var item = data_rows[index],
+                dateText = formatDateWithDay(item.date),
+                timeText = formatTime(item.date);
+
+            var labelText = labelText = "Selected: " + item.selected + ", Date: " + dateText + " " + timeText + ", Delay: ";
+            labelText += item.delay + ", Distance: " + item.distance + ", Route: " + item.origin + "-->" + item.destination + " (idx: " + index + ")";
+            currentLabel
+                .attr("class", function(d) {
+                    return item.selected ? "selected" : "notSelected"
+                })
+                .text(labelText);
+        })
+        .on("mouseleave", function() {
+            currentLabel.html("&nbsp;");
+        })
+
+    // Create label for mousemove
+    currentLabel = datasetviewDiv.append("label").html("&nbsp;");
+
+    // Get context to canvas elem
+    datasetview_ctx = canvas.node().getContext('2d');
+
+    // Provide a callback method to redraw the data set view canvas
+    function redraw_datasetview(selected) {
+        // Clear data set view canvas
+        datasetview_ctx.fillStyle = "rgb(0,0,0)";
+        datasetview_ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+        // Add red out of bounds pixels 
+        var xSpan = (canvasWidth * canvasHeight) % data_xfilter_size;
+        var x = canvasWidth - xSpan;
+        var y = canvasHeight - 1;
+        datasetview_ctx.fillStyle = "rgb(255, 0, 0)";
+        datasetview_ctx.fillRect(x, y, xSpan, 1);
+
+
+        // Add: draw white pixel for each active element
+        datasetview_ctx.fillStyle = "rgb(255,255,255)";
+        selected.forEach(function(d) {
+            var x = d.index % canvasWidth;
+            var y = Math.floor(d.index / canvasWidth)
+            datasetview_ctx.fillRect(x, y, 1, 1);
+        });
+    }
+
+    return redraw_datasetview;
+}
+
 
 // WORM PETRI DISH VISUALIZATION CODE
 //////////////
@@ -161,14 +264,6 @@ function create_crossfilter(data_rows) {
     // Array that holds the currently selected "in-filter" selected records
     var selected = [];
 
-    // Various formatters.
-    var formatWholeNumber = d3.format(",d"),
-        formatChange = d3.format("+,d"),
-        formatDate = d3.time.format("%B %d, %Y"),
-        formatDateWithDay = d3.time.format("%a %B %d, %Y"),
-        formatTime = d3.time.format("%I:%M %p");
-
-
     // A little coercion, since the CSV is untyped.
     data_rows.forEach(function(d, i) {
         d.index = i;
@@ -185,6 +280,7 @@ function create_crossfilter(data_rows) {
     // Create the crossfilter for the relevant dimensions and groups.
     var data_xfilter = crossfilter(data_rows);
     var all = data_xfilter.groupAll();
+    var datasetview_ctx;
 
     // date dimension
     var date = data_xfilter.dimension(function(d) {
@@ -515,76 +611,9 @@ function create_crossfilter(data_rows) {
             return days[dayNumbers[d]].state;
         })
     }    
-                                     
-    // DATASET VIEW
-    // Create canvas element that holds one record per canvas pixel
-
-    // Make the width 2 * the square root of the total data size, so the box is
-    // at most 1:2 rectangle.  Squish the box so it's a thin vertical
-    // rectangle if the client window width is smaller than this, though.
-    var canvasWidth = Math.min(d3.select("body").property("clientWidth"),
-                               2 * Math.ceil(Math.sqrt(data_xfilter.size())));
-    var canvasHeight = Math.ceil(data_xfilter.size() / canvasWidth);
-    var canvas, ctx, currentLabel;
-
+    
     selected = date.top(Infinity);
-
-    // Get reference to canvas div
-    var datasetviewDiv = d3.select("#datasetview");
-
-    // Add div to hold description of canvas content
-    datasetviewDiv.select(".title")
-        .html("<span>Dataset View – Each of the " +
-              formatWholeNumber(data_xfilter.size()) +
-              " pixels represents a data record.</span>")
-
-    // Add canvas element and mouse handler
-    canvas = datasetviewDiv.selectAll("canvas")
-        .attr("width", canvasWidth)
-        .attr("height", canvasHeight)
-        .style("width", canvasWidth + "px")
-        .style("height", canvasHeight + "px")
-        .on("mousemove", function() {
-            var mouse = d3.mouse(canvas.node()),
-                x = Math.round(mouse[0]),
-                y = Math.round(mouse[1]),
-                index = y * canvasWidth + x;
-
-            // Event handler delivers mouse mousemove events outside the
-            // canvas sometimes (don't know why); therefore, ensure that only
-            // valid x and y values are processed
-            if (x < 0 || x > canvasWidth - 1 || y < 0 || y > canvasHeight - 1) {
-                currentLabel.html("&nbsp;");
-                return;
-            }
-            // then check if the index is out of bounds
-            // (the right part of the last row is NOT part of the dataset)        
-            if (index > data_xfilter.size() - 1) {
-                currentLabel.html("&nbsp;");
-                return;
-            }
-
-            var item = data_rows[index],
-                dateText = formatDateWithDay(item.date),
-                timeText = formatTime(item.date);
-
-            var labelText = labelText = "Selected: " + item.selected + ", Date: " + dateText + " " + timeText + ", Delay: ";
-            labelText += item.delay + ", Distance: " + item.distance + ", Route: " + item.origin + "-->" + item.destination + " (idx: " + index + ")";
-            currentLabel
-                .attr("class", function(d) {
-                    return item.selected ? "selected" : "notSelected"
-                })
-                .text(labelText);
-        })
-        .on("mouseleave", function() {
-            currentLabel.html("&nbsp;");
-        })
-
-    // Create label for mousemove
-    currentLabel = datasetviewDiv.append("label").html("&nbsp;");
-
-    // Get context to canvas elem
-    ctx = canvas.node().getContext('2d');
+    var redraw_datasetview = createDataSetView(data_xfilter.size(), date); 
 
     var delay_min = d3.min(data_rows, function(d) { return +d.delay});
     var delay_max = d3.max(data_rows, function(d) { return +d.delay});
@@ -692,25 +721,7 @@ function create_crossfilter(data_rows) {
             data_rows[d.index].selected = true;
         }) // then set some 
 
-        // Clear canvas
-        ctx.fillStyle = "rgb(0,0,0)";
-        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
-        // Add red out of bounds pixels 
-        var xSpan = (canvasWidth * canvasHeight) % data_xfilter.size();
-        var x = canvasWidth - xSpan;
-        var y = canvasHeight - 1;
-        ctx.fillStyle = "rgb(255, 0, 0)";
-        ctx.fillRect(x, y, xSpan, 1);
-
-
-        // Add: draw white pixel for each active element
-        ctx.fillStyle = "rgb(255,255,255)";
-        selected.forEach(function(d) {
-            var x = d.index % canvasWidth;
-            var y = Math.floor(d.index / canvasWidth)
-            ctx.fillRect(x, y, 1, 1);
-        })
+        redraw_datasetview(selected);
     }
 
 

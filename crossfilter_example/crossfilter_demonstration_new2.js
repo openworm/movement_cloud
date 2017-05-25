@@ -1,6 +1,13 @@
+// Crossfilter Demonstration
+//
+// By date, hour, and two other variables
+//
+"use strict";
 
-// Like d3.timeFormat, but faster.
+
 function parseDate(d) {
+    // Parse the date.  Assume it is the year 2001.
+    // Like d3.timeFormat, but faster.
     return new Date(2001,
         d.substring(0, 2) - 1,
         d.substring(2, 4),
@@ -10,12 +17,33 @@ function parseDate(d) {
 
 // Various formatters.
 const formatNumber = d3.format(',d');
-
 const formatChange = d3.format('+,d');
 const formatDate = d3.timeFormat('%B %d, %Y');
 const formatTime = d3.timeFormat('%I:%M %p');
 
+function valueFormatted(d, i) {
+    // Prepare a given value for display
 
+    var cur_item = XFILTER_PARAMS.display_fields[i];
+    var value = d[cur_item.data_field];
+    var value_formatted;
+
+    if("format_string" in cur_item) {
+        value_formatted =
+            d3.format(cur_item.format_string)(value);
+    } else {
+        value_formatted = value;
+    }
+
+    if("suffix" in cur_item) {
+        value_formatted += cur_item.suffix;
+    }
+
+    return value_formatted;
+}
+
+
+// Get the data
 d3.csv(XFILTER_PARAMS.data_file, (error, flights) => {
     if(error) { console.log(error); }
 
