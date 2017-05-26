@@ -112,9 +112,12 @@ function create_crossfilter(data_rows) {
             });
 */
 
+    // Render the initial results lists
+    let resultsList = get_resultsList(date_dimension);
+
     // Render the initial lists.
-    result_row_list = d3.selectAll('.result_row_list')
-        .data([flightList]);
+    //result_row_list = d3.selectAll('.result_row_list')
+    //    .data([flightList]);
 
     // Render the total.
     d3.selectAll('#total')

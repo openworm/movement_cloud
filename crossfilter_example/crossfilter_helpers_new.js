@@ -431,7 +431,7 @@ function get_resultsList(date_dimension) {
         // Results list
         // Nest the results by date
         var resultsByDate = d3.nest().key(function(d) {
-            return d3.time.day(d.date);
+            return d3.timeDay(d.date);
             })
             // Limit results shown to at most max_results
             .entries(date_dimension.top(XFILTER_PARAMS.max_results));
