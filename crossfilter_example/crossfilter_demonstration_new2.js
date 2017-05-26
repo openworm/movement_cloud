@@ -114,6 +114,7 @@ function create_crossfilter(data_rows) {
 
     // Render the initial results lists
     let resultsList = get_resultsList(date_dimension);
+    result_row_list = d3.selectAll(".result_row_list").data([resultsList]);
 
     // Render the initial lists.
     //result_row_list = d3.selectAll('.result_row_list')
