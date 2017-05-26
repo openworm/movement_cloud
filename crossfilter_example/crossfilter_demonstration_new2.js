@@ -32,7 +32,7 @@ function create_crossfilter(data_rows) {
     // Create the crossfilter for the relevant dimensions and groups.
     const data_xfilter = crossfilter(data_rows);
 
-    const all = data_xfilter.groupAll();
+    const xfilter_all = data_xfilter.groupAll();
     const date_dimension = data_xfilter.dimension(d => d.date);
     const dates = date_dimension.group(d3.timeDay);
     const hour = data_xfilter.dimension(d => d.date.getHours() + d.date.getMinutes() / 60);
@@ -55,8 +55,15 @@ function create_crossfilter(data_rows) {
     function renderAll() {
         chart_DOM_elements.each(render);
         result_row_list.each(render);
-        d3.select('#active').text(formatWholeNumber(all.value()));
+        d3.select('#active').text(formatWholeNumber(xfilter_all.value()));
+
+        redraw_datasetview();
     }
+
+    // Create the datasetview widget, and obtain a callback function that
+    // when called, refreshes the widget.
+    var redraw_datasetview = createDataSetView(data_xfilter.size(), data_rows, date_dimension);
+
 
     var delay_min = d3.min(data_rows, function(d) { return +d.delay});
     var delay_max = d3.max(data_rows, function(d) { return +d.delay});

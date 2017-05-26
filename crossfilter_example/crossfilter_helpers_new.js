@@ -38,7 +38,7 @@ function valueFormatted(d, i) {
 }
 
 
-function createDataSetView(data_xfilter_size, date) {
+function createDataSetView(data_xfilter_size, data_rows, date_dimension) {
     // DATASET VIEW
     // Create canvas element that holds one record per canvas pixel
     // Make the width 2 * the square root of the total data size, so the box is
@@ -107,7 +107,19 @@ function createDataSetView(data_xfilter_size, date) {
     datasetview_ctx = canvas.node().getContext('2d');
 
     // Provide a callback method to redraw the data set view canvas
-    function redraw_datasetview(rows_selected) {
+    function redraw_datasetview() {
+        // Update the "rows_selected" array, which holds
+        // the currently selected (in-filter) items
+        let rows_selected = date_dimension.top(Infinity);
+
+        // Set the selected status in the data source ("data_rows")
+        data_rows.forEach(function(d) {
+            d.selected = false;
+        }); // first clear all
+        rows_selected.forEach(function(d) {
+            data_rows[d.index].selected = true;
+        }) // then set some 
+
         // Clear data set view canvas
         datasetview_ctx.fillStyle = "rgb(0,0,0)";
         datasetview_ctx.fillRect(0, 0, canvasWidth, canvasHeight);
