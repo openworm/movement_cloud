@@ -102,7 +102,7 @@ function create_crossfilter(data_rows) {
     // We also listen to the chart's brush events to update the display.
     chart_DOM_elements = d3.selectAll('.chart')
         .data(charts)
-            .each(function(chart) { console.log(chart); });
+//            .each(function(chart) { console.log(chart); });
 
 /*
                 chart
@@ -115,10 +115,6 @@ function create_crossfilter(data_rows) {
     // Render the initial results lists
     let resultsList = get_resultsList(date_dimension);
     result_row_list = d3.selectAll(".result_row_list").data([resultsList]);
-
-    // Render the initial lists.
-    //result_row_list = d3.selectAll('.result_row_list')
-    //    .data([flightList]);
 
     // Render the total.
     d3.selectAll('#total')

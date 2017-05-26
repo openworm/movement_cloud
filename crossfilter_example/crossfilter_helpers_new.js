@@ -468,12 +468,13 @@ function get_resultsList(date_dimension) {
                     return formatTime(d.date);
                 });
     
+            
             results_row_all.append("div")
-                .attr("class", "display_field" + toString(0 + 1))
+                .attr("class", "display_field" + String(0 + 1))
                 .text(function(d) { return valueFormatted(d, 0)});
     
             results_row_all.append("div")
-                .attr("class", "display_field" + toString(1 + 1))
+                .attr("class", "display_field" + String(1 + 1))
                 .text(function(d) { return valueFormatted(d, 1)});
     
             results_row_all.append("div")
