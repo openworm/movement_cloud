@@ -80,11 +80,8 @@ function create_crossfilter(data_rows) {
     var dayNumber = data_xfilter.dimension(function(d) {
         return d.date.getDay();
     });
-    var dayNumbers = dayNumber.group(function(d) {
-        return d;
-    });
 
-    createRadioButtons(dayNumber, renderAll);
+    let updateDaySelection = createRadioButtons(dayNumber, renderAll);
 
     rows_selected = date_dimension.top(Infinity);
     // Create the datasetview widget, and obtain a callback function that

@@ -60,6 +60,8 @@ function create_crossfilter(data_rows) {
         redraw_datasetview();
     }
 
+    let updateDaySelection = createRadioButtons(data_xfilter, renderAll);
+
     // Create the datasetview widget, and obtain a callback function that
     // when called, refreshes the widget.
     var redraw_datasetview = createDataSetView(data_xfilter.size(), data_rows, date_dimension);
@@ -145,60 +147,4 @@ function create_crossfilter(data_rows) {
         renderAll();
     };
 
-    function flightList(div) {
-        // Results List
-
-        // Group by date
-        const data_rowsByDate = d3.nest().key(d => d3.timeDay(d.date))
-            // Limit to 40 results
-            .entries(date_dimension.top(XFILTER_PARAMS.max_results));
-
-        div.each(function() {
-            const date = d3.select(this).selectAll('.date')
-                .data(data_rowsByDate, d => d.key);
-
-            date.exit().remove();
-
-            date.enter().append('div')
-                .attr('class', 'date')
-                .append('div')
-                .attr('class', 'day')
-                .text(d => formatDate(d.values[0].date))
-                .merge(date);
-
-
-            const flight = date.order().selectAll('.flight')
-                .data(d => d.values, d => d.index);
-
-            flight.exit().remove();
-
-            const flightEnter = flight.enter().append('div')
-                .attr('class', 'flight');
-
-            flightEnter.append('div')
-                .attr('class', 'time')
-                .text(d => formatTime(d.date));
-
-            flightEnter.append('div')
-                .attr('class', 'origin')
-                .text(d => d.origin);
-
-            flightEnter.append('div')
-                .attr('class', 'destination')
-                .text(d => d.destination);
-
-            flightEnter.append('div')
-                .attr('class', 'distance')
-                .text(d => `${formatWholeNumber(d.distance)} mi.`);
-
-            flightEnter.append('div')
-                .attr('class', 'delay')
-                .classed('early', d => d.delay < 0)
-                .text(d => `${formatChange(d.delay)} min.`);
-
-            flightEnter.merge(flight);
-
-            flight.order();
-        });
-    }
 }

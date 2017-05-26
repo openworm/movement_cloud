@@ -146,7 +146,13 @@ function createDataSetView(data_xfilter_size, data_rows, date_dimension) {
 
 
 ///////////////////////////////////////////////////////
-function createRadioButtons(dayNumber, renderAll) {
+function createRadioButtons(data_xfilter, renderAll) {
+
+    // Add new day dimension
+    var dayNumber = data_xfilter.dimension(function(d) {
+        return d.date.getDay();
+    });
+
     // Date selection radio buttons
     // Day selection variables
     var days = {
@@ -291,20 +297,10 @@ function createRadioButtons(dayNumber, renderAll) {
 
     // Add radio button to each span
     radioSpan.append("input")
-        .attr({
-            type: "radio",
-            name: function(d) {
-                return d.name
-            },
-        })
-        .property({
-            checked: function(d) {
-                return d.state
-            },
-            value: function(d) {
-                return d.value
-            }
-        });
+        .attr("type", "radio")
+        .attr("name", function(d) { return d.name; })
+        .property("checked", function(d) { return d.state; })
+        .property("value", function(d) { return d.value; });
 
     // Add radio button label
     radioSpan.append("label")
@@ -321,20 +317,10 @@ function createRadioButtons(dayNumber, renderAll) {
     // Add checkbox to each span
     checkboxSpan
         .append("input")
-        .attr({
-            type: "checkbox",
-            name: function(d) {
-                return d.name
-            }
-        })
-        .property({
-            value: function(d) {
-                return d.value
-            },
-            checked: function(d) {
-                return d.state
-            }
-        })
+        .attr("type", "checkbox")
+        .attr("name", function(d) { return d.name; })
+        .property("checked", function(d) { return d.state; })
+        .property("value", function(d) { return d.value; });
 
     // Add checkbox label
     checkboxSpan
