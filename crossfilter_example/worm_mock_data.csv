@@ -1,4 +1,4 @@
-date,delay,distance,origin,destination
+datetime,delay,distance,origin,destination
 01111135,1151.86,1014.6,N2,-N/A-
 01111136,1222.2,1613.83,N2,-N/A-
 01111136,1219.76,278.922,N2,-N/A-

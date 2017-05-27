@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset='utf-8'>
-        <title>Worm Crossfilter Demonstration</title>
+        <title></title>
 
         <link rel="stylesheet" href="worm_filter_new.css">
         <script src="crossfilter_parameters.js"></script>
@@ -10,7 +10,7 @@
         <script src="d3.v4.min.js" defer></script>
         <script src="babel.min.js" defer></script>
         <script src="crossfilter_bar_chart_new.js" defer></script>
-        <script src="crossfilter_helpers_new.js?version=4" defer></script>
+        <script src="crossfilter_helpers_new.js?version=5" defer></script>
         <script src="crossfilter_demonstration_new2.js?version=4" defer></script>
     </head>
 </html>
@@ -22,16 +22,16 @@
         <a href="javascript:resetAll()" class="reset" style="margin-left: -10px; margin-bottom: 20px">Reset all</a>
     </div>
     <div id='charts'>
-        <div id='hour-chart' class='chart'>
+        <div id='chart1' class='chart'>
             <div class='title'>Time of Day</div>
         </div>
-        <div id='delay-chart' class='chart'>
+        <div id='chart2' class='chart'>
             <div class='title'>Arrival Delay (min.)</div>
         </div>
-        <div id='distance-chart' class='chart'>
+        <div id='chart3' class='chart'>
             <div class='title'>Distance (mi.)</div>
         </div>
-        <div id='date-chart' class='chart'>
+        <div id='chart4' class='chart'>
             <div class='title'>Date</div>
         </div>
     </div>
@@ -43,7 +43,7 @@
     </div>
 
     <aside id='totals'>
-        <span id='active'>-</span> of <span id='total'>-</span> flights selected.
+        <span id='active'>-</span> of <span id='total'>-</span> experiments selected.
     </aside>
 
     <div id='lists'>

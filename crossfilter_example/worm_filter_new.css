@@ -13,7 +13,7 @@ footer {
     font-size: 12px;
 }
 h1 {
-    font-size: 96px;
+    font-size: 56px;
     margin-top: .3em;
     margin-bottom: 0;
 }
@@ -74,16 +74,16 @@ h2 {
     fill: #eee;
     stroke: #666;
 }
-#hour-chart {
+#chart1 {
     width: 260px;
 }
-#delay-chart {
+#chart2 {
     width: 230px;
 }
-#distance-chart {
+#chart3 {
     width: 420px;
 }
-#date-chart {
+#chart4 {
     width: 920px;
 }
 #datasetview {

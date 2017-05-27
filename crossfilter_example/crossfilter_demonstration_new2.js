@@ -4,7 +4,6 @@
 //
 "use strict";
 
-
 // Get the data
 d3.csv(XFILTER_PARAMS.data_file, (error, data_rows) => {
     if(error) { console.log(error); }
@@ -17,13 +16,15 @@ d3.csv(XFILTER_PARAMS.data_file, (error, data_rows) => {
     // A little coercion, since the CSV is untyped.
     data_rows.forEach((d, i) => {
         d.index = i;
-        d.date = parseDate(d.date);
+        d.datetime = parseDate(d.datetime);
         d.delay = +d.delay;
         d.distance = +d.distance;
+        //d.destination = d.destination + "HAHA";
     });
 
     create_crossfilter(data_rows);
 })
+
 
 function create_crossfilter(data_rows) {
     // Array that holds the currently selected "in-filter" selected records
@@ -33,14 +34,14 @@ function create_crossfilter(data_rows) {
     const data_xfilter = crossfilter(data_rows);
 
     const xfilter_all = data_xfilter.groupAll();
-    const date_dimension = data_xfilter.dimension(d => d.date);
-    const dates = date_dimension.group(d3.timeDay);
-    const hour = data_xfilter.dimension(d => d.date.getHours() + d.date.getMinutes() / 60);
-    const hours = hour.group(Math.floor);
-    const delay = data_xfilter.dimension(d => d.delay);
-    const delays = delay.group(d => Math.floor(d / 10) * 10);
-    const distance = data_xfilter.dimension(d => d.distance);
-    const distances = distance.group(d => Math.floor(d / 50) * 50);
+    const datetime_dimension = data_xfilter.dimension(d => d.datetime);
+    const dates = datetime_dimension.group(d3.timeDay);
+    const hour_dimension = data_xfilter.dimension(d => d.datetime.getHours() + d.datetime.getMinutes() / 60);
+    const hours = hour_dimension.group(Math.floor);
+    const delay_dimension = data_xfilter.dimension(d => d.delay);
+    const delays = delay_dimension.group(d => Math.floor(d / 10) * 10);
+    const distance_dimension = data_xfilter.dimension(d => d.distance);
+    const distances = distance_dimension.group(d => Math.floor(d / 50) * 50);
 
     let result_row_list;
     let chart_DOM_elements;
@@ -64,7 +65,7 @@ function create_crossfilter(data_rows) {
 
     // Create the datasetview widget, and obtain a callback function that
     // when called, refreshes the widget.
-    var redraw_datasetview = createDataSetView(data_xfilter.size(), data_rows, date_dimension);
+    var redraw_datasetview = createDataSetView(data_xfilter.size(), data_rows, datetime_dimension);
 
 
     var delay_min = d3.min(data_rows, function(d) { return +d.delay});
@@ -76,28 +77,28 @@ function create_crossfilter(data_rows) {
     const charts = [
 
         barChart(renderAll)
-            .dimension(hour)
+            .dimension(hour_dimension)
             .group(hours)
             .x(d3.scaleLinear()
                 .domain([0, 24])
                 .rangeRound([0, 10 * 24])), // 10 pixels per bar, 240 pixels total
 
         barChart(renderAll)
-            .dimension(delay)
+            .dimension(delay_dimension)
             .group(delays)
             .x(d3.scaleLinear()
                 .domain([delay_min, delay_max])
                 .rangeRound([0, 10 * 21])), // 21 delay groups, 210 pixels total
 
         barChart(renderAll)
-            .dimension(distance)
+            .dimension(distance_dimension)
             .group(distances)
             .x(d3.scaleLinear()
                 .domain([distance_min, distance_max])
                 .rangeRound([0, 10 * 40])), // 40 distance groups
 
         barChart(renderAll)
-            .dimension(date_dimension)
+            .dimension(datetime_dimension)
             .group(dates)
             .round(d3.timeDay.round)
             .x(d3.scaleTime()
@@ -122,7 +123,7 @@ function create_crossfilter(data_rows) {
 */
 
     // Render the initial results lists
-    let resultsList = get_resultsList(date_dimension);
+    let resultsList = get_resultsList(datetime_dimension);
     result_row_list = d3.selectAll(".result_row_list").data([resultsList]);
 
     // Render the total.

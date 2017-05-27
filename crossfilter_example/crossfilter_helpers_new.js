@@ -38,7 +38,7 @@ function valueFormatted(d, i) {
 }
 
 
-function createDataSetView(data_xfilter_size, data_rows, date_dimension) {
+function createDataSetView(data_xfilter_size, data_rows, datetime_dimension) {
     // DATASET VIEW
     // Create canvas element that holds one record per canvas pixel
     // Make the width 2 * the square root of the total data size, so the box is
@@ -84,11 +84,9 @@ function createDataSetView(data_xfilter_size, data_rows, date_dimension) {
                 return;
             }
 
-            var item = data_rows[index],
-                dateText = formatDateWithDay(item.date),
-                timeText = formatTime(item.date);
+            var item = data_rows[index];
 
-            var labelText = labelText = "Selected: " + item.selected + ", Date: " + dateText + " " + timeText + ", Delay: ";
+            var labelText = labelText = "Selected: " + item.selected + ", Date: " + formatDateWithDay(item.datetime) + " " + formatTime(item.datetime) + ", Delay: ";
             labelText += item.delay + ", Distance: " + item.distance + ", Route: " + item.origin + "-->" + item.destination + " (idx: " + index + ")";
             currentLabel
                 .attr("class", function(d) {
@@ -110,7 +108,7 @@ function createDataSetView(data_xfilter_size, data_rows, date_dimension) {
     function redraw_datasetview() {
         // Update the "rows_selected" array, which holds
         // the currently selected (in-filter) items
-        let rows_selected = date_dimension.top(Infinity);
+        let rows_selected = datetime_dimension.top(Infinity);
 
         // Set the selected status in the data source ("data_rows")
         data_rows.forEach(function(d) {
@@ -150,7 +148,7 @@ function createRadioButtons(data_xfilter, renderAll) {
 
     // Add new day dimension
     var dayNumber = data_xfilter.dimension(function(d) {
-        return d.date.getDay();
+        return d.datetime.getDay();
     });
 
     // Date selection radio buttons
@@ -396,7 +394,7 @@ function createRadioButtons(data_xfilter, renderAll) {
                 return days[day].state;
             })
 
-        // BoE: process selected days
+        // Process selected days
         var workDayCount = workDays.reduce(function(p, c) {
             return (days[c].state) ? p + 1 : p
         }, 0);
@@ -423,66 +421,69 @@ function createRadioButtons(data_xfilter, renderAll) {
 }
 
 ////////////////////////////////////////////////
-function get_resultsList(date_dimension) {
+function get_resultsList(datetime_dimension) {
 
     function resultsList(div) {
         // Results list
         // Nest the results by date
         var resultsByDate = d3.nest().key(function(d) {
-            return d3.timeDay(d.date);
+            return d3.timeDay(d.datetime);
             })
             // Limit results shown to at most max_results
-            .entries(date_dimension.top(XFILTER_PARAMS.max_results));
+            .entries(datetime_dimension.top(XFILTER_PARAMS.max_results));
     
+        // For each day group, create a div with class = cur_results_list_group,
+        // and then create a day label div and
+        //                 the results row divs
         div.each(function() {
-            var date = d3.select(this).selectAll(".date")
+            var cur_results_list = d3.select(this).selectAll(".cur_results_list_group")
                 .data(resultsByDate, function(d) {
                     return d.key;
                 });
     
-            date.enter().append("div")
-                .attr("class", "date")
+            cur_results_list.enter().append("div")
+                .attr("class", "cur_results_list_group")
                 .append("div")
-                .attr("class", "day")
+                .attr("class", "day_group_label")
                 .text(function(d) {
-                    return formatDate(d.values[0].date);
+                    return formatDate(d.values[0].datetime);
                 });
+
+            cur_results_list.exit().remove();
     
-            date.exit().remove();
-    
-            var results_row = date.order().selectAll(".results_list_row")
+            var results_row = cur_results_list.order().selectAll(".results_list_row")
                 .data(function(d) {
                     return d.values;
                 }, function(d) {
                     return d.index;
                 });
-    
+
             var results_row_all = results_row.enter().append("div")
                 .attr("class", "results_list_row");
-    
+
             results_row_all.append("div")
                 .attr("class", "time")
                 .text(function(d) {
-                    return formatTime(d.date);
+                    return formatTime(d.datetime);
                 });
-    
-            
+
+        
             results_row_all.append("div")
-                .attr("class", "display_field" + String(0 + 1))
-                .text(function(d) { return valueFormatted(d, 0)});
-    
+                .attr("class", "display_field1")
+                .text(function(d) { return valueFormatted(d, 0); });
+
             results_row_all.append("div")
-                .attr("class", "display_field" + String(1 + 1))
-                .text(function(d) { return valueFormatted(d, 1)});
-    
+                .attr("class", "display_field2")
+                .text(function(d) { return valueFormatted(d, 1); });
+
             results_row_all.append("div")
                 .attr("class", "user_field2")
-                .text(function(d) { return valueFormatted(d, 3)});
-    
+                .text(function(d) { return valueFormatted(d, 3); });
+
             results_row_all.append("div")
                 .attr("class", "user_field1")
                 .classed("positive", function(d) { return d[XFILTER_PARAMS.display_fields[2].data_field] > 0; })
-                .text(function(d) { return valueFormatted(d, 2)});
+                .text(function(d) { return valueFormatted(d, 2); });
     
             results_row.exit().remove();
     
