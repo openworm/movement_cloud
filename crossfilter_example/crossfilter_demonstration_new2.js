@@ -32,16 +32,39 @@ function create_crossfilter(data_rows) {
 
     // Create the crossfilter for the relevant dimensions and groups.
     const data_xfilter = crossfilter(data_rows);
+    // So we can display the total count of rows selected:
+    const xfilter_all = data_xfilter.groupAll();  
 
-    const xfilter_all = data_xfilter.groupAll();
-    const datetime_dimension = data_xfilter.dimension(d => d.datetime);
-    const dates = datetime_dimension.group(d3.timeDay);
-    const hour_dimension = data_xfilter.dimension(d => d.datetime.getHours() + d.datetime.getMinutes() / 60);
-    const hours = hour_dimension.group(Math.floor);
-    const delay_dimension = data_xfilter.dimension(d => d.delay);
-    const delays = delay_dimension.group(d => Math.floor(d / 10) * 10);
-    const distance_dimension = data_xfilter.dimension(d => d.distance);
-    const distances = distance_dimension.group(d => Math.floor(d / 50) * 50);
+    let x_filter_dimension = [];
+    let x_filter_dimension_grouped = [];
+
+    for(let i=0; i<4; i++) {
+        // First get what field goes in chart i
+        let cur_data_field = XFILTER_PARAMS.charts[i];
+        // Then lookup all the stuff about that field
+        let cur_field_attrs = XFILTER_PARAMS.display_fields[cur_data_field];
+        let cur_xfilter_dim;
+        if(i==0) {
+            // DEBUG: hardcode the "hours" transformation for now, but remove
+            // this later
+            cur_xfilter_dim = data_xfilter.dimension(d => d[cur_data_field].getHours() + d[cur_data_field].getMinutes() / 60);
+        } else {
+            cur_xfilter_dim = data_xfilter.dimension(d => d[cur_data_field]);
+        }
+
+        // Add it to our list of x_filter dimensions
+        x_filter_dimension.push(cur_xfilter_dim);
+
+
+        // Add the title of the chart
+        console.log(cur_data_field, cur_field_attrs.display_name);
+        d3.selectAll("#chart"+String(i)+" .title").text(cur_field_attrs.display_name);
+    }
+    x_filter_dimension_grouped.push(x_filter_dimension[0].group(Math.floor));  // hour
+    x_filter_dimension_grouped.push(x_filter_dimension[1].group(d => Math.floor(d / 10) * 10));  // delay
+    x_filter_dimension_grouped.push(x_filter_dimension[2].group(d => Math.floor(d / 50) * 50));  // distances
+    x_filter_dimension_grouped.push(x_filter_dimension[3].group(d3.timeDay)); // dateTime
+
 
     let result_row_list;
     let chart_DOM_elements;
@@ -55,7 +78,7 @@ function create_crossfilter(data_rows) {
     // whenever the brush moves and other events like that
     function renderAll() {
         chart_DOM_elements.each(render);
-        result_row_list.each(render);
+        result_row_list   .each(render);
         d3.select('#active').text(formatWholeNumber(xfilter_all.value()));
 
         redraw_datasetview();
@@ -65,46 +88,49 @@ function create_crossfilter(data_rows) {
 
     // Create the datasetview widget, and obtain a callback function that
     // when called, refreshes the widget.
-    var redraw_datasetview = createDataSetView(data_xfilter.size(), data_rows, datetime_dimension);
+    var redraw_datasetview = createDataSetView(data_xfilter.size(), data_rows, x_filter_dimension[3]);  // DEBUG: fix hardcoding
 
+    function getExtremes(field_name) {
+        // Obtain the [min, max] scalar values from the data, for a given
+        // column (aka field)
+        const cur_min = d3.min(data_rows, function(d) { return +d[field_name]});
+        const cur_max = d3.max(data_rows, function(d) { return +d[field_name]});
 
-    var delay_min = d3.min(data_rows, function(d) { return +d.delay});
-    var delay_max = d3.max(data_rows, function(d) { return +d.delay});
+        return [cur_min, cur_max];
+    }
 
-    var distance_min = d3.min(data_rows, function(d) { return +d.distance});
-    var distance_max = d3.max(data_rows, function(d) { return +d.distance});
 
     const charts = [
 
         barChart(renderAll)
-            .dimension(hour_dimension)
-            .group(hours)
+            .dimension(x_filter_dimension[0])
+            .group(x_filter_dimension_grouped[0])
             .x(d3.scaleLinear()
                 .domain([0, 24])
                 .rangeRound([0, 10 * 24])), // 10 pixels per bar, 240 pixels total
 
         barChart(renderAll)
-            .dimension(delay_dimension)
-            .group(delays)
+            .dimension(x_filter_dimension[1])
+            .group(x_filter_dimension_grouped[1])
             .x(d3.scaleLinear()
-                .domain([delay_min, delay_max])
+                .domain(getExtremes(XFILTER_PARAMS.charts[1]))
                 .rangeRound([0, 10 * 21])), // 21 delay groups, 210 pixels total
 
         barChart(renderAll)
-            .dimension(distance_dimension)
-            .group(distances)
+            .dimension(x_filter_dimension[2])
+            .group(x_filter_dimension_grouped[2])
             .x(d3.scaleLinear()
-                .domain([distance_min, distance_max])
+                .domain(getExtremes(XFILTER_PARAMS.charts[2]))
                 .rangeRound([0, 10 * 40])), // 40 distance groups
 
         barChart(renderAll)
-            .dimension(datetime_dimension)
-            .group(dates)
+            .dimension(x_filter_dimension[3])
+            .group(x_filter_dimension_grouped[3])
             .round(d3.timeDay.round)
             .x(d3.scaleTime()
-                .domain([new Date(2001, 0, 1), new Date(2001, 3, 1)])
+                .domain(getExtremes(XFILTER_PARAMS.charts[3]))
                 .rangeRound([0, 10 * 90]))
-            .filter([new Date(2001, 1, 1), new Date(2001, 2, 1)]),    
+            //.filter([new Date(2001, 1, 1), new Date(2001, 2, 1)]),    
     ];
 
     // Given our array of charts, which we assume are in the same order as the
@@ -123,7 +149,7 @@ function create_crossfilter(data_rows) {
 */
 
     // Render the initial results lists
-    let resultsList = get_resultsList(datetime_dimension);
+    let resultsList = get_resultsList(x_filter_dimension[3]);
     result_row_list = d3.selectAll(".result_row_list").data([resultsList]);
 
     // Render the total.

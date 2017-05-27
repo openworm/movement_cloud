@@ -16,10 +16,10 @@ var formatWholeNumber = d3.format(",d"),
     formatDateWithDay = d3.timeFormat("%a %B %d, %Y"),
     formatTime = d3.timeFormat("%I:%M %p");
 
-function valueFormatted(d, i) {
+function valueFormatted(d, field_name) {
     // Prepare a given value for display
 
-    var cur_item = XFILTER_PARAMS.display_fields[i];
+    var cur_item = XFILTER_PARAMS.display_fields[field_name];
     var value = d[cur_item.data_field];
     var value_formatted;
 
@@ -461,30 +461,20 @@ function get_resultsList(datetime_dimension) {
             var results_row_all = results_row.enter().append("div")
                 .attr("class", "results_list_row");
 
-            results_row_all.append("div")
-                .attr("class", "time")
-                .text(function(d) {
-                    return formatTime(d.datetime);
-                });
+            // Loop over all columns we are supposed to display in the results
+            for(let len = XFILTER_PARAMS.results_display.length, i=0; i<len; i++) {
+                let cur_field = XFILTER_PARAMS.results_display[i];
+                results_row_all.append("div")
+                    .attr("class", "display_field" + String(i))
+                    .text(function(d) {
+                        if(cur_field == "datetime") {
+                            return formatTime(d.datetime);  // DEBUG: do not hardcode this conversion to "TIME"
+                        } else {
+                            return valueFormatted(d, cur_field);
+                        }
+                    });
+            }
 
-        
-            results_row_all.append("div")
-                .attr("class", "display_field1")
-                .text(function(d) { return valueFormatted(d, 0); });
-
-            results_row_all.append("div")
-                .attr("class", "display_field2")
-                .text(function(d) { return valueFormatted(d, 1); });
-
-            results_row_all.append("div")
-                .attr("class", "user_field2")
-                .text(function(d) { return valueFormatted(d, 3); });
-
-            results_row_all.append("div")
-                .attr("class", "user_field1")
-                .classed("positive", function(d) { return d[XFILTER_PARAMS.display_fields[2].data_field] > 0; })
-                .text(function(d) { return valueFormatted(d, 2); });
-    
             results_row.exit().remove();
     
             results_row.order();

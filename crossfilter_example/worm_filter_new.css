@@ -62,7 +62,7 @@ h2 {
 .axis text {
     font: 10px sans-serif;
 }
-.brush rect.extent {
+.brush rect.selection {
     fill: steelblue;
     fill-opacity: .125;
 }
@@ -119,16 +119,10 @@ h2 {
 #results-list .results_list_row div {
     display: inline-block;
 }
-#results-list div.user_field2,
-#results-list div.user_field1 {
-    width: 160px;
-    padding-right: 10px;
-    text-align: right;
-}
 #results-list .positive {
     color: green;
 }
-#results-list div.time {
+#results-list div.display_field0 {
     width: 100px;
     text-align: left;
 }
@@ -142,11 +136,11 @@ h2 {
     text-align: left;
     padding-left: 15px;
 }
-#results-list div.distance {
+#results-list div.display_field3 {
     width: 100px;
     text-align: left;
 }
-#results-list div.delay {
+#results-list div.display_field4 {
     width: 120px;
     padding-right: 0px;
     text-align: right;
@@ -173,6 +167,9 @@ label.selected {
 label.notSelected {
     color: lightgray;
 }
+
+
+
 ellipse {
     fill: #000;
     stroke-width: 1px;
