@@ -49,11 +49,5 @@ var XFILTER_PARAMS = {
         "distance"
     ],
     "max_results": 15,
-    "radio_buttons": "dates",
-    "worm_petri_dish": {
-        "width": 500,
-        "height": 400,
-        "MAX_WORMS_VISUALIZED": 15,
-        "m": 12
-    }
+    "radio_buttons": "dates"
 }
