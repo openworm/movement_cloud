@@ -1,6 +1,8 @@
 // WORM PETRI DISH VISUALIZATION CODE
 // sets up a d3.timer within the svg element of the wormVisualization div.
 //////////////
+let wcon_objj;
+
 d3.json("smaller.wcon", function(error, wcon_obj) {
     if (error) { console.log(error) }
 
@@ -14,20 +16,27 @@ function load_wcon_path(wcon_obj) {
     var wcon_path_x = wcon_obj.data[0].x[0];
     var wcon_path_y = wcon_obj.data[0].y[0];
 
+    wcon_obj.metadata
 
+    wcon_objj = wcon_obj;
+
+    d3.select("#metadata")
+        .append("div")
+        .attr("class", "metadata")
+        .text("METADATA:" + JSON.stringify(wcon_obj.metadata));
 }
 
 var wcon_path;
 
-var num_worms_visualized = 10;
+var num_worms_visualized = WORMVIZ_PARAMS.worm_petri_dish.NUM_WORMS;
 
-var spermatozoa = d3.range(XFILTER_PARAMS.worm_petri_dish.MAX_WORMS_VISUALIZED).map(function() {
-    var x = Math.random() * XFILTER_PARAMS.worm_petri_dish.width,
-        y = Math.random() * XFILTER_PARAMS.worm_petri_dish.height;
+var spermatozoa = d3.range(WORMVIZ_PARAMS.worm_petri_dish.NUM_WORMS).map(function() {
+    var x = Math.random() * WORMVIZ_PARAMS.worm_petri_dish.width,
+        y = Math.random() * WORMVIZ_PARAMS.worm_petri_dish.height;
     return {
         vx: Math.random() * 2 - 1,
         vy: Math.random() * 2 - 1,
-        path: d3.range(XFILTER_PARAMS.worm_petri_dish.m).map(function() {
+        path: d3.range(WORMVIZ_PARAMS.worm_petri_dish.m).map(function() {
             return [x, y];
         }),
         count: 0
@@ -35,8 +44,8 @@ var spermatozoa = d3.range(XFILTER_PARAMS.worm_petri_dish.MAX_WORMS_VISUALIZED).
 });
 
 var svg = d3.select("#wormVisualization").selectAll("svg")
-    .attr("width", XFILTER_PARAMS.worm_petri_dish.width)
-    .attr("height", XFILTER_PARAMS.worm_petri_dish.height);
+    .attr("width", WORMVIZ_PARAMS.worm_petri_dish.width)
+    .attr("height", WORMVIZ_PARAMS.worm_petri_dish.height);
 
 var g = svg.selectAll("g")
     .data(spermatozoa)
@@ -73,15 +82,15 @@ d3.timer(function() {
             k1 = -5 - speed / 3;
 
         // Bounce off the walls.
-        if (x < 0 || x > XFILTER_PARAMS.worm_petri_dish.width) {
+        if (x < 0 || x > WORMVIZ_PARAMS.worm_petri_dish.width) {
             spermatozoon.vx *= -1;
         }
-        if (y < 0 || y > XFILTER_PARAMS.worm_petri_dish.height) {
+        if (y < 0 || y > WORMVIZ_PARAMS.worm_petri_dish.height) {
             spermatozoon.vy *= -1;
         }
 
         // Swim!
-        for (var j = 0; ++j < XFILTER_PARAMS.worm_petri_dish.m;) {
+        for (var j = 0; ++j < WORMVIZ_PARAMS.worm_petri_dish.m;) {
             var vx = x - path[j][0],
                 vy = y - path[j][1],
                 k2 = Math.sin(((spermatozoon.count += count) + j * 3) / 300) / speed;
@@ -102,4 +111,3 @@ function headTransform(d) {
 function tailPath(d) {
     return "M" + d.join("L");
 }
-//////////////
