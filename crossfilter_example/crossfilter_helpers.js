@@ -17,8 +17,8 @@ var formatWholeNumber = d3.format(",d"),
 function valueFormatted(d, field_name) {
     // Prepare a given value for display
 
-    var cur_item = XFILTER_PARAMS.display_fields[field_name];
-    var value = d[cur_item.data_field];
+    var cur_item = XFILTER_PARAMS.data_fields[field_name];
+    var value = d[field_name];
     var value_formatted;
 
     if("format_string" in cur_item) {

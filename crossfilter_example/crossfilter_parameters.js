@@ -1,9 +1,8 @@
 var XFILTER_PARAMS = {
     "report_title": "Open Worm Movement Database: Crossfilter of Results",
     "data_file": "worm_mock_data.csv",
-    "display_fields": {
+    "data_fields": {
         "timestamp": {
-            "data_field": "timestamp",
             "data_type": "string",
             "display_name": "Date / Time",
             "suffix": "",
@@ -11,7 +10,6 @@ var XFILTER_PARAMS = {
             "bucket_width": 1
         },
         "hour": {
-            "data_field": "hour",
             "data_type": "numeric",
             "display_name": "Hour in the day",
             "suffix": "",
@@ -21,7 +19,6 @@ var XFILTER_PARAMS = {
             "rangeRound": [0, 240]
         },
         "iso_date": {
-            "data_field": "iso_date",
             "data_type": "iso_date",
             "display_name": "Experiment Date",
             "suffix": "",
@@ -30,7 +27,6 @@ var XFILTER_PARAMS = {
             "rangeRound": [0, 900]
         },
         "pretty_date": {
-            "data_field": "pretty_date",
             "data_type": "string",
             "display_name": "Full Date",
             "suffix": "",
@@ -38,7 +34,6 @@ var XFILTER_PARAMS = {
             "bucket_width": 1
         },
         "pretty_time": {
-            "data_field": "pretty_time",
             "data_type": "string",
             "display_name": "Time of Day",
             "suffix": "",
@@ -46,7 +41,6 @@ var XFILTER_PARAMS = {
             "bucket_width": 1
         },
         "day_of_week": {
-            "data_field": "day_of_week",
             "data_type": "numeric",
             "display_name": "Day of the week",
             "suffix": "",
@@ -54,7 +48,6 @@ var XFILTER_PARAMS = {
             "bucket_width": 1
         },
         "worm_length": {
-            "data_field": "worm_length",
             "data_type": "numeric",
             "display_name": "Worm Length (μm)",
             "suffix": "μm",
@@ -63,7 +56,6 @@ var XFILTER_PARAMS = {
             "rangeRound": [0, 210]
         },
         "path_range": {
-            "data_field": "path_range",
             "data_type": "numeric",
             "display_name": "Path Range (μm)",
             "suffix": "μm",
@@ -72,12 +64,10 @@ var XFILTER_PARAMS = {
             "rangeRound": [0, 400]
         },
         "strain": {
-            "data_field": "strain",
             "data_type": "string",
             "display_name": "Strain"
         },
         "allele": {
-            "data_field": "allele",
             "data_type": "string",
             "display_name": "Allele"
         }

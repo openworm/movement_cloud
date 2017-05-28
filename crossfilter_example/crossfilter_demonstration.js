@@ -19,10 +19,10 @@ d3.csv(XFILTER_PARAMS.data_file, (error, data_rows) => {
         d.index = i;
 
         // Parse numeric fields to be numeric.
-        const display_fields = Object.keys(XFILTER_PARAMS.display_fields);
+        const display_fields = Object.keys(XFILTER_PARAMS.data_fields);
         for (let len = display_fields.length, i=0; i<len; i++) {
             const cur_field = display_fields[i];
-            const cur_attrs = XFILTER_PARAMS.display_fields[cur_field];
+            const cur_attrs = XFILTER_PARAMS.data_fields[cur_field];
             // If cur_field is supposed to be numeric, convert it from String
             // to numeric.
             if (cur_attrs.data_type == "numeric") {
@@ -60,7 +60,7 @@ function create_crossfilter(data_rows) {
         // First get what field goes in chart i
         let cur_data_field = XFILTER_PARAMS.charts[i];
         // Then lookup all the stuff about that field
-        let cur_field_attrs = XFILTER_PARAMS.display_fields[cur_data_field];
+        let cur_field_attrs = XFILTER_PARAMS.data_fields[cur_data_field];
         let cur_xfilter_dim = data_xfilter.dimension(d => d[cur_data_field]);
 
         // Add it to our list of x_filter dimensions
@@ -104,7 +104,7 @@ function create_crossfilter(data_rows) {
     const charts = []
     for(let i=0; i<4; i++) {
         let cur_field = XFILTER_PARAMS.charts[i];
-        let cur_attr = XFILTER_PARAMS.display_fields[cur_field];
+        let cur_attr = XFILTER_PARAMS.data_fields[cur_field];
         let cur_domain = [];
 
         // Use the data's extremes for our domain, unless the user has
