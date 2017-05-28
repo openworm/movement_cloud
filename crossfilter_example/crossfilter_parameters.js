@@ -52,16 +52,18 @@ var XFILTER_PARAMS = {
             "display_name": "Worm Length (μm)",
             "suffix": "μm",
             "scale": "linear",
-            "bucket_width": 10,
-            "rangeRound": [0, 210]
+            "bucket_width": 1,
+            "rangeRound": [0, 210],
+            "stratify": 10
         },
         "path_range": {
             "data_type": "numeric",
             "display_name": "Path Range (μm)",
             "suffix": "μm",
             "scale": "linear",
-            "bucket_width": 50,
-            "rangeRound": [0, 400]
+            "bucket_width": 5,
+            "rangeRound": [0, 400],
+            "stratify": 50
         },
         "strain": {
             "data_type": "string",

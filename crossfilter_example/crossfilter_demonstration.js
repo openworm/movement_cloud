@@ -68,11 +68,19 @@ function create_crossfilter(data_rows) {
 
         // Add the title of the chart
         d3.selectAll("#chart"+String(i)+" .title").text(cur_field_attrs.display_name);
+
+        let group_mapping;
+        // Stratify the data into a few points for better analysis
+        if("stratify" in cur_field_attrs) {
+            let s = cur_field_attrs.stratify;
+            group_mapping = (d => Math.floor(d / s) * s);
+        } else {
+            // Otherwise just do a passthrough mapping
+            group_mapping = (d => d);
+        }
+        let dim_grouped = x_filter_dimension[i].group(group_mapping);
+        x_filter_dimension_grouped.push(dim_grouped);
     }
-    x_filter_dimension_grouped.push(x_filter_dimension[0].group(d => d));  // hour
-    x_filter_dimension_grouped.push(x_filter_dimension[1].group(d => Math.floor(d / 10) * 10));  // delay
-    x_filter_dimension_grouped.push(x_filter_dimension[2].group(d => Math.floor(d / 50) * 50));  // distances
-    x_filter_dimension_grouped.push(x_filter_dimension[3].group(Math.floor)); // dateTime
 
     let x_filter_results_grouping_dimension = data_xfilter.dimension(d => d[XFILTER_PARAMS.results_grouping_field]);
 
@@ -191,5 +199,4 @@ function create_crossfilter(data_rows) {
         // here...
         renderAll();
     };
-
 }
