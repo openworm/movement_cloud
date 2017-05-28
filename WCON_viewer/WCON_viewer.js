@@ -5,6 +5,28 @@
 //////////////
 let wcon_objj; // DEBUG used for debugging
 
+function syntaxHighlight(json) {
+    if (typeof json != 'string') {
+         json = JSON.stringify(json, undefined, 2);
+    }
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        var cls = 'number';
+        if (/^"/.test(match)) {
+            if (/:$/.test(match)) {
+                cls = 'key';
+            } else {
+                cls = 'string';
+            }
+        } else if (/true|false/.test(match)) {
+            cls = 'boolean';
+        } else if (/null/.test(match)) {
+            cls = 'null';
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+    });
+}
+
 d3.json("smaller.wcon", function(error, wcon_obj) {
     if (error) { console.log(error) }
 
@@ -22,10 +44,11 @@ function load_wcon_path(wcon_obj) {
 
     wcon_objj = wcon_obj;  // DEBUG
 
-    d3.select("#metadata")
-        .append("div")
+    d3.select("#metadata").append("div")
         .attr("class", "metadata")
-        .text("METADATA:" + JSON.stringify(wcon_obj.metadata));
+        .text("METADATA:")
+        .append("pre")
+            .node().innerHTML = syntaxHighlight(wcon_obj.metadata);
 }
 
 var wcon_path;
