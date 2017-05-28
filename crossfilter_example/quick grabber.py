@@ -4,11 +4,16 @@ import pandas as pd
 
 sql_query_string ="""
 SELECT /*experiments_full.id,*/
-       DATE_FORMAT(experiments_full.date, '%m%d%H%i') AS `date`,
-       `length` AS `delay`,
-       path_range AS `distance`,
-       experiments_full.strain AS `origin`,
-       experiments_full.allele AS `destination`
+    DATE_FORMAT(experiments_full.date, '%Y%m%d%H%i') AS `timestamp`,  -- e.g. "200101301359"  (30 Jan 2001, 13:59)
+    CONVERT(DATE_FORMAT(experiments_full.date, '%H'), DECIMAL(10,6)) + CONVERT(DATE_FORMAT(experiments_full.date, '%i'), DECIMAL(10,6)) / 60.0 AS `hour`,  -- e.g. 13.5  (1:30pm)
+    DATE_FORMAT(experiments_full.date, '%Y-%m-%d') AS `iso_date`, -- e.g. "2001-01-30"
+    DATE_FORMAT(experiments_full.date, '%M %D, %Y') AS `pretty_date`, -- e.g. "January 30, 2001"
+    DATE_FORMAT(experiments_full.date, '%H:%m') AS `pretty_time`, -- e.g. "13:58"
+    DATE_FORMAT(experiments_full.date, '%w') AS `day_of_week`,  -- 0 = Sunday, 6 = Saturday
+    `length` AS `worm_length`,
+    path_range,
+    experiments_full.strain AS `strain`,
+    experiments_full.allele AS `allele`
 FROM experiments_full
 LEFT OUTER JOIN features_means ON features_means.experiment_id = experiments_full.id
 WHERE

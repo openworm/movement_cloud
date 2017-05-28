@@ -1,20 +1,18 @@
 "use strict";
 
-// Parse the date.  Assume it is the year 2001.
-function parseDate(d) {  // (parseDate is like d3.time.format, but faster)
-    return new Date(2001,
-        d.substring(0, 2) - 1,
-        d.substring(2, 4),
-        d.substring(4, 6),
-        d.substring(6, 8));
+function parseDate(d) {
+    // Parse the date.
+    // (this function is like d3.time.format, but faster)
+    return new Date(d.substring(0,4),
+        d.substring(4, 6) - 1,
+        d.substring(6, 8),
+        d.substring(8, 10),
+        d.substring(10, 12));
 }
 
 // Various formatters.
 var formatWholeNumber = d3.format(",d"),
-    formatChange = d3.format("+,d"),
-    formatDate = d3.timeFormat("%B %d, %Y"),
-    formatDateWithDay = d3.timeFormat("%a %B %d, %Y"),
-    formatTime = d3.timeFormat("%I:%M %p");
+    formatChange = d3.format("+,d");
 
 function valueFormatted(d, field_name) {
     // Prepare a given value for display
@@ -38,7 +36,17 @@ function valueFormatted(d, field_name) {
 }
 
 
-function createDataSetView(data_xfilter_size, data_rows, datetime_dimension) {
+function getExtremes(data_rows, field_name) {
+    // Obtain the [min, max] scalar values from the data, for a given
+    // column (aka field)
+    const cur_min = d3.min(data_rows, function(d) { return +d[field_name]});
+    const cur_max = d3.max(data_rows, function(d) { return +d[field_name]});
+
+    return [cur_min, cur_max];
+}
+
+
+function createDataSetView(data_xfilter_size, data_rows, dataset_group_dimension) {
     // DATASET VIEW
     // Create canvas element that holds one record per canvas pixel
     // Make the width 2 * the square root of the total data size, so the box is
@@ -86,7 +94,7 @@ function createDataSetView(data_xfilter_size, data_rows, datetime_dimension) {
 
             var item = data_rows[index];
 
-            var labelText = labelText = "Selected: " + item.selected + ", Date: " + formatDateWithDay(item.datetime) + " " + formatTime(item.datetime) + ", Delay: ";
+            var labelText = labelText = "Selected: " + item.selected + ", Date: " + item.pretty_date + " " + item.pretty_time + ", Delay: ";
             labelText += item.delay + ", Distance: " + item.distance + ", Route: " + item.origin + "-->" + item.destination + " (idx: " + index + ")";
             currentLabel
                 .attr("class", function(d) {
@@ -108,7 +116,7 @@ function createDataSetView(data_xfilter_size, data_rows, datetime_dimension) {
     function redraw_datasetview() {
         // Update the "rows_selected" array, which holds
         // the currently selected (in-filter) items
-        let rows_selected = datetime_dimension.top(Infinity);
+        let rows_selected = dataset_group_dimension.top(Infinity);
 
         // Set the selected status in the data source ("data_rows")
         data_rows.forEach(function(d) {
@@ -146,9 +154,11 @@ function createDataSetView(data_xfilter_size, data_rows, datetime_dimension) {
 ///////////////////////////////////////////////////////
 function createRadioButtons(data_xfilter, renderAll) {
 
+    const radio_button_grouping_field = XFILTER_PARAMS.radio_button_grouping_field;
+
     // Add new day dimension
     var dayNumber = data_xfilter.dimension(function(d) {
-        return d.datetime.getDay();
+        return d[radio_button_grouping_field];
     });
 
     // Date selection radio buttons
@@ -361,7 +371,7 @@ function createRadioButtons(data_xfilter, renderAll) {
                     break;
             }
 
-            updateDaySelection();
+            updateDaySelection(false);
             renderAll();
         });
 
@@ -378,14 +388,18 @@ function createRadioButtons(data_xfilter, renderAll) {
             var day = elem.property("value");
             days[day].state = checked;
 
-            updateDaySelection();
+            updateDaySelection(false);
             renderAll();
         })
 
 
     // Update the state of the day selection radio buttons and checkboxes
     // (called after "change" events from those elements)
-    function updateDaySelection() {
+    function updateDaySelection(doReset) {
+        if(doReset) {
+            Object.keys(days).forEach(function(d) { days[d].state = true });
+        }
+
         // Update checkboxes
         d3.selectAll("input[type=checkbox][name=days]")
             .property("checked", function(d, i, a) {
@@ -421,23 +435,26 @@ function createRadioButtons(data_xfilter, renderAll) {
 }
 
 ////////////////////////////////////////////////
-function get_resultsList(datetime_dimension) {
+function get_resultsList(grouping_dimension) {
 
     function resultsList(div) {
+        // This is the field we will group the results on.
+        let group_field = XFILTER_PARAMS.results_grouping_field;
+
         // Results list
         // Nest the results by date
-        var resultsByDate = d3.nest().key(function(d) {
-            return d3.timeDay(d.datetime);
+        var resultsGrouped = d3.nest().key(function(d) {
+            return d[group_field];
             })
             // Limit results shown to at most max_results
-            .entries(datetime_dimension.top(XFILTER_PARAMS.max_results));
+            .entries(grouping_dimension.top(XFILTER_PARAMS.max_results));
     
         // For each day group, create a div with class = cur_results_list_group,
         // and then create a day label div and
         //                 the results row divs
         div.each(function() {
             var cur_results_list = d3.select(this).selectAll(".cur_results_list_group")
-                .data(resultsByDate, function(d) {
+                .data(resultsGrouped, function(d) {
                     return d.key;
                 });
     
@@ -445,9 +462,7 @@ function get_resultsList(datetime_dimension) {
                 .attr("class", "cur_results_list_group")
                 .append("div")
                 .attr("class", "day_group_label")
-                .text(function(d) {
-                    return formatDate(d.values[0].datetime);
-                });
+                .text(function(d) { return d.values[0].pretty_date; });
 
             cur_results_list.exit().remove();
     
@@ -467,11 +482,7 @@ function get_resultsList(datetime_dimension) {
                 results_row_all.append("div")
                     .attr("class", "display_field" + String(i))
                     .text(function(d) {
-                        if(cur_field == "datetime") {
-                            return formatTime(d.datetime);  // DEBUG: do not hardcode this conversion to "TIME"
-                        } else {
-                            return valueFormatted(d, cur_field);
-                        }
+                        return valueFormatted(d, cur_field);
                     });
             }
 
