@@ -87,8 +87,7 @@ var XFILTER_PARAMS = {
         "worm_length",
         "path_range"
     ],
-    "results_grouping_field": "iso_date",
-    "results_grouping_display_field": "pretty_date",
     "max_results": 15,
+    "datasetview_chart_index": 3,
     "radio_button_grouping_field": "day_of_week",
 }

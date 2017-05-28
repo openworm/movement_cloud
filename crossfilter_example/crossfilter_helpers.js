@@ -94,8 +94,10 @@ function createDataSetView(data_xfilter_size, data_rows, dataset_group_dimension
 
             var item = data_rows[index];
 
-            var labelText = labelText = "Selected: " + item.selected + ", Date: " + item.pretty_date + " " + item.pretty_time + ", Delay: ";
-            labelText += item.delay + ", Distance: " + item.distance + ", Route: " + item.origin + "-->" + item.destination + " (idx: " + index + ")";
+            // DEBUG: remove hardcoding
+            var labelText = "idx: " + index + ".";
+           // var labelText = labelText = "Selected: " + item.selected + ", Date: " + item.pretty_date + " " + item.pretty_time + ", Delay: ";
+            //labelText += item.delay + ", Distance: " + item.distance + ", Route: " + item.origin + "-->" + item.destination + " (idx: " + index + ")";
             currentLabel
                 .attr("class", function(d) {
                     return item.selected ? "selected" : "notSelected"
@@ -435,62 +437,35 @@ function createRadioButtons(data_xfilter, renderAll) {
 }
 
 ////////////////////////////////////////////////
-function get_resultsList(grouping_dimension) {
+function resultsList(grouping_dimension) {
+    // Re-run the results list, by erasing it and creating it again
 
-    function resultsList(div) {
-        // This is the field we will group the results on.
-        let group_field = XFILTER_PARAMS.results_grouping_field;
+    let div = d3.select("#results-list");
 
-        // Results list
-        // Nest the results by date
-        var resultsGrouped = d3.nest().key(function(d) {
-            return d[group_field];
-            })
-            // Limit results shown to at most max_results
-            .entries(grouping_dimension.top(XFILTER_PARAMS.max_results));
-    
-        // For each day group, create a div with class = cur_results_list_group,
-        // and then create a day label div and
-        //                 the results row divs
-        div.each(function() {
-            var cur_results_list = d3.select(this).selectAll(".cur_results_list_group")
-                .data(resultsGrouped, function(d) {
-                    return d.key;
-                });
-    
-            cur_results_list.enter().append("div")
-                .attr("class", "cur_results_list_group")
-                .append("div")
-                .attr("class", "day_group_label")
-                .text(function(d) { return d.values[0].pretty_date; });
+    // Clear the existing results
+    div.selectAll("div").remove();
 
-            cur_results_list.exit().remove();
-    
-            var results_row = cur_results_list.order().selectAll(".results_list_row")
-                .data(function(d) {
-                    return d.values;
-                }, function(d) {
-                    return d.index;
-                });
+    // Create a header div
+    let header_row = div.append("div")
+        .attr("class", "header_row");
 
-            var results_row_all = results_row.enter().append("div")
-                .attr("class", "results_list_row");
+    // Due to a quirk in d3.js we have to select .results_list_row to get the
+    // first data entry to show ()
+    let cur_results_all = div.selectAll(".header_row.results_list_row")
+        .data(grouping_dimension.top(XFILTER_PARAMS.max_results))
+        // Create a row div for every result we want to display.
+        .enter().append("div").attr("class", "results_list_row");
 
-            // Loop over all columns we are supposed to display in the results
-            for(let len = XFILTER_PARAMS.results_display.length, i=0; i<len; i++) {
-                let cur_field = XFILTER_PARAMS.results_display[i];
-                results_row_all.append("div")
-                    .attr("class", "display_field" + String(i))
-                    .text(function(d) {
-                        return valueFormatted(d, cur_field);
-                    });
-            }
+    // Loop over all columns we are supposed to display in the results
+    for(let len = XFILTER_PARAMS.results_display.length, i=0; i<len; i++) {
+        let cur_field = XFILTER_PARAMS.results_display[i];
 
-            results_row.exit().remove();
-    
-            results_row.order();
-        });
+        header_row.append("div")
+            .attr("class", "display_field" + String(i))
+            .text(d => XFILTER_PARAMS.data_fields[cur_field].display_name);
+
+        cur_results_all.append("div")
+            .attr("class", "display_field" + String(i))
+            .text(d => valueFormatted(d, cur_field));
     }
-
-    return resultsList;
 }

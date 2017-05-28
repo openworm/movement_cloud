@@ -82,10 +82,6 @@ function create_crossfilter(data_rows) {
         x_filter_dimension_grouped.push(dim_grouped);
     }
 
-    let x_filter_results_grouping_dimension = data_xfilter.dimension(d => d[XFILTER_PARAMS.results_grouping_field]);
-
-
-    let result_row_list;
     let chart_DOM_elements;
 
     // Renders the specified chart or list.
@@ -97,7 +93,7 @@ function create_crossfilter(data_rows) {
     // whenever the brush moves and other events like that
     function renderAll() {
         chart_DOM_elements.each(render);
-        result_row_list   .each(render);
+        resultsList(x_filter_dimension[XFILTER_PARAMS.datasetview_chart_index]);
         d3.select('#active').text(formatWholeNumber(xfilter_all.value()));
 
         redraw_datasetview();
@@ -107,8 +103,10 @@ function create_crossfilter(data_rows) {
 
     // Create the datasetview widget, and obtain a callback function that
     // when called, refreshes the widget.
-    var redraw_datasetview = createDataSetView(data_xfilter.size(), data_rows, x_filter_dimension[3]);  // DEBUG: fix hardcoding
+    var redraw_datasetview = createDataSetView(data_xfilter.size(), data_rows, x_filter_dimension[XFILTER_PARAMS.datasetview_chart_index]);
 
+    // Create each chart with the proper scale and dimensions, and connect
+    // them to the crossfilter data.
     const charts = []
     for(let i=0; i<4; i++) {
         let cur_field = XFILTER_PARAMS.charts[i];
@@ -161,16 +159,12 @@ function create_crossfilter(data_rows) {
             });
 */
 
-    // Render the initial results lists
-    let resultsList = get_resultsList(x_filter_results_grouping_dimension);
-    result_row_list = d3.selectAll(".result_row_list").data([resultsList]);
-
     // Render the total.
     d3.selectAll('#total')
         .text(formatWholeNumber(data_xfilter.size()));
 
     renderAll();
-        
+
     window.filter = filters => {
         filters.forEach((d, i) => {
             charts[i].filter(d);
@@ -191,6 +185,7 @@ function create_crossfilter(data_rows) {
         renderAll();
     };
 
+    // Event handler for the "reset" buttons
     window.reset = i => {
         charts[i].filter(null);
         console.log("reset fired!");

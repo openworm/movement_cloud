@@ -116,6 +116,15 @@ h2 {
 #results-list .time {
     color: #999;
 }
+#results-list .header_row {
+    line-height: 1.5em;
+    background: rgba(70, 130, 180, 0.325);  /*steelblue, opacity: .325 */
+    width: 925px;
+    margin-bottom: 1px;
+}
+#results-list .header_row div {
+    display: inline-block;    
+}
 #results-list .results_list_row div {
     display: inline-block;
 }
@@ -123,7 +132,7 @@ h2 {
     color: green;
 }
 #results-list div.display_field0 {
-    width: 100px;
+    width: 130px;
     text-align: left;
 }
 #results-list div.display_field1 {
@@ -137,13 +146,13 @@ h2 {
     padding-left: 15px;
 }
 #results-list div.display_field3 {
-    width: 100px;
+    width: 200px;
     text-align: left;
 }
 #results-list div.display_field4 {
-    width: 120px;
+    width: 170px;
     padding-right: 0px;
-    text-align: right;
+    text-align: left;
 }
 #results-list .early {
     color: green;
