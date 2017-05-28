@@ -1,7 +1,9 @@
+// WCON Viewer
+// Views a WCON file, showing all its metadata and the path of the worm
 // WORM PETRI DISH VISUALIZATION CODE
 // sets up a d3.timer within the svg element of the wormVisualization div.
 //////////////
-let wcon_objj;
+let wcon_objj; // DEBUG used for debugging
 
 d3.json("smaller.wcon", function(error, wcon_obj) {
     if (error) { console.log(error) }
@@ -18,7 +20,7 @@ function load_wcon_path(wcon_obj) {
 
     wcon_obj.metadata
 
-    wcon_objj = wcon_obj;
+    wcon_objj = wcon_obj;  // DEBUG
 
     d3.select("#metadata")
         .append("div")
