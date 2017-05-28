@@ -44,6 +44,12 @@ function load_wcon_path(wcon_obj) {
 
     wcon_objj = wcon_obj;  // DEBUG
 
+    d3.select("#units").append("div")
+        .attr("class", "units")
+        .text("UNITS:")
+        .append("pre")
+            .node().innerHTML = syntaxHighlight(wcon_obj.units);
+
     d3.select("#metadata").append("div")
         .attr("class", "metadata")
         .text("METADATA:")
