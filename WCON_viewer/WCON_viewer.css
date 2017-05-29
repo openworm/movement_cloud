@@ -207,6 +207,12 @@ path.tail {
     stoke-width: 4;
 }
 
+circle {
+    stroke: black;
+    stroke-width: 5px;
+    fill: none;
+}
+
 
 /* For JSON syntax highlighting */
 pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
@@ -218,9 +224,14 @@ pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
 
 
 #footer {
-    color: DarkGray;
+    color: DimGray;
 }
 
 #footer .links a {
     display: block;
+}
+
+
+#units thead {
+    background: rgba(70, 130, 180, 0.325);  /*steelblue, opacity: .325 */
 }

@@ -4,8 +4,7 @@ var WORMVIZ_PARAMS = {
     "schema_url": "https://raw.githubusercontent.com/openworm/tracker-commons/master/wcon_schema.json",
     
     "worm_petri_dish": {
-        "width": 500,
-        "height": 400,
+        "radius": 200,
         "NUM_WORMS": 5,
         "m": 12
     }
