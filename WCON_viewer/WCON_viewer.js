@@ -7,6 +7,25 @@ let wcon_objj; // DEBUG used for debugging
 
 const wcon_file_name = "smaller.wcon";
 
+simple_schema = {
+    "title": "Person",
+    "type": "object",
+    "properties": {
+        "firstName": {
+            "type": "string"
+        },
+        "lastName": {
+            "type": "string"
+        },
+        "age": {
+            "description": "Age in years",
+            "type": "integer",
+            "minimum": 0
+        }
+    },
+    "required": ["firstName", "lastName"]
+};
+
 // Load the worm schema, and use this information to render some explanation
 // of what the WCON format is
 d3.json(WORMVIZ_PARAMS.schema_url, function(error1, schema_obj) {
@@ -15,24 +34,42 @@ d3.json(WORMVIZ_PARAMS.schema_url, function(error1, schema_obj) {
         if (error1) { console.log(error1); }
         if (error2) { console.log(error2); }
 
-        // VALIDATE WCON FILE AGAINST SCHEMA    
-        //let ajv = new Ajv();
-        //var validate = ajv.compile(schema_obj);
-
         // FILE INFORMATION    
         let file_info = d3.select("#file_info");
     
         file_info.append("div")
             .attr("class", "file_info")
             .text("File name: " + String(wcon_file_name));
-    
-        file_info.append("div")
-            .attr("class", "validation_state")
-            .text("Validation state: " + "UNKNOWN");
-        
-        // WCON FILE INFORMATION
-        display_wcon(wcon_obj); 
 
+        let validation_state = file_info.append("div")
+                .attr("class", "validation_state")
+
+    
+        // VALIDATE WCON FILE AGAINST SCHEMA    
+        let isValidWCON = false;
+        let ajv = new Ajv();
+        if (!ajv.validate(schema_obj, wcon_obj)) {
+            isValidWCON = false;
+
+            // If it did not validate, show the errors
+            validation_state
+                .append("h3").attr("class", "bad").text("SCHEMA VALIDATION ERRORS:")
+                .append("pre")
+                    .node().innerHTML = syntaxHighlight(ajv.errors);
+        } else {
+            isValidWCON = true;
+
+            validation_state
+                    .append("span").text("Validation state: ")
+                    .append("span").attr("class", "good").text("VALIDATED");
+        }
+
+        // Only show the WCON information if the previous schema test passed,
+        // otherwise the parser behaviour is undefined.
+        //if(isValidWCON) {  // DEBUG: for now don't be strict
+            // WCON FILE INFORMATION
+            display_wcon(wcon_obj); 
+        //}
         // FOOTER
         let footer = d3.select("#footer");
     
@@ -41,6 +78,8 @@ d3.json(WORMVIZ_PARAMS.schema_url, function(error1, schema_obj) {
     
         footer.insert("div",".links").attr("class", "description")
             .append("p").text(schema_obj.description);
+
+
     });
 });
 

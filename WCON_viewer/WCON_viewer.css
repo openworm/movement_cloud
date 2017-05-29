@@ -93,3 +93,11 @@ pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
 #units thead {
     background: rgba(70, 130, 180, 0.325);  /*steelblue, opacity: .325 */
 }
+
+#file_info .validation_state .good {
+    color: green;
+}
+
+#file_info .validation_state .bad {
+    color: red;
+}
