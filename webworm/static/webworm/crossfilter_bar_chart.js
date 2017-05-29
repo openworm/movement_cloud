@@ -1,199 +1,192 @@
-"use strict";
+// d3.js v4 bar chart for crossfilter
 
-function barChart() {
-    // BoE: barChart.id is shared by all instances of barChart's chart, effectively an instance counter
+function barChart(brushMovedEventHandler) {
+    /* Create a bar chart
+
+    Parameters: brushMovedEventHandler
+        A function that will be called when the brush moves.
+
+    Returns: chart object
+    */
+
+    // DEBUG: these next two lines seem like they could be written better.
     if (!barChart.id) barChart.id = 0;
+    const id = barChart.id++;
 
-    var margin = {
-            top: 10,
-            right: 10,
-            bottom: 20,
-            left: 10
-        },
-        x,
-        y = d3.scale.linear().range([100, 0]), // 100 pixels height
-        id = barChart.id++,
-        axis = d3.svg.axis().orient("bottom"),
-        brush = d3.svg.brush(),
-        brushDirty,
-        dimension,
-        group,
-        round,
-        yMax;
+    let margin = { top: 10, right: 13, bottom: 20, left: 10 };
+    let x;
+    let y = d3.scaleLinear().range([100, 0]);
+    const axis = d3.axisBottom();
+    const brush = d3.brushX();
+    let brushDirty;
+    let dimension;
+    let group;
+    let round;
+    let gBrush;
 
     function chart(div) {
-        /*
-        // BoE: uncomment this to see how the domain and ranges change as the filters are modified
-        console.log("margin", margin);
-        console.log("x.range()", x.range())
-        console.log("x.domain()", x.domain())
-        console.log("y.range()", y.range())
-        console.log("y.domain()", y.domain())
-        */
+        const width = x.range()[1];
+        const height = y.range()[0];
 
-        var width = x.range()[1],
-            height = y.range()[0];
+        brush.extent([[0, 0], [width, height]])
+            // attach an event handler so if the brush moves,
+            // the passed function is called, refreshing global elements
+            .on("start brush end", brushMovedEventHandler);
 
-        yMax = 0;
-        y.domain([0, yMax == 0 ? group.top(1)[0].value : yMax]); // set y domain to max value in this group
+        y.domain([0, group.top(1)[0].value]);
 
-        // BoE: why is this done using "each"? There is only one div per chart; therefore the construct "div.each" will
-        //    only be executed once
         div.each(function() {
-            var div = d3.select(this),
-                g = div.select("g");
+            const div = d3.select(this);
+            let g = div.select('g');
 
             // Create the skeletal chart.
-            // BoE: this is only executed once, at init, when there is nothing in the group
             if (g.empty()) {
-                div.select(".title").append("a")
-                    .attr("href", "javascript:reset(" + id + ")")
-                    .attr("class", "reset")
-                    .text("reset")
-                    .style("display", "none");
+                div.select('.title').append('a')
+                    .attr('href', `javascript:reset(${id})`)
+                    .attr('class', 'reset')
+                    .text('reset')
+                    .style('display', 'none');
 
-                g = div.append("svg")
-                    .attr("width", width + margin.left + margin.right)
-                    .attr("height", height + margin.top + margin.bottom)
-                    .append("g")
-                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                g = div.append('svg')
+                    .attr('width', width + margin.left + margin.right)
+                    .attr('height', height + margin.top + margin.bottom)
+                    .append('g')
+                        .attr('transform', `translate(${margin.left},${margin.top})`);
 
-                // BoE: reset the clip path to full width
-                g.append("clipPath")
-                    .attr("id", "clip-" + id)
-                    .append("rect")
-                    .attr("width", width)
-                    .attr("height", height);
+                g.append('clipPath')
+                    .attr('id', `clip-${id}`)
+                    .append('rect')
+                        .attr('width', width)
+                        .attr('height', height);
 
-                // BoE: generate two paths, one background, one foreground
-                g.selectAll(".bar")
-                    .data(["background", "foreground"])
-                    .enter().append("path")
-                    .attr("class", function(d) {
-                        return d + " bar";
-                    })
-                    // assign all the data in the group to the path
-                    .datum(group.all());
+                g.selectAll('.bar')
+                    .data(['background', 'foreground'])
+                    .enter().append('path')
+                        .attr('class', d => `${d} bar`)
+                        .datum(group.all());
 
-                // BoE: assign the clip path to the foreground bars
-                g.selectAll(".foreground.bar")
-                    .attr("clip-path", "url(#clip-" + id + ")");
+                g.selectAll('.foreground.bar')
+                    .attr('clip-path', `url(#clip-${id})`);
 
-                // BoE: add the x-axis to the svg group
-                g.append("g")
-                    .attr("class", "axis")
-                    .attr("transform", "translate(0," + height + ")")
+                g.append('g')
+                    .attr('class', 'axis')
+                    .attr('transform', `translate(0,${height})`)
                     .call(axis);
 
                 // Initialize the brush component with pretty resize handles.
-                var gBrush = g.append("g").attr("class", "brush").call(brush);
-                gBrush.selectAll("rect").attr("height", height);
-                gBrush.selectAll(".resize").append("path").attr("d", resizePath);
+                gBrush = g.append('g')
+                    .attr('class', 'brush')
+                    .call(brush);
+
+                gBrush.selectAll('.handle--custom')
+                    .data([{ type: 'w' }, { type: 'e' }])
+                    .enter().append('path')
+                        .attr('class', 'brush-handle')
+                        .attr('cursor', 'ew-resize')
+                        .attr('d', resizePath)
+                        .style('display', 'none');
             }
 
             // Only redraw the brush if set externally.
-            // BoE: at init, the **Date** chart has an externally set brush;
-            // in this extended example, the **Time of Day** chart also has an externally set brush
-            if (brushDirty) {
+            if (brushDirty !== false) {
+                const filterVal = brushDirty;
                 brushDirty = false;
-                g.selectAll(".brush").call(brush);
-                div.select(".title a").style("display", brush.empty() ? "none" : null);
-                if (brush.empty()) {
-                    g.selectAll("#clip-" + id + " rect")
-                        .attr("x", 0)
-                        .attr("width", width);
+
+                div.select('.title a').style('display', d3.brushSelection(div) ? null : 'none');
+
+                if (!filterVal) {
+                    // DEBUG: the outer condition is that brushdirty !==false,
+                    // so this will never be reached.
+                    g.call(brush);
+
+                    g.selectAll(`#clip-${id} rect`)
+                        .attr('x', 0)
+                        .attr('width', width);
+
+                    g.selectAll('.brush-handle').style('display', 'none');
                 } else {
-                    var extent = brush.extent();
-                    g.selectAll("#clip-" + id + " rect")
-                        .attr("x", x(extent[0]))
-                        .attr("width", x(extent[1]) - x(extent[0]));
+                    const range = filterVal.map(x);
+                    brush.move(gBrush, range);
                 }
             }
 
-            // BoE: this sets the **d** attribute on the path
-            g.selectAll(".bar").attr("d", barPath);
-        });
+            g.selectAll('.bar').attr('d', barPath);
+        });  // div.each
 
-        // BoE: the barPath function is called as usual with the d, i, a arguments 
-        //   (d being called **groups** here, the other args not used)
         function barPath(groups) {
-            var path = [],
-                i = -1,
-                n = groups.length,
-                d;
+            const path = [];
+            let i = -1;
+            const n = groups.length;
+            let d;
             while (++i < n) {
                 d = groups[i];
-                path.push("M", x(d.key), ",", height, "V", y(d.value), "h9V", height);
+                path.push('M', x(d.key), ',', height, 'V', y(d.value), 'h9V', height);
             }
-            // BoE: uncomment the next line to see the neat path array that has been generated
-            //console.log("path", path)
-            return path.join("");
+            return path.join('');
         }
 
-        // BoE: the resizePath function defines the look of the brush "handles" on the left and right side of the brush
         function resizePath(d) {
-            var e = +(d == "e"),
-                x = e ? 1 : -1,
-                y = height / 3;
-            return "M" + (.5 * x) + "," + y +
-                "A6,6 0 0 " + e + " " + (6.5 * x) + "," + (y + 6) +
-                "V" + (2 * y - 6) +
-                "A6,6 0 0 " + e + " " + (.5 * x) + "," + (2 * y) +
-                "Z" +
-                "M" + (2.5 * x) + "," + (y + 8) +
-                "V" + (2 * y - 8) +
-                "M" + (4.5 * x) + "," + (y + 8) +
-                "V" + (2 * y - 8);
+            const e = +(d.type === 'e');
+            const x = e ? 1 : -1;
+            const y = height / 3;
+            return `M${0.5 * x},${y}A6,6 0 0 ${e} ${6.5 * x},${y + 6}V${2 * y - 6}A6,6 0 0 ${e} ${0.5 * x},${2 * y}ZM${2.5 * x},${y + 8}V${2 * y - 8}M${4.5 * x},${y + 8}V${2 * y - 8}`;
         }
-    }
+    } // function chart(div)
 
-    // BoE: the .chart below threw me for a loop at first; turns out the app is registering multiple brush handlers;
-    //   see above for the first instance of brush handlers; to allow multiple handlers to be registered on the same event, 
-    //   d3 requires a "namespace identifier" on the subsequent event handlers; here "chart" is used as a namespace indicator
-    //   alse see: http://stackoverflow.com/questions/32459420/what-does-d3-brush-onbrush-chat-means
-    brush.on("brushstart.chart", function() {
-        var div = d3.select(this.parentNode.parentNode.parentNode);
-        div.select(".title a").style("display", null);
+    brush.on('start.chart', function() {
+        const div = d3.select(this.parentNode.parentNode.parentNode);
+        div.select('.title a').style('display', null);
     });
 
-    // BoE: uncomment the next like to see another brush handler in action using a dummy namespace
-    //brush.on("brush.whatever", function() { console.log("brush.whatever") })
+    brush.on('brush.chart', function() {
+        const g = d3.select(this.parentNode);
+        const brushRange = d3.event.selection || d3.brushSelection(this); // attempt to read brush range
+        const xRange = x && x.range(); // attempt to read range from x scale
+        let activeRange = brushRange || xRange; // default to x range if no brush range available
 
-    // BoE: this "brush.chart" event handler fires before the "brush" handler fires above; 
-    //    this particular handler just sets the filter; 
-    //    the other handler updates all charts
-    brush.on("brush.chart", function() {
-        var g = d3.select(this.parentNode),
-            extent = brush.extent(); // extent contains the domain (x.invert) of the brush
+        const hasRange = activeRange &&
+                         activeRange.length === 2 &&
+                         !isNaN(activeRange[0]) &&
+                         !isNaN(activeRange[1]);
 
-        // BoE: handle rounding of extent (allow only integers)
-        if (round) g.select(".brush")
-            .call(brush.extent(extent = extent.map(round)))
-            .selectAll(".resize")
-            .style("display", null); // remove the resize a element
-        g.select("#clip-" + id + " rect")
-            .attr("x", x(extent[0])) // set clip rect x pos
-            .attr("width", x(extent[1]) - x(extent[0])); // set clip rect width
+        if (!hasRange) return; // quit early if we don't have a valid range
 
-        // BoE: set a new filter range
-        dimension.filterRange(extent);
-    });
+        // calculate current brush extents using x scale
+        let extents = activeRange.map(x.invert);
 
-    brush.on("brushend.chart", function() {
-        if (brush.empty()) {
-            // BoE: if brush is empty, invalidate the clip rect (show all foreground bars), and remove the dimension filter
-            var div = d3.select(this.parentNode.parentNode.parentNode);
+        // if rounding fn supplied, then snap to rounded extents
+        // and move brush rect to reflect rounded range bounds if it was set by user interaction
+        if (round) {
+            extents = extents.map(round);
+            activeRange = extents.map(x);
 
-            // BoE: remove the reset "a" element
-            div.select(".title a").style("display", "none");
+            if (
+                d3.event.sourceEvent &&
+                d3.event.sourceEvent.type === 'mousemove'
+            ) {
+                d3.select(this).call(brush.move, activeRange);
+            }
+        }
 
-            // BoE: invalidate the clip rect (thereby show all foreground blue bars)
-            div.select("#clip-" + id + " rect")
-                .attr("x", null) // remove the x attribute which will render the clipRect invalid
-                .attr("width", "100%");
+        // move brush handles to start and end of range
+        g.selectAll('.brush-handle')
+            .style('display', null)
+            .attr('transform', (d, i) => `translate(${activeRange[i]}, 0)`);
 
-            // BoE: remove the dimension's filter
-            dimension.filterAll();
+        // resize sliding window to reflect updated range
+        g.select(`#clip-${id} rect`)
+            .attr('x', activeRange[0])
+            .attr('width', activeRange[1] - activeRange[0]);
+
+        // filter the active dimension to the range extents
+        dimension.filterRange(extents);
+    }); // brush.on  brush.chart
+
+    brush.on('end.chart', function() {
+        // Reset corresponding filter if the brush selection was cleared
+        // (e.g. user "clicked off" the active range)
+        if (!d3.brushSelection(this)) {
+            reset(id);
         }
     });
 
@@ -207,7 +200,6 @@ function barChart() {
         if (!arguments.length) return x;
         x = _;
         axis.scale(x);
-        brush.x(x);
         return chart;
     };
 
@@ -218,29 +210,20 @@ function barChart() {
     };
 
     chart.dimension = function(_) {
-        //console.log("chart.dimension..." + _)
         if (!arguments.length) return dimension;
         dimension = _;
         return chart;
     };
 
-    chart.filter = function(_) {
-        if (_) {
-            brush.extent(_);
-            dimension.filterRange(_);
-        } else {
-            brush.clear();
-            dimension.filterAll();
-        }
-        brushDirty = true;
+    chart.filter = _ => {
+        if (!_) dimension.filterAll();
+        brushDirty = _;
         return chart;
     };
 
     chart.group = function(_) {
         if (!arguments.length) return group;
         group = _;
-        // added by BoE
-        yMax = group.top(1)[0].value;
         return chart;
     };
 
@@ -250,7 +233,7 @@ function barChart() {
         return chart;
     };
 
-    // BoE: the d3 rebind function moves the "on" method from the "brush" object/function to the "chart" object/function;
-    // it then returns the "chart" function/object
-    return d3.rebind(chart, brush, "on");
-};
+    chart.gBrush = () => gBrush;
+
+    return chart;
+} // function barChart
