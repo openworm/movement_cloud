@@ -71,11 +71,18 @@ circle {
     fill: none;
 }
 
+.worm_path {
+    stroke: green;
+    stroke-width: 2;
+    fill: none;
+}
+
 .worm_skeleton {
     stroke: blue;
     stroke-width: 2;
     fill: none;
 }
+
 
 
 /* For JSON syntax highlighting */
