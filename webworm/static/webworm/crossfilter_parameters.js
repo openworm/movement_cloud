@@ -1,20 +1,93 @@
 var XFILTER_PARAMS = {
-    "display_fields": [
-        {"data_field": "origin", "data_type": "string", "display_name": "Origin"},
-        {"data_field": "destination", "data_type": "string", "display_name": "Destination"},
-        {"data_field": "delay", "data_type": "numeric", "display_name": "Time of Day", "suffix": "μm", "bucket_width": 10},
-        {"data_field": "distance", "data_type": "numeric", "display_name": "Arrival Delay (min.)", "suffix": "μm", "bucket_width": 50}
-    ],
-
+    "report_title": "Open Worm Movement Database: Crossfilter of Results",
     "data_file": dataFilePath,
-    "report_title": "Worm Crossfilter Demonstration",
-
+    "data_fields": {
+        "timestamp": {
+            "data_type": "string",
+            "display_name": "Date / Time",
+            "suffix": "",
+            "scale": "linear",
+            "bucket_width": 1
+        },
+        "hour": {
+            "data_type": "numeric",
+            "display_name": "Hour in the day",
+            "suffix": "",
+            "scale": "linear",
+            "bucket_width": 10,
+            "domain": [0, 24],
+            "rangeRound": [0, 240]
+        },
+        "iso_date": {
+            "data_type": "iso_date",
+            "display_name": "Experiment Date",
+            "suffix": "",
+            "scale": "time",
+            "bucket_width": 1,
+            "rangeRound": [0, 900]
+        },
+        "pretty_date": {
+            "data_type": "string",
+            "display_name": "Full Date",
+            "suffix": "",
+            "scale": "linear",
+            "bucket_width": 1
+        },
+        "pretty_time": {
+            "data_type": "string",
+            "display_name": "Time of Day",
+            "suffix": "",
+            "scale": "linear",
+            "bucket_width": 1
+        },
+        "day_of_week": {
+            "data_type": "numeric",
+            "display_name": "Day of the week",
+            "suffix": "",
+            "scale": "linear",
+            "bucket_width": 1
+        },
+        "worm_length": {
+            "data_type": "numeric",
+            "display_name": "Worm Length (μm)",
+            "suffix": "μm",
+            "scale": "linear",
+            "bucket_width": 1,
+            "rangeRound": [0, 210],
+            "stratify": 10
+        },
+        "path_range": {
+            "data_type": "numeric",
+            "display_name": "Path Range (μm)",
+            "suffix": "μm",
+            "scale": "linear",
+            "bucket_width": 5,
+            "rangeRound": [0, 400],
+            "stratify": 50
+        },
+        "strain": {
+            "data_type": "string",
+            "display_name": "Strain"
+        },
+        "allele": {
+            "data_type": "string",
+            "display_name": "Allele"
+        }
+    },
+    "charts": [
+        "hour",
+        "worm_length",
+        "path_range",
+        "iso_date"
+    ],
+    "results_display": [
+        "pretty_time",
+        "strain",
+        "allele",
+        "worm_length",
+        "path_range"
+    ],
     "max_results": 15,
-    
-    "worm_petri_dish": {
-        "width": 500,
-        "height": 400,
-        "MAX_WORMS_VISUALIZED": 100,
-        "m": 12
-    }
+    "datasetview_chart_index": 3,
+    "radio_button_grouping_field": "day_of_week",
 }

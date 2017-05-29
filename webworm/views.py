@@ -14,32 +14,7 @@ import json
 # For performance debugging only
 import time
 
-coreFeatures = {};
-
-# Global variables to control expensive operations as a tentative measure
-#  These ought to be populated only once. If the database changes, Django
-#  automatically refreshes the call into views.py, so these should get
-#  regenerated as well.
-param_min_list = [];
-param_max_list = [];
-
 # Support functions
-
-def loadCoreFeatures(featureFields, context):
-    global coreFeatures;
-    coreFeatures = json.loads(open('webworm/defaultCoreFeatures.json').read());
-    # Check that the features are in the database
-    allFeaturesList = [f.name for f in featureFields];
-    coreList = coreFeatures['features'];
-    presentList = [];
-    missingList = [];
-    for feature in coreList:
-        if feature['name'] in allFeaturesList:
-            presentList.append(feature);
-        else:
-            missingList.append(feature);
-    context['presentFeatures'] = presentList;
-    context['missingFeatures'] = missingList;
 
 def getFieldCounts(experiments, fieldName, fieldList, nullNameString):
     counts = {};
@@ -85,23 +60,6 @@ def processSearchField(key, db_filter, getRequest, experimentsList):
                              db_filter + '=searchTerm);');
     return returnList[0];
 
-def processSearchParameters(getRequest, featuresObjects, experimentsList):
-    returnList = [experimentsList];
-    # This is pretty painful, and requires us to traverse the request list for keys
-    #   instead of a forward search. Still looks more efficient than traversing
-    #   all 700+ parameters.
-    for key in getRequest.keys():
-        name = '';
-        if key.endswith('_minInput'):
-            name = key[:-9];
-            minVal = getRequest[key];
-            exec('returnList[0] = returnList[0].filter(featuresmeans__' + name + '__gte=minVal);');
-        elif key.endswith('_maxInput'):
-            name = key[:-9];
-            maxVal = getRequest[key];
-            exec('returnList[0] = returnList[0].filter(featuresmeans__' + name + '__lte=maxVal);');
-    return returnList[0];
-
 def processFeatures(getRequest, featuresObjects, experimentsList):
     returnList = [];
     listOfLists = [];
@@ -116,14 +74,7 @@ def processFeatures(getRequest, featuresObjects, experimentsList):
 
 def processSearchConfiguration(getRequest, experimentsList, featuresObjects):
     # Sane defaults
-#    pt0 = time.time();
-    exact = 'off';
-    case_sen = 'off';
     returnList = experimentsList;
-    if 'exact_match' in getRequest:
-        exact = getRequest['exact_match'];
-    if 'case_sensitive' in getRequest:
-        case_sen = getRequest['case_sensitive'];
     if 'start_date' in getRequest:
         start = getRequest['start_date'];
         if start:
@@ -150,12 +101,6 @@ def processSearchConfiguration(getRequest, experimentsList, featuresObjects):
                                     getRequest, returnList);
     returnList = processSearchField('experimenter', 'experimenter__name__exact', 
                                     getRequest, returnList);
-#    returnList = processSearchParameters(getRequest, featuresObjects, returnList);
-#    pt1 = time.time();
-#    print("------ PROCESS FIELDS ---------");
-#    print(pt1-pt0);
-#    pt0 = time.time();
-
     return returnList;
 
 def createFeaturesNames(featuresFields, context):
@@ -171,72 +116,6 @@ def createFeaturesNames(featuresFields, context):
     param_name_list = [x.name for x in parameter_field_list];
     context['parameter_name_list'] = param_name_list;
     
-
-def createParametersMetadata(featuresFields, featuresObjects, context):
-#    pt0 = time.time();
-    # This is clunky, there has to be a better way to do this.
-    parameter_field_list = tuple(x for x in featuresFields
-                                 if (x.name != "id") and 
-                                 (x.name != "experiment_id") and
-                                 (x.name != "worm_index") and
-                                 (x.name != "n_frames") and
-                                 (x.name != "n_valid_skel") and
-                                 (x.name != "first_frame")
-                                 );
-#    pt1 = time.time();
-#    print("------GET FEATURES LIST ---------");
-#    print(pt1-pt0);
-#    pt0 = time.time();
-
-    param_name_list = [x.name for x in parameter_field_list];
-#    pt1 = time.time();
-#    print("------GET FEATURES NAMES ---------");
-#    print(pt1-pt0);
-#    pt0 = time.time();
-#    param_jsgrid_name_list = [{"Parameter Name":x.name} for x in parameter_field_list];
-
-    # Compute only if not previously computed
-    global param_min_list;
-    if not param_min_list:
-    # *CWL* Hardcoding the name of the dictionary returned has to be the ugliest hack!
-        for field_min in parameter_field_list:
-            minval = featuresObjects.aggregate(Min(field_min.name)).get(field_min.name+'__min');
-            if (minval == None):
-                param_min_list.append("None");
-            else:
-                param_min_list.append(minval);
-        #    pt1 = time.time();
-        #    print("------GET FEATURES MIN ---------");
-        #    print(pt1-pt0);
-        #    pt0 = time.time();
-
-    # Compute only if not previously computed
-    global param_max_list;
-    if not param_max_list:
-        for field_max in parameter_field_list:
-            maxval = featuresObjects.aggregate(Max(field_max.name)).get(field_max.name+'__max');
-            #        pt1 = time.time();
-            #        print("------ FIND FIELD MAX ---------");
-            #        print(pt1-pt0);
-            #        pt0 = time.time();
-            if (maxval == None):
-                param_max_list.append("None");
-            else:
-                param_max_list.append(maxval);
-        #    pt1 = time.time();
-        #    print("------GET FEATURES MAX ---------");
-        #    print(pt1-pt0);
-        #    pt0 = time.time();
-
-    param_tuple_list = zip(param_name_list, param_min_list, param_max_list);
-    context['param_list'] = param_tuple_list;
-    context['parameter_name_list'] = param_name_list;
- #   pt1 = time.time();
- #   print("------FEATURES ZIP ---------");
- #   print(pt1-pt0);
- #  pt0 = time.time();
-    
-
 def createDiscreteFieldMetadata(experiments, context):
     experiments_count = experiments.count();
 
@@ -288,8 +167,6 @@ def createDiscreteFieldMetadata(experiments, context):
 # Create your views here.
 
 def index(request):
-#    tstart = time.time();
-#    t0 = tstart;
     form = SearchForm();
     context = {};
 
@@ -298,30 +175,9 @@ def index(request):
     db_experiment_count = experiments_list.count();
 
     createDiscreteFieldMetadata(experiments_list, context);
-#    t1 = time.time();
-#    print("***** CREATE DISCRETE META ******");
-#    print(t1-t0);
-#    t0 = time.time();
-
     featuresFields = FeaturesMeans._meta.get_fields();
-#    t1 = time.time();
-#    print("***** GET FEATURES FIELDS ******");
-#    print(t1-t0);
-#    t0 = time.time();
-
     featuresObjects = FeaturesMeans.objects.all();
-#    t1 = time.time();
-#    print("***** GET FEATURES OBJECTS ******");
-#    print(t1-t0);
-#    t0 = time.time();
-
-# *CWL* We no longer need this time-consuming task when using Crossfilter.
     createFeaturesNames(featuresFields, context);
-#    createParametersMetadata(featuresFields, featuresObjects, context);
-#    t1 = time.time();
-#    print("***** CREATE FEATURES META ******");
-#    print(t1-t0);
-#    t0 = time.time();
 
     experiment_date_min = experiments_list.aggregate(Min('date')).get('date__min');
     experiment_date_max = experiments_list.aggregate(Max('date')).get('date__max');
@@ -330,9 +186,6 @@ def index(request):
     results_count = 0;
     results_list = None;
 
-    # Get Core Parameters from JSON file
-    #   *CWL* deprecated by data stored in database
-    #    loadCoreFeatures(featuresFields, context);
     coreFeaturesObjects = Features.objects.all();
     isCore = coreFeaturesObjects.filter(is_core_feature__exact="1");
     presentList = [];
@@ -353,34 +206,9 @@ def index(request):
             results_count = results_list.count();
 
     context['db_experiment_count'] = db_experiment_count;
-# *CWL* This old operation was ridiculously expensive when all records were selected. 
-#    context['results_list'] = results_list;
     context['results_list'] = filteredList;
     context['results_count'] = results_count;
     context['min_date'] = experiment_date_min;
     context['max_date'] = experiment_date_max;
-#    context['search_string'] = search_string;
     context['form'] = form;
-#    t1 = time.time();
-#    print("***** TOTAL ******");
-#    print(t1-tstart);
     return render(request, 'webworm/index.html', context);
-
-# *CWL* - Consolidated into a single page.
-#def filter(request):
-#    form = SearchForm();
-#    experiments_list = Experiments.objects.order_by('base_name');
-#    db_experiment_count = experiments_list.count();
-#    search_string = '';
-#    if request.method == "GET":
-#        experiments_list = processSearchConfiguration(request.GET, experiments_list);
-#    if search_string == '':
-#        search_string = 'All';
-#    experiment_count = experiments_list.count();
-#    context = {'experiments_list': experiments_list, 
-#               'experiment_count': experiment_count,
-#               'db_experiment_count': db_experiment_count, 
-#               'search_string': search_string,
-#               'form':form }
-#    createDiscreteFieldMetadata(experiments_list, context);
-#    return render(request, 'webworm/results.html', context);
