@@ -59,7 +59,7 @@ path.tail {
     stroke-width: 2px;
 }
 #wormvisualization svg {
-    style: outline: thin solid grey;
+    style: outline: thin solid black;
     stroke: #000;
     fill: none;
     stoke-width: 4;
@@ -68,6 +68,12 @@ path.tail {
 circle {
     stroke: black;
     stroke-width: 5px;
+    fill: none;
+}
+
+.worm_skeleton {
+    stroke: blue;
+    stroke-width: 2;
     fill: none;
 }
 
@@ -82,7 +88,7 @@ pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
 
 
 #footer {
-    color: DimGray;
+    /*color: DimGray;*/
 }
 
 #footer .links a {
@@ -101,3 +107,9 @@ thead {
 .bad {
     color: red;
 }
+
+/*
+#wormVisualization .chart {
+    background: green;
+    /*opacity: 0.125;*/
+}*/
