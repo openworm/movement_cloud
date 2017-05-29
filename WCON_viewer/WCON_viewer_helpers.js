@@ -1,5 +1,11 @@
+///////////////////////////
+function onlyUnique(value, index, self) { 
+    return self.indexOf(value) === index;
+}
+// e.g. let unique = a.filter( onlyUnique );
 
 
+//////////////////////////
 function pivot_object(obj, key_column_name, value_column_name) {
     /* 
     This function pivots a key-value object into an array that can be
@@ -94,7 +100,7 @@ function syntaxHighlight(json) {
 
 
 ////////////////////////////////////////////
-function create_worm_animation(wcon_data_obj) {
+function create_worm_animation(wcon_data_obj, num_worms) {
     /* Create worm animation
 
     */
@@ -105,10 +111,9 @@ function create_worm_animation(wcon_data_obj) {
 
     var wcon_path;
 
-    const dish_radius = WORMVIZ_PARAMS.worm_petri_dish.radius;    
-    const NUM_WORMS = WORMVIZ_PARAMS.worm_petri_dish.NUM_WORMS;
-    
-    var spermatozoa = d3.range(NUM_WORMS).map(function() {
+    const dish_radius = WORMVIZ_PARAMS.worm_petri_dish.radius;
+   
+    var spermatozoa = d3.range(num_worms).map(function() {
         var x = Math.random() * (dish_radius*2),
             y = Math.random() * (dish_radius*2);
         return {
@@ -158,7 +163,7 @@ function create_worm_animation(wcon_data_obj) {
     var tail = g.selectAll("path");
     
     d3.timer(function() {
-        for (var i = -1; ++i < NUM_WORMS;) {
+        for (var i = -1; ++i < num_worms;) {
             var spermatozoon = spermatozoa[i],
                 path = spermatozoon.path,
                 dx = spermatozoon.vx,
@@ -189,13 +194,6 @@ function create_worm_animation(wcon_data_obj) {
                 } 
             }
 
-            //if (x < 0 || x > dish_radius*2) {
-            //    spermatozoon.vx *= -1;
-            //}
-            //if (y < 0 || y > dish_radius*2) {
-            //    spermatozoon.vy *= -1;
-            //}
-    
             // Swim!
             for (var j = 0; ++j < WORMVIZ_PARAMS.worm_petri_dish.m;) {
                 var vx = x - path[j][0],

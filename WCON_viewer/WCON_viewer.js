@@ -1,30 +1,28 @@
-// WCON Viewer
-// Views a WCON file, showing all its metadata and the path of the worm
-// WORM PETRI DISH VISUALIZATION CODE
-// sets up a d3.timer within the svg element of the wormVisualization div.
-//////////////
+/* 
+
+WCON Viewer
+
+Views a WCON file, showing all its metadata and the path of the worm
+WORM PETRI DISH VISUALIZATION CODE
+sets up a d3.timer within the svg element of the wormVisualization div.
+
+TODO: If there is a "files" entry, warn that this parser is not grabbing it.
+Ask the user to run the WCON file through the Python parser to fix.
+* Ask the user to run the WCON file through e.g. the Python parser to fix.
+
+TODO: If worms_ids.length < wcon_obj.data.length, then at least one
+      worm's "tracks" are being split over two or more wcon_obj.data
+      entries and again this parser cannot handle that.
+* Ask the user to run the WCON file through e.g. the Python parser to fix.
+
+TODO: Warn that unzipping cannot be handled, or else just handle it!
+      You can use (https://gildas-lormeau.github.io/zip.js/) perhaps.
+
+*/
+
 let wcon_objj; // DEBUG used for debugging
 
-const wcon_file_name = "smaller.wcon";
-
-simple_schema = {
-    "title": "Person",
-    "type": "object",
-    "properties": {
-        "firstName": {
-            "type": "string"
-        },
-        "lastName": {
-            "type": "string"
-        },
-        "age": {
-            "description": "Age in years",
-            "type": "integer",
-            "minimum": 0
-        }
-    },
-    "required": ["firstName", "lastName"]
-};
+const wcon_file_name = "smaller.wcon";  // DEBUG: hardcoded for now
 
 // Load the worm schema, and use this information to render some explanation
 // of what the WCON format is
@@ -108,7 +106,60 @@ function display_wcon(wcon_obj) {
     let units_pivoted = pivot_object(wcon_obj.units, "dimension", "units");
     tabulate(d3.select("#units"), units_pivoted, ["dimension", "units"]);
 
+
+    // Obtain a list of all unique worm ids
+    let worm_ids = []
+    wcon_obj.data.map(d => worm_ids.push(d.id));
+    let unique_worm_ids = worm_ids.filter(onlyUnique);
+
+    let data_info = d3.select("#data_info");
+    data_info.append("div")
+        .attr("class", "worm_ids")
+        .text("List of worm IDs: " + unique_worm_ids.toString());
+
+    if(unique_worm_ids.length !== wcon_obj.data.length) {
+        // This parser cannot handle the same worm split over multiple tracks
+        data_info.append("div")
+            .attr("class", "too_many_tracks_error")
+                .append("span").attr("class", "bad")
+                .text("ERROR: There are " + String(worm_ids.length) +
+                      " unique worm IDs but the data array's length is " + 
+                      String(wcon_obj.data.length) + ", when this parser " + 
+                      "requires they be equal. As it stands, at " +
+                      "least one worm's 'tracks' are being split over two " +
+                      "or more wcon_obj.data entries and again this parser " +
+                      "cannot handle that.  Please run the WCON file " + 
+                      "through another parser such as the Python parser " + 
+                      "to simplify the file, and then reload here.");
+    }
+
+    // FRAME RATE
+    // Assumes units are xs, where x is some scalar.
+    let frame_rate = parseFloat(wcon_obj.units.t.slice(0, -1));
+    // If the units were just "s", frame rate should be 1 frame / second.
+    if (isNaN(frame_rate)) { frame_rate = 1.0; }
+
+    data_info.append("div")
+        .attr("class", "frame_rate")
+            .append("span")
+            .text("Frame rate: " + frame_rate + " frames per second");
+
+    // TRACKS COUNT DATA
+    // Go through all tracks and grab the length of t and other data
+    let wcon_data_info = [];
+    for(let i=0; i<wcon_obj.data.length; i++) {
+        wcon_data_info.push({
+            "ID": wcon_obj.data[i].id,
+            "Number of Frames": wcon_obj.data[i].t.length,
+            "Seconds of footage": wcon_obj.data[i].t.length * frame_rate,
+            "Data Types": Object.keys(wcon_obj.data[i]).toString()
+        });
+    }
+    let wcon_data_columns = Object.keys(wcon_data_info[0]);
+    // Put this information in a nice useful table
+    tabulate(d3.select("#data_info"), wcon_data_info, wcon_data_columns);
+
     // Animate the worm's data
-    create_worm_animation(wcon_obj.data);
+    create_worm_animation(wcon_obj.data, unique_worm_ids.length);
 }
 
