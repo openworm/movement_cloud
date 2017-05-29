@@ -137,7 +137,12 @@ function display_wcon(wcon_obj) {
     // Assumes units are xs, where x is some scalar.
     let frame_rate = parseFloat(wcon_obj.units.t.slice(0, -1));
     // If the units were just "s", frame rate should be 1 frame / second.
-    if (isNaN(frame_rate)) { frame_rate = 1.0; }
+    if (isNaN(frame_rate)) {
+        frame_rate = 1.0;
+    } else {
+        // Convert from seconds per frame to the more familiar fps.
+        frame_rate = 1 / frame_rate;
+    }
 
     data_info.append("div")
         .attr("class", "frame_rate")
@@ -151,8 +156,12 @@ function display_wcon(wcon_obj) {
         wcon_data_info.push({
             "ID": wcon_obj.data[i].id,
             "Number of Frames": wcon_obj.data[i].t.length,
-            "Seconds of footage": wcon_obj.data[i].t.length * frame_rate,
-            "Data Types": Object.keys(wcon_obj.data[i]).toString()
+            "Seconds of footage": wcon_obj.data[i].t.length * (1/frame_rate),
+            "Data Types": Object.keys(wcon_obj.data[i]).toString(),
+            "x Min Articulation Pts": d3.min(wcon_obj.data[i].x.map(d => d.length)).toString(),
+            "x Max Articulation Pts": d3.max(wcon_obj.data[i].x.map(d => d.length)).toString(),
+            "y Min Articulation Pts": d3.min(wcon_obj.data[i].y.map(d => d.length)).toString(),
+            "y Max Articulation Pts": d3.max(wcon_obj.data[i].y.map(d => d.length)).toString(),
         });
     }
     let wcon_data_columns = Object.keys(wcon_data_info[0]);
