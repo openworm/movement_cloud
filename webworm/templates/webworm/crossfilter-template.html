@@ -1,41 +1,36 @@
 <div id="crossfilter_pane">
   <div id="header">
-    <h1 id="report_title"></h1>
+    <h1 id="crossfilter_report_title"></h1>
   </div>
-  <div id="body">
-    <div>
-      <a href="javascript:resetAll()" class="reset" style="margin-left: -10px; margin-bottom: 20px">Reset all</a>
+  <div>
+    <a href="javascript:resetAll()" class="reset" style="margin-left: -10px; margin-bottom: 20px">Reset all</a>
+  </div>
+  <div id='charts'>
+    <div id='chart0' class='chart'>
+      <div class='title'></div>
     </div>
-    <div id="charts">
-      <div id="hour-chart" class="chart">
-        <div class="title">Time of Day</div>
-      </div>
-      <div id="delay-chart" class="chart">
-        <div class="title">Worm length (microns)</div>
-      </div>
-      <div id="distance-chart" class="chart">
-        <div class="title">Distance travelled (microns)</div>
-      </div>
-      <div id="date-chart" class="chart">
-        <div class="title">Date</div>
-      </div>
+    <div id='chart1' class='chart'>
+      <div class='title'></div>
     </div>
-    
-    <div id="daySelectionDiv"></div>
-        
-    <div id="datasetview">
-      <div class="title"></div>
-      <canvas></canvas>
+    <div id='chart2' class='chart'>
+      <div class='title'></div>
     </div>
-        
-    <aside id="totals"><span id="active">-</span> of <span id="total">-</span> experiments selected.</aside>
-
-    <div id="wormVisualization">
-      <svg></svg>
+    <div id='chart3' class='chart'>
+      <div class='title'></div>
     </div>
-          
-    <div id="lists">
-      <div id="results-list" class="list"></div>
-    </div>
+  </div>
+  
+  <div id="daySelectionDiv"></div>
+  <div id="datasetview">
+    <div class="title"></div>
+    <canvas></canvas>
+  </div>
+  
+  <aside id='totals'>
+    <span id='active'>-</span> of <span id='total'>-</span> experiments selected.
+  </aside>
+  
+  <div id='lists'>
+    <div id='results-list' class='result_row_list'></div>
   </div>
 </div>  
