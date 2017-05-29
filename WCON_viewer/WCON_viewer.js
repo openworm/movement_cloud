@@ -5,57 +5,68 @@
 //////////////
 let wcon_objj; // DEBUG used for debugging
 
-function syntaxHighlight(json) {
-    if (typeof json != 'string') {
-         json = JSON.stringify(json, undefined, 2);
-    }
-    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-        var cls = 'number';
-        if (/^"/.test(match)) {
-            if (/:$/.test(match)) {
-                cls = 'key';
-            } else {
-                cls = 'string';
-            }
-        } else if (/true|false/.test(match)) {
-            cls = 'boolean';
-        } else if (/null/.test(match)) {
-            cls = 'null';
-        }
-        return '<span class="' + cls + '">' + match + '</span>';
-    });
-}
+const wcon_file_name = "smaller.wcon";
 
-d3.json("smaller.wcon", function(error, wcon_obj) {
-    if (error) { console.log(error) }
+// Load the worm schema, and use this information to render some explanation
+// of what the WCON format is
+d3.json(WORMVIZ_PARAMS.schema_url, function(error, schema_obj) {
+    let footer = d3.select("#footer");
 
-    // process the worm WCON file.
-    load_wcon_path(wcon_obj);
-    
+    footer.insert("div",".links").attr("class", "title")
+        .append("h3").text(schema_obj.title);
+
+    footer.insert("div",".links").attr("class", "description")
+        .append("p").text(schema_obj.description);
+
 });
 
-function load_wcon_path(wcon_obj) {
-    wcon_path = wcon_obj;
-    var wcon_path_x = wcon_obj.data[0].x[0];
-    var wcon_path_y = wcon_obj.data[0].y[0];
 
-    wcon_obj.metadata
+// Display this specific WCON file
+d3.json(wcon_file_name, function(error, wcon_obj) {
+    if (error) { console.log(error) }
 
+    let file_info = d3.select("#file_info");
+
+    file_info.append("div")
+        .attr("class", "file_info")
+        .text("File name: " + String(wcon_file_name));
+
+    file_info.append("div")
+        .attr("class", "validation_state")
+        .text("Validation state: " + "UNKNOWN");
+
+
+    // process the worm WCON file.
+    display_wcon(wcon_obj); 
+});
+
+
+function display_wcon(wcon_obj) {
     wcon_objj = wcon_obj;  // DEBUG
 
-    d3.select("#units").append("div")
-        .attr("class", "units")
-        .text("UNITS:")
-        .append("pre")
-            .node().innerHTML = syntaxHighlight(wcon_obj.units);
+    get_wcon_path(wcon_obj.data);
 
+    // Units
+    let units_pivoted = pivot_object(wcon_obj.units, "dimension", "units");
+    tabulate(d3.select("#units"), units_pivoted, ["dimension", "units"]);
+
+    // 
     d3.select("#metadata").append("div")
         .attr("class", "metadata")
-        .text("METADATA:")
         .append("pre")
             .node().innerHTML = syntaxHighlight(wcon_obj.metadata);
 }
+
+
+function get_wcon_path(wcon_data_obj) {
+    var wcon_path_x = wcon_data_obj[0].x[0];
+    var wcon_path_y = wcon_data_obj[0].y[0];
+}
+
+
+
+////////////////////////////////////////////
+// Visualization
 
 var wcon_path;
 
@@ -142,3 +153,8 @@ function headTransform(d) {
 function tailPath(d) {
     return "M" + d.join("L");
 }
+
+
+
+
+

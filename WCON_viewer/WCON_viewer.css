@@ -177,6 +177,11 @@ label.notSelected {
     color: lightgray;
 }
 
+/* For tables */
+td, th {
+  padding: 1px 4px;
+}
+
 
 
 ellipse {
@@ -203,9 +208,19 @@ path.tail {
 }
 
 
+/* For JSON syntax highlighting */
 pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
 .string { color: green; }
 .number { color: darkorange; }
 .boolean { color: blue; }
 .null { color: magenta; }
 .key { color: red; }
+
+
+#footer {
+    color: DarkGray;
+}
+
+#footer .links a {
+    display: block;
+}

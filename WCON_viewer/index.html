@@ -4,13 +4,15 @@
         <meta charset='utf-8'>
         <title>WCON Viewer</title>
 
-        <link rel="stylesheet" href="WCON_viewer.css">
-        <script src="wormviz_parameters.js"></script>
+        <link rel="stylesheet" href="WCON_viewer.css?version=2">
+        <script src="wormviz_parameters.js?version=2"></script>
 
         <script src="d3.v4.min.js" defer></script>
         <script src="babel.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/5.1.5/ajv.min.js"></script>
 
-        <script src="WCON_viewer.js?version=2" defer></script>
+        <script src="WCON_viewer_helpers.js?version=5" defer></script>
+        <script src="WCON_viewer.js?version=7" defer></script>
     </head>
 </html>
 <body>
@@ -18,14 +20,25 @@
         <h1>WCON Viewer</h1>
     </div>
 
-    <div id="units">
+    <div id="file_info"><h3>FILE INFORMATION:</h3>
+    </div>
+
+    <div id="units"><h3>UNITS:</h3>
     </div>
 
 
-    <div id="metadata">
+    <div id="metadata"><h3>METADATA:</h3>
     </div>
 
-    <div id="wormVisualization">
+    <div id="wormVisualization"><h3>DATA:</h3>
       <svg></svg>
+    </div>
+
+    <div id="footer">
+        <div class="links">
+            <a href="https://github.com/openworm/tracker-commons/blob/master/WCON_format.md">WCON Specification</a>
+            <a href="https://github.com/openworm/tracker-commons/blob/master/wcon_schema.json">WCON Schema</a>
+            <a href="https://github.com/openworm/tracker-commons">WCON Parsers</a>
+        </div>
     </div>
 </body>
