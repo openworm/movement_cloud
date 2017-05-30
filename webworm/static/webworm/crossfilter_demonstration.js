@@ -56,7 +56,7 @@ function create_crossfilter(data_rows) {
     let x_filter_dimension = [];
     let x_filter_dimension_grouped = [];
 
-    for(let i=0; i<4; i++) {
+    for(let i=0; i<XFILTER_PARAMS.num_fields; i++) {
         // First get what field goes in chart i
         let cur_data_field = XFILTER_PARAMS.charts[i];
         // Then lookup all the stuff about that field
@@ -66,6 +66,10 @@ function create_crossfilter(data_rows) {
         // Add it to our list of x_filter dimensions
         x_filter_dimension.push(cur_xfilter_dim);
 
+	// Use jQuery to create and append chart template
+	$('#charts').append('<div id="chart' + i +'" class="chart">' +
+			    '<div class="title"></div>' +
+			    '</div>');
         // Add the title of the chart
         d3.selectAll("#chart"+String(i)+" .title").text(cur_field_attrs.display_name);
 
@@ -108,7 +112,7 @@ function create_crossfilter(data_rows) {
     // Create each chart with the proper scale and dimensions, and connect
     // them to the crossfilter data.
     const charts = []
-    for(let i=0; i<4; i++) {
+    for(let i=0; i<XFILTER_PARAMS.num_fields; i++) {
         let cur_field = XFILTER_PARAMS.charts[i];
         let cur_attr = XFILTER_PARAMS.data_fields[cur_field];
         let cur_domain = [];

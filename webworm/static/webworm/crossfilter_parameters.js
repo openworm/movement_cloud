@@ -1,6 +1,7 @@
 var XFILTER_PARAMS = {
     "report_title": "Open Worm Movement Database: Crossfilter of Results",
     "data_file": dataFilePath,
+    "num_fields": 4,
     "data_fields": {
         "timestamp": {
             "data_type": "string",
