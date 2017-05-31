@@ -174,13 +174,13 @@ function create_worm_animation(wcon_data_obj, num_worms) {
         }
     }
 
-    function getSkeleton(wormIndex, frameIndex) {
+    function getSkeleton(worm_index, frame_index) {
         // For a given worm and frame index, obtain an array of "x", "y" dicts
         // containing that frame's points.
         let points = [];
-        for(let len=wcon_data_obj[wormIndex].x[0].length, j=0; j<len; j++) {
-            points.push({"x": wcon_data_obj[wormIndex].x[frameIndex][j],
-                         "y": wcon_data_obj[wormIndex].y[frameIndex][j] })
+        for(let len=wcon_data_obj[worm_index].x[0].length, j=0; j<len; j++) {
+            points.push({"x": wcon_data_obj[worm_index].x[frame_index][j],
+                         "y": wcon_data_obj[worm_index].y[frame_index][j] })
         }
         return points;
     }
@@ -206,13 +206,14 @@ function create_worm_animation(wcon_data_obj, num_worms) {
         frame_index++;
         // Reset the animation if it has reached the end
         if (frame_index >= num_frames) { frame_index = 0; }
-        let skeleton = lineFunction(getSkeleton(worm_index, frame_index));
 
-        if(skeleton[0].x !== null) {
+        if(wcon_data_obj[worm_index].x[frame_index][0] !== null) {
+            let skeleton_line = lineFunction(getSkeleton(worm_index,
+                                                         frame_index));
             worm_skeleton_DOM
                 .classed("worm_skeleton", true)
                 .classed("worm_skeleton_nan", false)
-                .attr("d", skeleton);
+                .attr("d", skeleton_line);
         } else {
             // If the skeleton is just NaNs, go "grey" and don't move.
             worm_skeleton_DOM
