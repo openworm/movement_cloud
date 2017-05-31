@@ -103,7 +103,9 @@ function create_crossfilter(data_rows) {
         redraw_datasetview();
     }
 
-    let updateDaySelection = createRadioButtons(data_xfilter, renderAll);
+    // *CWL* - I don't think we need this, and it adds unnecessary complexity to
+    //    the data processing code.
+    //    let updateDaySelection = createRadioButtons(data_xfilter, renderAll);
 
     // Create the datasetview widget, and obtain a callback function that
     // when called, refreshes the widget.
@@ -183,8 +185,9 @@ function create_crossfilter(data_rows) {
         let filters = [null, null, null, null];
         filters.forEach(function(d, i) { charts[i].filter(d); });
 
+	// *CWL* - I don't think we need this
         // Passing true to updateDaySelection ensures the checkboxes are reset
-        updateDaySelection(true);
+	//        updateDaySelection(true);
 
         renderAll();
     };

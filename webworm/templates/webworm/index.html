@@ -30,18 +30,20 @@
 </div>
 
 {% load static %}
+
 <script type="text/javascript"> 
   if ({{ results_count }} > 0) {
     $('#tabsUL a[href="#crossfilterPane"]').trigger('click');
   }
+  var dataFilePath = "{% static 'webworm/worm_mock_data.csv' %}";
+  var crossfilterData = {{ results_list }};
+  var discreteFieldData = {{ discrete_field_counts|safe }};
+  var discreteFieldMetadata = {{ discrete_field_meta|safe }};
+  var discreteFieldNames = {{ discrete_field_names|safe }};
 </script>
 
-<script src="{% static "webworm/paginate-discrete.js" %}"></script>
-<script src="{% static "webworm/paginate-cf-parameters.js" %}"></script>
-
-<script type="text/javascript"> 
-  var dataFilePath = "{% static 'webworm/worm_mock_data.csv'%}";
-</script>
+<script src="{% static 'webworm/paginate-discrete.js' %}"></script>
+<script src="{% static 'webworm/paginate-cf-parameters.js' %}"></script>
 
 <script src="{% static 'webworm/crossfilter_parameters.js' %}"></script>
 

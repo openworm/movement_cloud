@@ -1,21 +1,11 @@
-var discreteMap = [
-		   'strains',
-		   'trackers',
-		   'sex',
-		   'dev',
-		   'ventral',
-		   'food',
-		   'arena',
-		   'habituation',
-		   'experimenter',
-		   ];
+// Discrete information
+var discreteElementsPerRow = 2;
+var discreteConfirmElementsPerRow = 4;
 var hiddenDiscreteIndex = 1;
-var discreteTables = new Array(discreteMap.length);
-var confirmTables = new Array(discreteMap.length);
 
 // On Form Submission, populate the discrete search parameters
 var submitFunction = function() {
-    for (var disIdx=0; disIdx<discreteMap.length; disIdx++) {
+    for (var disIdx=0; disIdx<discreteFieldMetadata.length; disIdx++) {
 	var fieldString = '';
 	confirmTables[disIdx].rows().every( function(index) {
 		var data = this.data();
@@ -24,93 +14,148 @@ var submitFunction = function() {
 	// remove last excess comma
         fieldString = fieldString.substring(0, fieldString.length - 1);
 	//	alert(fieldString);
-	$('#'+discreteMap[disIdx]+'InputList').val(fieldString);
+	$('#'+discreteFieldMetadata[disIdx]+'InputList').val(fieldString);
     }
 }
 
-$(document).ready(function() {
+var populateDiscreteTables = function() {
+    for (var currIdx=0; currIdx < discreteFieldMetadata.length; currIdx++) {
+	let rowIdx = Math.floor(currIdx/discreteElementsPerRow);
+	let confirmRowIdx = Math.floor(currIdx/discreteConfirmElementsPerRow);
+	if (currIdx%discreteElementsPerRow == 0) {
+	    // create a new row
+	    $('#discreteFieldsContentPane').append('<hr><div class="row" id="dRow' +
+						   rowIdx + '"></div>');
+	}
+	if (currIdx%discreteConfirmElementsPerRow == 0) {
+	    // create a new row of confirmation tables
+	    $('#confirm_fields_panel').append('<dir class="row" id="dConfirmRow' +
+					      confirmRowIdx + '"></div>');
+	}
+	// Insert and populate record tables
+	$('#dRow' + rowIdx).append('<div class="col-sm-6">' +
+				   '<h4>' + discreteFieldNames[currIdx] + ' Records</h4>' +
+				   '<a href="#sum_' + discreteFieldMetadata[currIdx] + '_panel"' +
+				   'class="btn btn-info" data-toggle="collapse">' +
+				   'Toggle ' + discreteFieldNames[currIdx] + '</a>' +
+				   '<div id="sum_' + discreteFieldMetadata[currIdx] + '_panel"' +
+				   'class="collapse">' +
+				   '<table id="sum_' + discreteFieldMetadata[currIdx] + '"' +
+				   'class="table table-striped table-bordered table-responsive">' +
+				   '<thead>' +
+				   '<tr>' +
+				   '<th>Name</th>' +
+				   '<th>Num Experiments</th>' +
+				   '</tr>' +
+				   '</thead>' +
+				   '<tbody id="dBody' + currIdx + '">' +
+				   '</tbody>' +
+				   '</table>' +
+				   '</div>');
+	for (var recordIdx=0; recordIdx<discreteFieldData[currIdx].length; recordIdx++) {
+	    $('#dBody' + currIdx).append('<tr>' +
+					 '<td>' + discreteFieldData[currIdx][recordIdx][0] + '</td>' +
+					 '<td>' + discreteFieldData[currIdx][recordIdx][1] + '</td>' +
+					 '</tr>');
+	}
+	// Insert empty confirmation tables
+	$('#dConfirmRow' + confirmRowIdx).append('<div class="col-sm-3">' +
+						 '<p><b>' + discreteFieldNames[currIdx] + 
+						 '</b></p>' +
+						 '<table id="' + discreteFieldMetadata[currIdx] +
+						 'Confirm" class="table table-striped ' +
+						 'table-bordered table-responsive">' +
+						 '<thead>' +
+						 '<tr><th>Name</th></tr>' +
+						 '</thead>' +
+						 '<tbody>' +
+						 '</tbody>' +
+						 '</table>' +
+						 '</div>');
+    }
+    // Insert line breaks for main tables
+    $('#discreteFieldsContentPane').append('<hr>');
+}
 
-	var selectEventFactory = function(discreteTable, confirmTable, discreteIndex) {
-	    var returnFunction = function(e, dt, type, indexes) {
-		var localDiscreteTable = discreteTable;
-		var localConfirmTable = confirmTable;
-		var localDiscreteIndex = discreteIndex;
-		if ( type === 'row' ) {
-		    var origData = localDiscreteTable.rows(indexes).data();
-		    var selectLength = indexes.length;
-		    for (var sIdx=0; sIdx<selectLength; sIdx++) {
-			if (!localDiscreteIndex[indexes[sIdx]]) {
-			    localDiscreteIndex[indexes[sIdx]] = "true";
-			    var data = [];
-			    // *CWL* This is an annoying hardcode.
-			    data.push(origData[sIdx][0]); // name of parameter
-			    data.push(indexes[sIdx]);
-			    localConfirmTable.row.add(data);
-			}
-		    }
-		    localConfirmTable.draw();
+var selectEventFactory = function(discreteTable, confirmTable, discreteIndex) {
+    var returnFunction = function(e, dt, type, indexes) {
+	var localDiscreteTable = discreteTable;
+	var localConfirmTable = confirmTable;
+	var localDiscreteIndex = discreteIndex;
+	if ( type === 'row' ) {
+	    var origData = localDiscreteTable.rows(indexes).data();
+	    var selectLength = indexes.length;
+	    for (var sIdx=0; sIdx<selectLength; sIdx++) {
+		if (!localDiscreteIndex[indexes[sIdx]]) {
+		    localDiscreteIndex[indexes[sIdx]] = "true";
+		    var data = [];
+		    // *CWL* This is an annoying hardcode.
+		    data.push(origData[sIdx][0]); // name of parameter
+		    data.push(indexes[sIdx]);
+		    localConfirmTable.row.add(data);
 		}
 	    }
-	    return returnFunction;
+	    localConfirmTable.draw();
 	}
+    }
+    return returnFunction;
+}
 	
-	var deselectEventFactory = function(discreteTable, confirmTable, discreteIndex) {
-	    var returnFunction = function(e, dt, type, indexes) {
-		var localDiscreteTable = discreteTable;
-		var localConfirmTable = confirmTable;
-		var localDiscreteIndex = discreteIndex;
-		if ( type === 'row' ) {
-		    var selectLength = indexes.length;
-		    for (var sIdx=0; sIdx<selectLength; sIdx++) {
-			if (localDiscreteIndex[indexes[sIdx]]) {
-			    delete localDiscreteIndex[indexes[sIdx]];
-			    localConfirmTable.row( function(idx, data, node){
-				    return data[hiddenDiscreteIndex] === 
-					indexes[sIdx]?true:false;
-				}).remove();
-			}
-		    }
-		    localConfirmTable.draw();
+var deselectEventFactory = function(discreteTable, confirmTable, discreteIndex) {
+    var returnFunction = function(e, dt, type, indexes) {
+	var localDiscreteTable = discreteTable;
+	var localConfirmTable = confirmTable;
+	var localDiscreteIndex = discreteIndex;
+	if ( type === 'row' ) {
+	    var selectLength = indexes.length;
+	    for (var sIdx=0; sIdx<selectLength; sIdx++) {
+		if (localDiscreteIndex[indexes[sIdx]]) {
+		    delete localDiscreteIndex[indexes[sIdx]];
+		    localConfirmTable.row( function(idx, data, node){
+			    return data[hiddenDiscreteIndex] === 
+				indexes[sIdx]?true:false;
+			}).remove();
 		}
 	    }
-	    return returnFunction;
+	    localConfirmTable.draw();
 	}
-
-	var discreteIndices = new Array(discreteMap.length);
-	for (var disIdx=0; disIdx<discreteMap.length; disIdx++) {
-	    discreteIndices[disIdx] = {};
-	}
-
-	for (var disIdx=0; disIdx<confirmTables.length; disIdx++) {
-	    confirmTables[disIdx] = $('#'+discreteMap[disIdx]+'Confirm').DataTable( {
-		    "columnDefs": [ {
-			    "targets":[hiddenDiscreteIndex],
-			    "visible": false,
-			    "searchable": false
-			},],
-		    "bFilter": false,
-		    deferRender:    true,
-		    scrollY:        200,
-		    scrollCollapse: true,
-		    scroller:       true,
-		});
-	    discreteTables[disIdx] = $('#sum_'+ discreteMap[disIdx]).DataTable( {
-		    dom: 'Blfrtip',
-		    buttons: [
-			      'selectAll',
-			      'selectNone',
-			      ],
-		    select: {
-			style: 'multi'
-		    }
-		});
-	    var discreteTable = discreteTables[disIdx];
-	    var discreteIndex = discreteIndices[disIdx];
-	    var confirmTable = confirmTables[disIdx];
-	    discreteTable.on('select', 
-			     selectEventFactory(discreteTable, confirmTable, discreteIndex));
-	    discreteTable.on('deselect', 
-			     deselectEventFactory(discreteTable, confirmTable, discreteIndex));
-	}
-
-    } );
+    }
+    return returnFunction;
+}
+    
+populateDiscreteTables();
+var discreteIndices = new Array(discreteFieldMetadata.length);
+var discreteTables = new Array(discreteFieldMetadata.length);
+var confirmTables = new Array(discreteFieldMetadata.length);
+for (var disIdx=0; disIdx<discreteFieldMetadata.length; disIdx++) {
+    discreteIndices[disIdx] = {};
+    discreteTables[disIdx] = $('#sum_'+ discreteFieldMetadata[disIdx]).DataTable( {
+	    dom: 'Blfrtip',
+	    buttons: [
+		      'selectAll',
+		      'selectNone',
+		      ],
+	    select: {
+		style: 'multi'
+	    }
+	});
+    confirmTables[disIdx] = $('#'+discreteFieldMetadata[disIdx]+'Confirm').DataTable( {
+	    "columnDefs": [ {
+		    "targets":[hiddenDiscreteIndex],
+		    "visible": false,
+		    "searchable": false
+		},],
+	    "bFilter": false,
+	    deferRender:    true,
+	    scrollY:        200,
+	    scrollCollapse: true,
+	    scroller:       true,
+	});
+    var discreteTable = discreteTables[disIdx];
+    var discreteIndex = discreteIndices[disIdx];
+    var confirmTable = confirmTables[disIdx];
+    discreteTable.on('select', 
+		     selectEventFactory(discreteTable, confirmTable, discreteIndex));
+    discreteTable.on('deselect', 
+		     deselectEventFactory(discreteTable, confirmTable, discreteIndex));
+}
