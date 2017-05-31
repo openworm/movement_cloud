@@ -124,12 +124,12 @@ function create_worm_animation(wcon_data_obj, num_worms) {
 
     // set the chart scale to accommodate the data extent
     let scaleX = d3.scaleLinear()
-        .domain([limitsX[0] - rangeX, limitsX[1] + rangeX])
-        .range([0, dish_radius*2])
+        .domain([limitsX[0] - rangeX/3, limitsX[1] + rangeX/3])
+        .range([0, dish_radius*2]);
 
     let scaleY = d3.scaleLinear()
-        .domain([limitsY[0] - rangeY, limitsY[1] + rangeY])
-        .range([0, dish_radius*2])
+        .domain([limitsY[0] - rangeY/3, limitsY[1] + rangeY/3])
+        .range([0, dish_radius*2]);
 
     ///////////////////
     // Create visual elements
@@ -168,8 +168,10 @@ function create_worm_animation(wcon_data_obj, num_worms) {
     // Path of the worm's head across the whole video
     let fullHeadPath = [];
     for(let len=wcon_data_obj[0].x.length, i=0; i<len; i++) {
-        fullHeadPath.push({"x": wcon_data_obj[worm_index].x[i][0],
-                           "y": wcon_data_obj[worm_index].y[i][0] })
+        if(wcon_data_obj[worm_index].x[i][0] !== null) {
+            fullHeadPath.push({"x": wcon_data_obj[worm_index].x[i][0],
+                               "y": wcon_data_obj[worm_index].y[i][0] })
+        }
     }
 
     function getSkeleton(wormIndex, frameIndex) {
@@ -196,7 +198,8 @@ function create_worm_animation(wcon_data_obj, num_worms) {
     let frame_index = 0;
     const num_frames = wcon_data_obj[worm_index].t.length;
 
-    // TODO: have the frames arrive at the correct time.    
+    // TODO: have the frames arrive at the correct time.
+    // TODO: add an svg representing the head of the worm.
 
     // Animate the worm's skeleton over time
     d3.timer(function() {
@@ -204,6 +207,17 @@ function create_worm_animation(wcon_data_obj, num_worms) {
         // Reset the animation if it has reached the end
         if (frame_index >= num_frames) { frame_index = 0; }
         let skeleton = lineFunction(getSkeleton(worm_index, frame_index));
-        worm_skeleton_DOM.attr("d", skeleton);
+
+        if(skeleton[0].x !== null) {
+            worm_skeleton_DOM
+                .classed("worm_skeleton", true)
+                .classed("worm_skeleton_nan", false)
+                .attr("d", skeleton);
+        } else {
+            // If the skeleton is just NaNs, go "grey" and don't move.
+            worm_skeleton_DOM
+                .classed("worm_skeleton", false)
+                .classed("worm_skeleton_nan", true);
+        }
     });
 }
