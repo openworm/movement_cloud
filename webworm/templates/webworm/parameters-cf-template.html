@@ -9,7 +9,7 @@
 	</tr>
       </thead>
       <tbody>
-	{% for feature in presentFeatures|dictsort:"name" %}
+	{% for feature in core_features|dictsort:"name" %}
 	<tr>
 	  <td> {{ feature.name }} </td>
 	  <td> {{ feature.desc }} </td>

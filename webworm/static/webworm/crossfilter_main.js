@@ -4,45 +4,55 @@
 //
 "use strict";
 
-// Get the data
-d3.csv(XFILTER_PARAMS.data_file, (error, data_rows) => {
-    if(error) { console.log(error); }
+if (hasCFData) {
+    XFILTER_PARAMS = createXfilterParams(XFILTER_PARAMS, crossfilterData);
+    generateXfilterDerivedColumns(crossfilterData);
+    processCrossfilterData(crossfilterData);
+} else {
+    // If no data is available, use the default example from a file
+    d3.csv(XFILTER_PARAMS.data_file, crossfilter_callback);
+}
 
-    // Set the titles in the report
+function crossfilter_callback(error, data_rows) {
+    if (error) { console.log(error); }
+    processCrossfilterData(data_rows);
+}
+
+function processCrossfilterData(data_rows) {
+   // Set the titles in the report
     document.title = XFILTER_PARAMS.report_title;
     let title_element = document.getElementById("crossfilter_report_title");
     title_element.innerHTML = XFILTER_PARAMS.report_title;
-
+    
     // A little coercion, since the CSV is untyped.
     data_rows.forEach((d, i) => {
-        // Create an index element
-        d.index = i;
-
-        // Parse numeric fields to be numeric.
-        const display_fields = Object.keys(XFILTER_PARAMS.data_fields);
-        for (let len = display_fields.length, i=0; i<len; i++) {
-            const cur_field = display_fields[i];
-            const cur_attrs = XFILTER_PARAMS.data_fields[cur_field];
-            // If cur_field is supposed to be numeric, convert it from String
-            // to numeric.
-            if (cur_attrs.data_type == "numeric") {
-                d[cur_field] = +d[cur_field];
-            }
-            if (cur_attrs.data_type == "iso_date") {
-                d[cur_field] = d3.isoParse(d[cur_field]);
-                // Be sure to set the time component to 0 to get consistent
-                // EOD dates
-                d[cur_field].setHours(0,0,0,0);
-            }
-        }        
-
-        // Parse the timestamp into an actual Date object
-        d.timestamp = parseDate(d.timestamp);
+      // Create an index element
+      d.index = i;
+		    
+      // Parse numeric fields to be numeric.
+      const display_fields = Object.keys(XFILTER_PARAMS.data_fields);
+      for (let len = display_fields.length, i=0; i<len; i++) {
+	  const cur_field = display_fields[i];
+	  const cur_attrs = XFILTER_PARAMS.data_fields[cur_field];
+	  // If cur_field is supposed to be numeric, convert it from String
+	  // to numeric.
+	  if (cur_attrs.data_type == "numeric") {
+	      d[cur_field] = +d[cur_field];
+	  }
+	  if (cur_attrs.data_type == "iso_date") {
+	      d[cur_field] = d3.isoParse(d[cur_field]);
+	      // Be sure to set the time component to 0 to get consistent
+	      // EOD dates
+	      d[cur_field].setHours(0,0,0,0);
+	  }
+      }        
+      
+      // Parse the timestamp into an actual Date object
+      d.timestamp = parseDate(d.timestamp);
     });
-
+	    
     create_crossfilter(data_rows);
-})
-
+}
 
 function create_crossfilter(data_rows) {
     // Array that holds the currently selected "in-filter" selected records
@@ -56,7 +66,7 @@ function create_crossfilter(data_rows) {
     let x_filter_dimension = [];
     let x_filter_dimension_grouped = [];
 
-    for(let i=0; i<XFILTER_PARAMS.num_fields; i++) {
+    for(let i=0; i<XFILTER_PARAMS.num_display_fields; i++) {
         // First get what field goes in chart i
         let cur_data_field = XFILTER_PARAMS.charts[i];
         // Then lookup all the stuff about that field
@@ -114,7 +124,7 @@ function create_crossfilter(data_rows) {
     // Create each chart with the proper scale and dimensions, and connect
     // them to the crossfilter data.
     const charts = []
-    for(let i=0; i<XFILTER_PARAMS.num_fields; i++) {
+    for(let i=0; i<XFILTER_PARAMS.num_display_fields; i++) {
         let cur_field = XFILTER_PARAMS.charts[i];
         let cur_attr = XFILTER_PARAMS.data_fields[cur_field];
         let cur_domain = [];

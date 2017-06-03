@@ -1,7 +1,7 @@
 var XFILTER_PARAMS = {
-    "report_title": "Open Worm Movement Database: Crossfilter of Results",
+    "report_title": "OpenWorm Movement Database: [EXAMPLE] Crossfilter of Results",
     "data_file": dataFilePath,
-    "num_fields": 4,
+    "num_display_fields": 4,
     "data_fields": {
         "timestamp": {
             "data_type": "string",
@@ -76,10 +76,10 @@ var XFILTER_PARAMS = {
         }
     },
     "charts": [
+	"iso_date",
         "hour",
         "worm_length",
         "path_range",
-        "iso_date"
     ],
     "results_display": [
         "pretty_time",
