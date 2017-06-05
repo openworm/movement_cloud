@@ -14,34 +14,34 @@ import json
 # For performance debugging only
 import time
 
-coreFeatures = {};
+# Global discrete field management information
+discreteFields = {
+    'strains': ('strain','Strains','Strains','None'),
+    'trackers': ('tracker','Trackers','Trackers','Unknown'),
+    'dev': ('developmental_stage','Developmental Stage','DevelopmentalStages','None'),
+    'ventral': ('ventral_side','Ventral Side','VentralSides','Unknown'),
+    'food': ('food','Food','Foods','Unknown'), 
+    'arena': ('arena','Arena','Arenas','None'),
+    'habituation': ('habituation','Habituation','Habituations','Unknown'),
+    'experimenter': ('experimenter','Experimenter','Experimenters','Unknown')
+    };
 
-# Global variables to control expensive operations as a tentative measure
-#  These ought to be populated only once. If the database changes, Django
-#  automatically refreshes the call into views.py, so these should get
-#  regenerated as well.
-param_min_list = [];
-param_max_list = [];
+# Default core features for landing page
+defaultCoreFeatures = [
+    'length',
+    'midbody_bend_mean_abs',
+    'midbody_speed_abs',
+    ];
+
+# In preparation for a cleaner way to handle results columns in Crossfilter
+defaultResultsInformation = [
+    { 'dbfield':'date', 'xFilterTag':'timestamp', 'label':'Local Date'},
+    { 'dbfield':'strain__name', 'xFilterTag':'strain', 'label':'Strain'},
+    { 'dbfield':'strain__allele__name', 'xFilterTag':'allele', 'label':'Allele'},
+    ];
 
 # Support functions
-
-def loadCoreFeatures(featureFields, context):
-    global coreFeatures;
-    coreFeatures = json.loads(open('webworm/defaultCoreFeatures.json').read());
-    # Check that the features are in the database
-    allFeaturesList = [f.name for f in featureFields];
-    coreList = coreFeatures['features'];
-    presentList = [];
-    missingList = [];
-    for feature in coreList:
-        if feature['name'] in allFeaturesList:
-            presentList.append(feature);
-        else:
-            missingList.append(feature);
-    context['presentFeatures'] = presentList;
-    context['missingFeatures'] = missingList;
-
-def getFieldCounts(experiments, fieldName, fieldList, nullNameString):
+def getDiscreteFieldCounts(experiments, fieldName, fieldList, nullNameString):
     counts = {};
     param = fieldName + '__name__exact';
     for element in fieldList:
@@ -49,9 +49,23 @@ def getFieldCounts(experiments, fieldName, fieldList, nullNameString):
             counts[element] = experiments.filter(**{param:element}).count();
         else:
             counts[nullNameString] = experiments.filter(**{param:element}).count();
-    return sorted(counts.items());
+    return sorted([list(tuple) for tuple in counts.items()]);
 
-def processSearchField(key, db_filter, getRequest, experimentsList):
+def getDiscreteFieldMetadata(experiments, context):
+    global discreteFields;
+    experiments_count = experiments.count();
+    fieldCounts = [];
+    for tag,field in discreteFields.items():
+        exec('' + tag + '_list = ' + field[2] + 
+             '.objects.order_by("name").values_list("name", flat=True).distinct();');
+        exec('' + tag + '_counts = getDiscreteFieldCounts(experiments, "' + field[0] +
+             '", ' + tag + '_list, "' + field[3] + '");');
+        exec('fieldCounts.append(' + tag + '_counts);');
+    context['discrete_field_meta'] = [tag for tag,field in discreteFields.items()];
+    context['discrete_field_names'] = [field[1] for tag,field in discreteFields.items()];
+    context['discrete_field_counts'] = fieldCounts;
+
+def processSearchField(key, db_filter, getRequest, dbRecords):
     # *CWL* This deals with a bizzarre difference in the way exec() behaves between
     #  Python 2 and Python 3 with regard to local variable assignment inside the
     #  call to exec() I do not yet fully understand. Quite by accident, I discovered
@@ -61,7 +75,7 @@ def processSearchField(key, db_filter, getRequest, experimentsList):
     #  this as the intended idiom in Python 3 to execute dynamic code driven by
     #  variables (in our case - "db_filter" which is a variable string but needed to 
     #  be code text when applied to a function parameter.)
-    returnList = [Experiments.objects.none()];
+    returnDbRecords = [Experiments.objects.none()];
     if key in getRequest:
         searchList = getRequest[key].split(',');
         if searchList:
@@ -72,7 +86,7 @@ def processSearchField(key, db_filter, getRequest, experimentsList):
             #   essentially a null operation. This conditional checks for it, and
             #   turns it into essentially a null operation.
             if (len(searchList) == 1) and (searchList[0] == ''):
-                returnList[0] = experimentsList;
+                returnDbRecords[0] = dbRecords;
             else:
                 for searchTerm in searchList:
                     # *CWL* This check may not actually be necessary, but is included
@@ -81,82 +95,36 @@ def processSearchField(key, db_filter, getRequest, experimentsList):
                     #   operation which translates to an expensive null operation, 
                     #   we ignore it.
                     if searchTerm != '':
-                        exec('returnList[0] = returnList[0] | experimentsList.filter(' + 
+                        exec('returnDbRecords[0] = returnDbRecords[0] | dbRecords.filter(' + 
                              db_filter + '=searchTerm);');
-    return returnList[0];
+    return returnDbRecords[0];
 
-def processSearchParameters(getRequest, featuresObjects, experimentsList):
-    returnList = [experimentsList];
-    # This is pretty painful, and requires us to traverse the request list for keys
-    #   instead of a forward search. Still looks more efficient than traversing
-    #   all 700+ parameters.
+# Produces a list of features data rows given a list of headers
+def processFeatures(inHeaders, dbRecords):
+    returnList = [];
+    # Makes a copy
+    headerList = inHeaders[:];
+    listOfLists = [];
+    for feature in headerList:
+        exec('listOfLists.append(' +
+             'dbRecords.values_list("featuresmeans__' +
+             feature + '",flat="true"));');
+    returnList = [list(item) for item in zip(*listOfLists)];
+    return (returnList,headerList);
+
+# Produces a list of features data rows given a GET request construct
+def processFeaturesFromGet(getRequest, dbRecords):
+    headerList = [];
     for key in getRequest.keys():
         name = '';
-        if key.endswith('_minInput'):
-            name = key[:-9];
-            minVal = getRequest[key];
-            exec('returnList[0] = returnList[0].filter(featuresmeans__' + name + '__gte=minVal);');
-        elif key.endswith('_maxInput'):
-            name = key[:-9];
-            maxVal = getRequest[key];
-            exec('returnList[0] = returnList[0].filter(featuresmeans__' + name + '__lte=maxVal);');
-    return returnList[0];
+        if key.endswith('_isFeature'):
+            name = key[:-10];
+            headerList.append(name);
+    return processFeatures(headerList, dbRecords);
 
-def processSearchConfiguration(getRequest, experimentsList, featuresObjects):
-    # Sane defaults
-    exact = 'off';
-    case_sen = 'off';
-    returnList = experimentsList;
-    if 'exact_match' in getRequest:
-        exact = getRequest['exact_match'];
-    if 'case_sensitive' in getRequest:
-        case_sen = getRequest['case_sensitive'];
-# *CWL* It has been agreed that searching by experiment "name" is not productive.
-#    if 'search_name' in getRequest:
-#        search = getRequest['search_name'];
-#        if search:
-#            search_string = search_string + ' String:' + search;
-#            if exact == 'on' and case_sen == 'on':
-#                experimentsList = experimentsList.filter(base_name__exact=search);
-#            elif exact == 'on' and case_sen == 'off':
-#                experimentsList = experimentsList.filter(base_name__iexact=search);
-#            elif exact == 'off' and case_sen == 'on':
-#                experimentsList = experimentsList.filter(base_name__contains=search);
-#            else: # default 'off' and 'off'
-#                experimentsList = experimentsList.filter(base_name__icontains=search);
-    if 'start_date' in getRequest:
-        start = getRequest['start_date'];
-        if start:
-            returnList = returnList.filter(date__gte=start);
-    if 'end_date' in getRequest:
-        end = getRequest['end_date'];
-        if end:
-            returnList = returnList.filter(date__lte=end);
-    returnList = processSearchField('strains', 'strain__name__exact', 
-                                    getRequest, returnList);
-    returnList = processSearchField('trackers', 'tracker__name__exact', 
-                                     getRequest, returnList);
-    returnlist = processSearchField('sex', 'sex__name__exact', 
-                                    getRequest, returnList);
-    returnList = processSearchField('dev', 'developmental_stage__name__exact', 
-                                    getRequest, returnList);
-    returnList = processSearchField('ventral', 'ventral_side__name__exact', 
-                                    getRequest, returnList);
-    returnList = processSearchField('food', 'food__name__exact', 
-                                    getRequest, returnList);
-    returnList = processSearchField('arena', 'arena__name__exact', 
-                                    getRequest, returnList);
-    returnList = processSearchField('habituation', 'habituation__name__exact', 
-                                    getRequest, returnList);
-    returnList = processSearchField('experimenter', 'experimenter__name__exact', 
-                                    getRequest, returnList);
-    returnList = processSearchParameters(getRequest, featuresObjects, returnList);
-
-    return returnList;
-    
-def createParametersMetadata(featuresFields, featuresObjects, context):
-#    pt0 = time.time();
-    # This is clunky, there has to be a better way to do this.
+def getFeaturesNames(featuresFields, context):
+    # This is clunky, there has to be a better way to do this (filter out
+    #   features table's metadata columns.)
     parameter_field_list = tuple(x for x in featuresFields
                                  if (x.name != "id") and 
                                  (x.name != "experiment_id") and
@@ -165,113 +133,61 @@ def createParametersMetadata(featuresFields, featuresObjects, context):
                                  (x.name != "n_valid_skel") and
                                  (x.name != "first_frame")
                                  );
-#    pt1 = time.time();
-#    print("------GET FEATURES LIST ---------");
-#    print(pt1-pt0);
-#    pt0 = time.time();
-
     param_name_list = [x.name for x in parameter_field_list];
-#    pt1 = time.time();
-#    print("------GET FEATURES NAMES ---------");
-#    print(pt1-pt0);
-#    pt0 = time.time();
-#    param_jsgrid_name_list = [{"Parameter Name":x.name} for x in parameter_field_list];
-
-    # Compute only if not previously computed
-    global param_min_list;
-    if not param_min_list:
-    # *CWL* Hardcoding the name of the dictionary returned has to be the ugliest hack!
-        for field_min in parameter_field_list:
-            minval = featuresObjects.aggregate(Min(field_min.name)).get(field_min.name+'__min');
-            if (minval == None):
-                param_min_list.append("None");
-            else:
-                param_min_list.append(minval);
-        #    pt1 = time.time();
-        #    print("------GET FEATURES MIN ---------");
-        #    print(pt1-pt0);
-        #    pt0 = time.time();
-
-    # Compute only if not previously computed
-    global param_max_list;
-    if not param_max_list:
-        for field_max in parameter_field_list:
-            maxval = featuresObjects.aggregate(Max(field_max.name)).get(field_max.name+'__max');
-            #        pt1 = time.time();
-            #        print("------ FIND FIELD MAX ---------");
-            #        print(pt1-pt0);
-            #        pt0 = time.time();
-            if (maxval == None):
-                param_max_list.append("None");
-            else:
-                param_max_list.append(maxval);
-        #    pt1 = time.time();
-        #    print("------GET FEATURES MAX ---------");
-        #    print(pt1-pt0);
-        #    pt0 = time.time();
-
-    param_tuple_list = zip(param_name_list, param_min_list, param_max_list);
-    context['param_list'] = param_tuple_list;
     context['parameter_name_list'] = param_name_list;
- #   pt1 = time.time();
- #   print("------FEATURES ZIP ---------");
- #   print(pt1-pt0);
- #  pt0 = time.time();
     
+def featuresNotNone(headers, row):
+    for feature in headers:
+        if row[feature] == None:
+            return False;
+    return True;
 
-def createDiscreteFieldMetadata(experiments, context):
-    experiments_count = experiments.count();
+def eliminateNonFeatureRows(featuresHeader, inList):
+    outList = [x for x in inList if featuresNotNone(featuresHeader, x)];
+    return outList;
 
-    # Strains
-    strain_list = Strains.objects.order_by('name').values_list('name', flat=True).distinct();
-    strain_counts = getFieldCounts(experiments, 'strain', strain_list, 'None');
-    context['strain_counts'] = strain_counts;
+def processSearchConfiguration(getRequest, experimentsList):
+    global discreteFields;
+    returnList = experimentsList;
+    if 'start_date' in getRequest:
+        start = getRequest['start_date'];
+        if start:
+            returnList = returnList.filter(date__gte=start);
+    if 'end_date' in getRequest:
+        end = getRequest['end_date'];
+        if end:
+            returnList = returnList.filter(date__lte=end);
+    for tag,field in discreteFields.items():
+        returnList = processSearchField(tag, field[0]+'__name__exact', 
+                                        getRequest, returnList);
+    return returnList;
 
-    # Trackers
-    trackers_list = Trackers.objects.order_by('name').values_list('name', flat=True).distinct();
-    trackers_counts = getFieldCounts(experiments, 'tracker', trackers_list, 'Unknown');
-    context['trackers_counts'] = trackers_counts;
+def constructSearchContext(featuresInfo, results_list, context):
+    featuresList = featuresInfo[0];
+    headerList = featuresInfo[1];
+    # Clone the list for only the features
+    featuresHeaderList = headerList[:];
+    # *CWL* Find a way to eliminate this horrid hardcode
+    headerList.insert(0,'allele');
+    headerList.insert(0,'strain');
+    headerList.insert(0,'timestamp');
+    dataList = [list(item) for item in 
+                results_list.values_list('date','strain__name','strain__allele__name')];
+    slicedList = [item[1:3] for item in dataList];
+    dateList = [[item] for item in 
+                [entry[0].strftime("%Y%m%d%H%M") for entry in dataList]];
+    tempList = [list(item) for item in zip(dateList,slicedList,featuresList)];
+    returnList = [dict(zip(headerList,listLine)) for listLine in 
+                  [[item for sublist in l for item in sublist] for l in tempList]];
+    returnList = eliminateNonFeatureRows(featuresHeaderList, returnList);
+    results_count = len(returnList);
+    context['features_headers'] = featuresHeaderList;
+    context['results_list'] = returnList;
+    context['results_count'] = results_count;
 
-    # Sex - should we even need to have this field discoverable?
-    sex_list = Sexes.objects.order_by('name').values_list('name', flat=True).distinct();
-    sex_counts = getFieldCounts(experiments, 'sex', sex_list, 'Unknown');
-    context['sex_counts'] = sex_counts;
-
-    # Development Stages
-    dev_stage_list = DevelopmentalStages.objects.order_by('name').values_list('name', flat=True).distinct();
-    dev_stage_counts = getFieldCounts(experiments, 'developmental_stage', dev_stage_list, 'None');
-    context['dev_stage_counts'] = dev_stage_counts;
-
-    # Ventral Side - again, should we even need this?
-    ventral_list = VentralSides.objects.order_by('name').values_list('name', flat=True).distinct();
-    ventral_counts = getFieldCounts(experiments, 'ventral_side', ventral_list, 'Unknown');
-    context['ventral_counts'] = ventral_counts;
-
-    # Food
-    food_list = Foods.objects.order_by('name').values_list('name', flat=True).distinct();
-    food_counts = getFieldCounts(experiments, 'food', food_list, 'Unknown');
-    context['food_counts'] = food_counts;
-
-    # Arena - I'm assuming this has valid categories instead of being a free-form descriptor
-    arena_list = Arenas.objects.order_by('name').values_list('name', flat=True).distinct();
-    arena_counts = getFieldCounts(experiments, 'arena', arena_list, 'None');
-    context['arena_counts'] = arena_counts;
-    
-    # Habituation really ought to be a time-based field
-    habit_list = Habituations.objects.order_by('name').values_list('name', flat=True).distinct();
-    habit_counts = getFieldCounts(experiments, 'habituation', habit_list, 'Unknown');
-    context['habit_counts'] = habit_counts;
-
-    # Experimenter
-    experimenter_list = Experimenters.objects.order_by('name').values_list('name', flat=True).distinct();
-    experimenter_counts = getFieldCounts(experiments, 'experimenter', experimenter_list, 'Unknown');
-    context['experimenter_counts'] = experimenter_counts;
-            
 # Create your views here.
 
 def index(request):
-#    tstart = time.time();
-#    t0 = tstart;
     form = SearchForm();
     context = {};
 
@@ -279,30 +195,8 @@ def index(request):
     experiments_list = Experiments.objects.all();
     db_experiment_count = experiments_list.count();
 
-    createDiscreteFieldMetadata(experiments_list, context);
-#    t1 = time.time();
-#    print("***** CREATE DISCRETE META ******");
-#    print(t1-t0);
-#    t0 = time.time();
-
-    featuresFields = FeaturesMeans._meta.get_fields();
-#    t1 = time.time();
-#    print("***** GET FEATURES FIELDS ******");
-#    print(t1-t0);
-#    t0 = time.time();
-
-    featuresObjects = FeaturesMeans.objects.all();
-#    t1 = time.time();
-#    print("***** GET FEATURES OBJECTS ******");
-#    print(t1-t0);
-#    t0 = time.time();
-
-    createParametersMetadata(featuresFields, featuresObjects, context);
-#    t1 = time.time();
-#    print("***** CREATE FEATURES META ******");
-#    print(t1-t0);
-#    t0 = time.time();
-
+    getDiscreteFieldMetadata(experiments_list, context);
+    getFeaturesNames(FeaturesMeans._meta.get_fields(), context);
 
     experiment_date_min = experiments_list.aggregate(Min('date')).get('date__min');
     experiment_date_max = experiments_list.aggregate(Max('date')).get('date__max');
@@ -311,50 +205,36 @@ def index(request):
     results_count = 0;
     results_list = None;
 
-    # Get Core Parameters from JSON file
-    #   *CWL* deprecated by data stored in database
-    #    loadCoreFeatures(featuresFields, context);
+    # Produce list of core features
     coreFeaturesObjects = Features.objects.all();
     isCore = coreFeaturesObjects.filter(is_core_feature__exact="1");
-    presentList = [];
+    coreFeaturesList = [];
     for coreFeature in isCore:
-        presentList.append({'name':coreFeature.name,'desc':coreFeature.description});
-    context['presentFeatures'] = presentList;
+        coreFeaturesList.append({'name':coreFeature.name,'desc':coreFeature.description});
+    context['core_features'] = coreFeaturesList;
 
+    returnList = [];
+    # If anything else loads, loadDefault is set to False
+    loadDefault = True;
     if request.method == "GET":
-        if (len(request.GET.keys()) > 0):
+        # Look for crossfilter requests first.
+        if (request.GET.__contains__("crossfilter")):
+            loadDefault = False;
             results_list = processSearchConfiguration(request.GET, 
-                                                      Experiments.objects.order_by('base_name'),
-                                                      featuresObjects);
-            results_count = results_list.count();
+                                                      Experiments.objects.order_by('base_name'));
+            featuresInfo = processFeaturesFromGet(request.GET, results_list);
+            constructSearchContext(featuresInfo, results_list, context);        
 
+    # If the previous phase did not result in any loads from the database, load default
+    if loadDefault:
+        # All experiments are chosen by default
+        results_list = Experiments.objects.order_by('base_name');
+        featuresInfo = processFeatures(defaultCoreFeatures, results_list);
+        constructSearchContext(featuresInfo, results_list, context);        
+
+    # Produce static database context information
     context['db_experiment_count'] = db_experiment_count;
-    context['results_list'] = results_list;
-    context['results_count'] = results_count;
     context['min_date'] = experiment_date_min;
     context['max_date'] = experiment_date_max;
-#    context['search_string'] = search_string;
     context['form'] = form;
-#    t1 = time.time();
-#    print("***** TOTAL ******");
-#    print(t1-tstart);
     return render(request, 'webworm/index.html', context);
-
-# *CWL* - Consolidated into a single page.
-#def filter(request):
-#    form = SearchForm();
-#    experiments_list = Experiments.objects.order_by('base_name');
-#    db_experiment_count = experiments_list.count();
-#    search_string = '';
-#    if request.method == "GET":
-#        experiments_list = processSearchConfiguration(request.GET, experiments_list);
-#    if search_string == '':
-#        search_string = 'All';
-#    experiment_count = experiments_list.count();
-#    context = {'experiments_list': experiments_list, 
-#               'experiment_count': experiment_count,
-#               'db_experiment_count': db_experiment_count, 
-#               'search_string': search_string,
-#               'form':form }
-#    createDiscreteFieldMetadata(experiments_list, context);
-#    return render(request, 'webworm/results.html', context);

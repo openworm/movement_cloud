@@ -5,7 +5,7 @@
     <title>Worm Movement Database</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Worm Movement Database">
-    <meta name="author" content="cheelee@openworm.org">
+    <meta name="author" content="cheelee@openworm.org, mcurrie@openworm.org">
     {% load staticfiles %}
     <link rel="shortcut icon" href="{%  static 'favicon.ico' %}">
     
@@ -20,7 +20,10 @@
     <!-- Keeping the last old one used: Buttons + Select + Bootstrap
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs/dt-1.10.13/b-1.2.4/se-1.2.0/datatables.min.css"/>
     -->
- 
+    <link rel="stylesheet" href="{% static 'webworm/worm_style.css' %}" />
+    <!-- Crossfilter support -->
+    <link rel="stylesheet" href="{% static 'webworm/worm_filter.css' %}" />
+
     <!-- Scripts -->
     <!-- jQuery and Bootstrap -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
@@ -37,11 +40,19 @@
 
   <header class="jumbotron subhead" id="overview">
     <div class="container">
-      <h1>Worm Movement Database</h1>
-      <p class="lead">
-	A Prototype implementation of the Worm Movement Database Browser Tool.
-      <p>Total number of experiments in database = {{ db_experiment_count }} </p>
-      </p>
+     <div class="title_with_logo">
+      <table>
+        <tr>
+          <th><img src="{%  static 'logo_small.png' %}" width="128" height="128"></th>
+          <th>
+            <h1>Open Worm Movement Database</h1>
+            <p class="lead">
+              <p>Total number of experiments in database = {{ db_experiment_count }} </p>
+            </p>
+          </th>
+        </tr>
+      </table>
+    </div>
     </div>
   </header>
 

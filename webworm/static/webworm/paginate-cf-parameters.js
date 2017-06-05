@@ -25,11 +25,6 @@ $(document).ready(function() {
 	    });
 
 	var confirmParamTable = $('#confirmParameters').DataTable( {
-		"pageLength": 5,
-		// *CWL* Forced to turn pagination off for this table for now.
-		// Paging redraw mechanics for DataTables work poorly with
-		//   jQuery sliders. Perhaps we can find a work-around.
-		"bPaginate": false,
 	    });
 
 	// *CWL* In the case of features, the name of the feature makes for a
@@ -68,12 +63,6 @@ $(document).ready(function() {
 		    var selectLength = indexes.length;
 		    for (var i=0; i<selectLength; i++) {
 			var paramName = origData[i][0];
-			var minValue = Number(origData[i][1]);
-			var maxValue = Number(origData[i][2]);
-
-			var labelMinElement = "labelMin_" + indexes[i];
-			var labelMaxElement = "labelMax_" + indexes[i];
-			var sliderElement = "slider_" + indexes[i];
 
 			// This particular check is extremely important now
 			//   that we have 2 bound tables.
@@ -81,20 +70,9 @@ $(document).ready(function() {
 			    (selectedParamIndices[paramName] === "core")) {
 			    // Insert entries only from the full table, and not core.
 			    var data = [];
-			    data.push(paramName);
-			    data.push(minValue);
-			    data.push(maxValue);
-			    data.push('<p><label for="' + labelMinElement + '">From:</label>' +
-				      '<input type="text" id="' + labelMinElement + '" readonly' + 
-				      ' name="' + paramName + '_minInput" value=""' +
-				      ' style="border:0; color:#f6931f; font-weight:bold;">' +
-				      '</p>' +
-				      '<p><label for="' + labelMaxElement + '">To:</label>' +
-				      '<input type="text" id="' + labelMaxElement + '" readonly' + 
-				      ' name="' + paramName + '_maxInput" value=""' +
-				      ' style="border:0; color:#f6931f; font-weight:bold;">' +
-				      '</p>' +
-				      '<div id="' + sliderElement + '"></div>');
+			    data.push(paramName + 
+				      '<input type="hidden" readonly' +
+				      ' name="' + paramName + '_isFeature" />');
 			    confirmParamTable.row.add(data);
 			    selectedParamIndices[paramName] = "full";
 
@@ -108,37 +86,6 @@ $(document).ready(function() {
 		    // Draw the other two tables
 		    coreParamTable.draw();
 		    confirmParamTable.draw();
-
-		    // This second loop is to allow an optimization where each row
-		    //   does not have to be drawn immediately. Sliders are implemented
-		    //   in a way that requires the slider elements to be drawn before
-		    //   they can be manipulated.
-		    for (var i=0; i<selectLength; i++) {
-			var minValue = Number(origData[i][1]);
-			var maxValue = Number(origData[i][2]);
-			var rangeStep = (maxValue - minValue)/100.0;
-
-			// Dealing with the quirks of rounding where sliders are concerned
-			var searchMin = minValue - rangeStep;
-			var searchMax = maxValue + rangeStep;
-			
-			var labelMinElement = "labelMin_" + indexes[i];
-			var labelMaxElement = "labelMax_" + indexes[i];
-			var sliderElement = "slider_" + indexes[i];
-			$("#" + sliderElement).slider({
-				range: true,
-				    min: searchMin,
-				    max: searchMax,
-				    values: [searchMin, searchMax],
-				    step: rangeStep,
-				    slide: function(event, ui) {
-				    $("#" + labelMinElement).val(ui.values[0]);
-				    $("#" + labelMaxElement).val(ui.values[1]);
-				}
-			    });
-			$("#"+labelMinElement).val($("#"+sliderElement).slider("values", 0));
-			$("#"+labelMaxElement).val($("#"+sliderElement).slider("values", 1));
-		    }
 		}
 	    } );
 

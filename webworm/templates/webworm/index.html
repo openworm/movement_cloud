@@ -4,8 +4,8 @@
 <div class="container" id="master">
 
   <ul class="nav nav-tabs" id="tabsUL">
-    <li class="active"><a data-toggle="tab" href="#searchPane">Search Tools</a></li>
-    <li><a data-toggle="tab" href="#resultsPane">Results</a></li>
+    <li class="active"><a data-toggle="tab" href="#searchPane">Filter Tools</a></li>
+    <li><a data-toggle="tab" href="#crossfilterPane">Crossfilter Results</a></li>
  </ul>
 
   <div class="tab-content">
@@ -14,31 +14,48 @@
       {% include "webworm/search-template.html" %}
     </div>
 
-    <!-- Results Panel -->
-    <div class="tab-pane fade" id="resultsPane">
-      {% if results_list %}
-        {% include "webworm/results-template.html" %}
-      {% else %}
-      <div>
-	<!-- Idea for the future, a small random sample here? -->
-	<h3>No Search Results</h3>
-	<p>Please use the "Search Tools" tab to filter desired experiments for data download.<p>
-      </div>
-      {% endif %}
+    <!-- Cross Filter Panel -->
+    <div class="tab-pane fade" id="crossfilterPane">
+      {% include "webworm/crossfilter-template.html" %}
     </div>
-
   </div>
+
+<!-- *CWL* FOR MICHAEL - Output of Data that can be sent to client from server for
+     Crossfiltering
+  {% for item in results_list %}
+  <p>{{ item }}</p>
+  {% endfor %}
+-->
 
 </div>
 
 {% load static %}
+
 <script type="text/javascript"> 
+  var hasCFData = false;
   if ({{ results_count }} > 0) {
-    $('#tabsUL a[href="#resultsPane"]').trigger('click');
+    $('#tabsUL a[href="#crossfilterPane"]').trigger('click');
+    hasCFData = true;
   }
+  var dataFilePath = "{% static 'webworm/worm_mock_data.csv' %}";
+  var crossfilterData = {{ results_list|safe }};
+  var crossfilterHeader = {{ features_headers|safe }};
+  var discreteFieldData = {{ discrete_field_counts|safe }};
+  var discreteFieldMetadata = {{ discrete_field_meta|safe }};
+  var discreteFieldNames = {{ discrete_field_names|safe }};
 </script>
 
-<script src="{% static "webworm/paginate-discrete.js" %}"></script>
-<script src="{% static "webworm/paginate-parameters.js" %}"></script>
-<script src="{% static "webworm/paginate-results.js" %}"></script>
+<script src="{% static 'webworm/paginate-discrete.js' %}"></script>
+<script src="{% static 'webworm/paginate-cf-parameters.js' %}"></script>
+
+<script src="{% static 'webworm/crossfilter_parameters.js' %}"></script>
+
+<script src="{% static 'webworm/crossfilter.min.js' %}"></script>
+<script src="{% static 'webworm/d3.v4.min.js' %}"></script>
+<script src="{% static 'webworm/babel.min.js' %}"></script>
+
+<script src="{% static 'webworm/crossfilter_bar_chart.js' %}"></script>
+<script src="{% static 'webworm/crossfilter_helpers.js' %}"></script>
+<script src="{% static 'webworm/crossfilter_main.js' %}"></script>
+
 {% endblock %}

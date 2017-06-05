@@ -9,7 +9,7 @@
 	</tr>
       </thead>
       <tbody>
-	{% for feature in presentFeatures|dictsort:"name" %}
+	{% for feature in core_features|dictsort:"name" %}
 	<tr>
 	  <td> {{ feature.name }} </td>
 	  <td> {{ feature.desc }} </td>
@@ -19,20 +19,6 @@
     </table>
   </div>
   <hr>
-  {% if missingFeatures %}
-  <div>
-    <h4>Warning - Some Chosen Core Features Missing from Database</h4>
-    <a href="#missingFeaturesPanel" class="btn btn-warning" data-toggle="collapse">Click for List of Missing Features</a>
-    <div id="missingFeaturesPanel" class="collapse">
-      <ul>
-	{% for feature in missingFeatures %}
-	<li>{{ feature.name }}: "{{ feature.desc }}"</li>
-	{% endfor %}
-      </ul>
-    </div>
-  </div>
-  <hr>
-  {% endif %}
   <div>
     <h4>List of All Features</h4>
     <a href="#allFeaturesPanel" class="btn btn-info" data-toggle="collapse">Toggle All Features</a>
@@ -41,16 +27,12 @@
 	<thead>
 	  <tr>
 	    <th>Name</th>
-	    <th>Minimum</th>
-	    <th>Maximum</th>
 	  </tr>
 	</thead>
 	<tbody>
-	  {% for name, min, max in param_list %}
+	  {% for name in parameter_name_list %}
 	  <tr>
 	    <td>{{ name }}</td>
-	    <td>{{ min }}</td>
-	    <td>{{ max }}</td>
 	  </tr>
 	  {% endfor %}
 	</tbody>
