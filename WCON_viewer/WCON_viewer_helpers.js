@@ -102,10 +102,22 @@ function syntaxHighlight(json) {
 
 
 ////////////////////////////////////////////
-function create_worm_animation(wcon_data_obj, num_worms) {
+function create_worm_animation(DOM_viz, worm_data_obj) {
     /* Create worm animation
-
+    
+        Parameters
+        ----------
+        
+        DOM_viz: the d3 selection for the DOM element containing an SVG for
+                 the vizualization
+        
+        worm_data_obj: the data of the worm to animate
     */
+    // Clear the old visualization
+    DOM_viz.selectAll("svg")
+        // remove all child elements of the svg element
+        .selectAll("*").remove();
+    
     const max_width = WORMVIZ_PARAMS.worm_petri_dish.max_width;
     const max_height = WORMVIZ_PARAMS.worm_petri_dish.max_height;
     // Allow margin for the full circle stroke to be visible
@@ -117,8 +129,8 @@ function create_worm_animation(wcon_data_obj, num_worms) {
     }
 
     // Find extents of data
-    let limitsX = getLimitsNestedArray(wcon_data_obj[0].x);
-    let limitsY = getLimitsNestedArray(wcon_data_obj[0].y);
+    let limitsX = getLimitsNestedArray(worm_data_obj.x);
+    let limitsY = getLimitsNestedArray(worm_data_obj.y);
     let domainSizeX = limitsX[1] - limitsX[0];
     if (domainSizeX === 0) {
         console.log("data X has 0-size domain.  Aborting."); return;
@@ -153,12 +165,10 @@ function create_worm_animation(wcon_data_obj, num_worms) {
 
     // set the chart scale to accommodate the data extent
     let scaleX = d3.scaleLinear()
-//        .domain([limitsX[0] - domainSizeX/3, limitsX[1] + domainSizeX/3])
         .domain([limitsX[0], limitsX[1]])
         .range([0, width]);
 
     let scaleY = d3.scaleLinear()
-//        .domain([limitsY[0] - domainSizeY/3, limitsY[1] + domainSizeY/3])
         .domain([limitsY[0], limitsY[1]])
         .range([0, height]);
 
@@ -171,7 +181,7 @@ function create_worm_animation(wcon_data_obj, num_worms) {
         .on("zoom", zoomed);
 
     // Create visual elements
-    var svg = d3.select("#wormVisualization").selectAll("svg")
+    var svg = DOM_viz.selectAll("svg")
         .attr("width", svg_width)
         .attr("height", svg_height)
             // Enable pan and zoom
@@ -220,27 +230,22 @@ function create_worm_animation(wcon_data_obj, num_worms) {
         yAxisGroup.call(yAxis.scale(d3.event.transform.rescaleY(scaleY)));
     }
 
-
-
-    // TODO: loop to animate all worms here instead of just one ([0])
-    const worm_index = 0;
-
     // Path of the worm's head across the whole video
     let fullHeadPath = [];
-    for(let len=wcon_data_obj[0].x.length, i=0; i<len; i++) {
-        if(wcon_data_obj[worm_index].x[i][0] !== null) {
-            fullHeadPath.push({"x": wcon_data_obj[worm_index].x[i][0],
-                               "y": wcon_data_obj[worm_index].y[i][0] })
+    for(let len=worm_data_obj.x.length, i=0; i<len; i++) {
+        if(worm_data_obj.x[i][0] !== null) {
+            fullHeadPath.push({"x": worm_data_obj.x[i][0],
+                               "y": worm_data_obj.y[i][0] })
         }
     }
 
-    function getSkeleton(worm_index, frame_index) {
+    function getSkeleton(frame_index) {
         // For a given worm and frame index, obtain an array of "x", "y" dicts
         // containing that frame's points.
         let points = [];
-        for(let len=wcon_data_obj[worm_index].x[0].length, j=0; j<len; j++) {
-            points.push({"x": wcon_data_obj[worm_index].x[frame_index][j],
-                         "y": wcon_data_obj[worm_index].y[frame_index][j] })
+        for(let len=worm_data_obj.x[0].length, j=0; j<len; j++) {
+            points.push({"x": worm_data_obj.x[frame_index][j],
+                         "y": worm_data_obj.y[frame_index][j] })
         }
         return points;
     }
@@ -253,10 +258,10 @@ function create_worm_animation(wcon_data_obj, num_worms) {
     // Start at frame 0
     let worm_skeleton_DOM = view.append("path")
         .attr("class", "worm_skeleton")
-        .attr("d", lineFunction(getSkeleton(worm_index, 0)));
+        .attr("d", lineFunction(getSkeleton(0)));
 
     let frame_index = 0;
-    const num_frames = wcon_data_obj[worm_index].t.length;
+    const num_frames = worm_data_obj.t.length;
 
     // TODO: have the frames arrive at the correct time.
     // TODO: add an svg representing the head of the worm.
@@ -267,9 +272,8 @@ function create_worm_animation(wcon_data_obj, num_worms) {
         // Reset the animation if it has reached the end
         if (frame_index >= num_frames) { frame_index = 0; }
 
-        if(wcon_data_obj[worm_index].x[frame_index][0] !== null) {
-            let skeleton_line = lineFunction(getSkeleton(worm_index,
-                                                         frame_index));
+        if(worm_data_obj.x[frame_index][0] !== null) {
+            let skeleton_line = lineFunction(getSkeleton(frame_index));
             worm_skeleton_DOM
                 .classed("worm_skeleton", true)
                 .classed("worm_skeleton_nan", false)

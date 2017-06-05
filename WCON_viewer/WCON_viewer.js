@@ -169,6 +169,34 @@ function display_wcon(wcon_obj) {
     tabulate(d3.select("#data_info"), wcon_data_info, wcon_data_columns);
 
     // Animate the worm's data
-    create_worm_animation(wcon_obj.data, unique_worm_ids.length);
-}
+    create_worm_animation(d3.select("#wormVisualization"), wcon_obj.data[0]);
+                          
+    // Allow a choice of unique_worm_ids
+    d3.select("#worm_picker").selectAll("select")
+        // First selectAll from the non-existent "option" list otherwise
+        // .enter will miss the first array element
+        .selectAll("option")
+        .data(worm_ids).enter()
+            .insert("option")
+            .attr("value", (d, i) => String(i))
+            .text((d, i) => d)
+            // Let's select the first item by default
+            .attr("selected", (d, i) => (i === 0) ? "selected" : null);
 
+    // Now listen for changes to the worm selection list
+    let selectList = document.getElementById("wormDropDownMenu");
+    function worm_picker_selection_made(changeEvent) {
+        console.log(selectList.value);
+
+        // Restart the worm animation with the new worm choice
+        create_worm_animation(d3.select("#wormVisualization"),
+                              wcon_obj.data[selectList.value])
+    }
+    if(document.readyState === 'complete') {
+        selectList.addEventListener("change", worm_picker_selection_made);
+    } else {
+        document.addEventListener('DOMContentLoaded', function() {
+            selectList.addEventListener("change", worm_picker_selection_made);
+        });
+    }
+}

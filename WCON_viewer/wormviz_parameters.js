@@ -1,5 +1,5 @@
 var WORMVIZ_PARAMS = {
-    "WCON_data_file": "larger.wcon",
+    "WCON_data_file": "smaller.wcon",
     "schema_url": "https://raw.githubusercontent.com/openworm/tracker-commons/master/wcon_schema.json",
     
     "worm_petri_dish": {
