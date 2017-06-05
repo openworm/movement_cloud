@@ -1,13 +1,82 @@
 "use strict";
 
+var pretty_month_names = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+			   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
+
+function downloadResults() {
+    // *CWL* - Michael, how do we go about getting ALL the selected elements and not just
+    //    the ones on display?
+    var returnText = "";
+    $('.results_list_row').each(function (index,element) {
+	    returnText = returnText + index.toString() + "\n";
+	});
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,'+encodeURIComponent(returnText));
+    element.setAttribute('download', 'results.txt');
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+}
+
 function parseDate(d) {
     // Parse the date.
     // (this function is like d3.time.format, but faster)
     return new Date(d.substring(0,4),
-        d.substring(4, 6) - 1,
+	d.substring(4, 6) - 1,
         d.substring(6, 8),
         d.substring(8, 10),
         d.substring(10, 12));
+}
+
+function ts_getYear(timestamp) {
+    return (timestamp.substring(0,4));
+}
+
+function ts_getMonth(timestamp) {
+    return (timestamp.substring(4,6));
+}
+
+function ts_getDate(timestamp) {
+    return (timestamp.substring(6,8));
+}
+
+function ts_getHour(timestamp) {
+    let hour = parseInt(timestamp.substring(8,10));
+    let minutes = parseInt(timestamp.substring(10,12));
+    return (hour + minutes/60.0).toString();
+}
+
+function ts_prettyDate(timestamp) {
+    let month = parseInt(ts_getMonth(timestamp));
+    let suffix = "th";
+    let day = parseInt(ts_getDate(timestamp));
+    let digit = day%10;
+    if (digit == 1) {
+	suffix = "st";
+    } else if (digit == 2) {
+	suffix = "nd";
+    } else if (digit == 3) {
+	suffix = "rd";
+    }
+    return pretty_month_names[month-1] + " " + day.toString() + suffix +
+	" " + ts_getYear(timestamp);
+}
+
+function ts_prettyTime(timestamp) {
+    let hour = parseInt(timestamp.substring(8,10));
+    let minutes = timestamp.substring(10,12);
+    let pretty_hour = "";
+    let half = "am";
+    if (hour > 12) {
+	hour = hour - 12;
+	half = "pm";
+    } else {
+	if (hour == 12) {
+	    half = "pm";
+	}
+    }
+    return  hour.toString() + ":" + minutes + half;
 }
 
 // Various formatters.
@@ -45,6 +114,98 @@ function getExtremes(data_rows, field_name) {
     return [cur_min, cur_max];
 }
 
+// Create an initialized parameter object with static fields and information
+//   built-in.
+function initializeParamObject() {
+    var returnObject = {};
+    returnObject['report_title'] = "Crossfilter Available Experiments";
+    // *CWL* This hardcode of 2 display fields depends on the nature of the static fields
+    //    and needs to be generalized. Am thinking the server will send
+    //    an appropriate number corresponding to the static fields.
+    returnObject['num_display_fields'] = 2;
+    returnObject['data_fields'] = {};
+    returnObject['data_fields']['timestamp'] = { "data_type": "string",
+						 "display_name": "Date / Time",
+						 "suffix": "",
+						 "scale": "linear",
+						 "bucket_width": 1 };
+    returnObject['data_fields']['hour'] = { "data_type": "numeric",
+					    "display_name": "Hour of day",
+					    "suffix": "",
+					    "scale": "linear",
+					    "bucket_width": 10,
+					    "domain": [0, 24],
+					    "rangeRound": [0, 240] };
+    returnObject['data_fields']['iso_date'] = { "data_type": "iso_date",
+						"display_name": "Experiment Date",
+						"suffix": "",
+						"scale": "time",
+						"bucket_width": 1,
+						"rangeRound": [0, 900] };
+    returnObject['data_fields']['pretty_date'] = { "data_type": "string",
+						   "display_name": "Date",
+						   "suffix": "",
+						   "scale": "linear",
+						   "bucket_width": 1 };
+    returnObject['data_fields']['pretty_time'] = { "data_type": "string",
+						   "display_name": "Time",
+						   "suffix": "",
+						   "scale": "linear",
+						   "bucket_width": 1 };
+    returnObject['data_fields']['strain'] = { "data_type": "string",
+					      "display_name": "Strain" };
+    returnObject['data_fields']['allele'] = { "data_type": "string",
+					      "display_name": "Allele" };
+    returnObject['charts'] = [ "iso_date", "hour" ];
+    returnObject['results_display'] = [ 
+				       "pretty_date",
+				       "pretty_time", 
+				       "strain",  
+				       "allele"
+					];
+    returnObject['max_results'] = 20;
+    return returnObject;
+}
+
+function createXfilterParams(paramObject, rawInputData) {
+    // Reset the object.
+    let numFeatures = crossfilterHeader.length;
+    paramObject = initializeParamObject();
+    paramObject['num_display_fields'] = paramObject['num_display_fields'] + 
+	numFeatures;
+    paramObject['datasetview_chart_index'] = paramObject['num_display_fields'] - 1;
+    for (var i=0; i< numFeatures; i++) {
+	let fieldName = crossfilterHeader[i];
+	paramObject['data_fields'][fieldName] = { 
+	    "data_type": "numeric",
+	    "display_name": fieldName,
+	    "suffix": "",
+	    "scale": "linear",
+	    "bucket_width": 1,
+	    "rangeRound":[0,220],
+	    "stratify": 5
+	};
+	paramObject['charts'].push(fieldName);
+	paramObject['results_display'].push(fieldName);
+    }
+    return paramObject;
+}
+
+function generateXfilterDerivedColumns(rawInputData) {
+    for (var rowIdx=0; rowIdx < rawInputData.length; rowIdx++) {
+	let dataRow = rawInputData[rowIdx];
+	let timestamp = dataRow['timestamp'];
+	let rowDate = parseDate(timestamp);
+	dataRow['hour'] = ts_getHour(timestamp);
+	dataRow['iso_date'] =  ts_getYear(timestamp) + "-" +
+	    ts_getMonth(timestamp) + "-" +
+	    ts_getDate(timestamp);
+	//	dataRow['pretty_date'] = rowDate.toDateString();
+	dataRow['pretty_date'] = ts_prettyDate(timestamp);
+	//	dataRow['pretty_time'] = rowDate.toTimeString();
+	dataRow['pretty_time'] = ts_prettyTime(timestamp);
+    }
+}
 
 function createDataSetView(data_xfilter_size, data_rows, dataset_group_dimension) {
     // DATASET VIEW
