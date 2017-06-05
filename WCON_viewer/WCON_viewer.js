@@ -22,13 +22,13 @@ TODO: Warn that unzipping cannot be handled, or else just handle it!
 
 let wcon_objj; // DEBUG used for debugging
 
-const wcon_file_name = "smaller.wcon";  // DEBUG: hardcoded for now
+const WCON_data_file = WORMVIZ_PARAMS.WCON_data_file;  // DEBUG: hardcoded for now
 
 // Load the worm schema, and use this information to render some explanation
 // of what the WCON format is
 d3.json(WORMVIZ_PARAMS.schema_url, function(error1, schema_obj) {
     // Load this specific WCON file
-    d3.json(wcon_file_name, function(error2, wcon_obj) {
+    d3.json(WCON_data_file, function(error2, wcon_obj) {
         if (error1) { console.log(error1); }
         if (error2) { console.log(error2); }
 
@@ -37,7 +37,7 @@ d3.json(WORMVIZ_PARAMS.schema_url, function(error1, schema_obj) {
     
         file_info.append("div")
             .attr("class", "file_info")
-            .text("File name: " + String(wcon_file_name));
+            .text("File name: " + String(WCON_data_file));
 
         let validation_state = file_info.append("div")
                 .attr("class", "validation_state")

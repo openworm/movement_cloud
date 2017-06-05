@@ -106,11 +106,10 @@ function create_worm_animation(wcon_data_obj, num_worms) {
     /* Create worm animation
 
     */
+    const max_width = WORMVIZ_PARAMS.worm_petri_dish.max_width;
     const max_height = WORMVIZ_PARAMS.worm_petri_dish.max_height;
     // Allow margin for the full circle stroke to be visible
     const margin = WORMVIZ_PARAMS.worm_petri_dish.margin;
-    const svg_width = max_height + margin.left + margin.right;
-    const svg_height = max_height + margin.top + margin.bottom;
 
     function getLimitsNestedArray(aa) {
         return [d3.min(aa, a => d3.min(a)),
@@ -120,17 +119,48 @@ function create_worm_animation(wcon_data_obj, num_worms) {
     // Find extents of data
     let limitsX = getLimitsNestedArray(wcon_data_obj[0].x);
     let limitsY = getLimitsNestedArray(wcon_data_obj[0].y);
-    let rangeX = limitsX[1] - limitsX[0];
-    let rangeY = limitsY[1] - limitsY[0];
+    let domainSizeX = limitsX[1] - limitsX[0];
+    if (domainSizeX === 0) {
+        console.log("data X has 0-size domain.  Aborting."); return;
+    }
+    let domainSizeY = limitsY[1] - limitsY[0];
+    if (domainSizeY === 0) {
+        console.log("data Y has 0-size domain.  Aborting."); return;
+    }
+    // Let's find the maximum window size within [max_width, max_height]
+    // that will preserve aspect ratio.
+    let variable_height = max_width * (domainSizeY / domainSizeX);
+    let variable_width = max_height * (domainSizeX / domainSizeY);
+    let width, height;
+    if (variable_height > max_height) {
+        height = max_height;
+        width = variable_width;
+    } else if (variable_width > max_width) {
+        width = max_width;
+        height = variable_height;
+    } else if (variable_height <= max_height && variable_width <= max_width) {
+        // Now we have an embarassment of riches; let's arbitrarily choose Y
+        height = max_height;
+        width = variable_width;
+    } else {
+        // This condition should never arrive; one of the methods above should
+        // work, mathematically speaking!
+        console.log("Mathematical impossibility.  Aborting visualization.");
+    }
+    
+    let svg_width = width + margin.left + margin.right;
+    let svg_height = height + margin.top + margin.bottom;
 
     // set the chart scale to accommodate the data extent
     let scaleX = d3.scaleLinear()
-        .domain([limitsX[0] - rangeX/3, limitsX[1] + rangeX/3])
-        .range([0, max_height]);
+//        .domain([limitsX[0] - domainSizeX/3, limitsX[1] + domainSizeX/3])
+        .domain([limitsX[0], limitsX[1]])
+        .range([0, width]);
 
     let scaleY = d3.scaleLinear()
-        .domain([limitsY[0] - rangeY/3, limitsY[1] + rangeY/3])
-        .range([0, max_height]);
+//        .domain([limitsY[0] - domainSizeY/3, limitsY[1] + domainSizeY/3])
+        .domain([limitsY[0], limitsY[1]])
+        .range([0, height]);
 
     ///////////////////
     // Pan and zoom
@@ -149,23 +179,24 @@ function create_worm_animation(wcon_data_obj, num_worms) {
 
     let chart = svg.append("g")
             .attr("class", "chart")
-            .attr("width", max_height)
-            .attr("height", max_height)
+            .attr("width", width)
+            .attr("height", height)
             .attr("transform", "translate(" + String(margin.left) + ", " +
                                               String(margin.top) + ")");
 
     let view = chart.append("g")
         .attr("class", "view")
-        .attr("width", max_height)
-        .attr("height", max_height);
+        .attr("width", width)
+        .attr("height", height);
 
     // TODO: put everything above BEFORE the CSV file loads.
 
     // Axes
-    let xAxis = d3.axisBottom().scale(scaleX);
+    let xAxis = d3.axisBottom().scale(scaleX).ticks(5); // 5 tick marks
     let xAxisGroup = chart.append("g")
         .attr("transform", "translate(0, " + String(max_height) + ")")
         .call(xAxis);
+
 
     let yAxis = d3.axisLeft().scale(scaleY);
     let yAxisGroup = chart.append("g")
