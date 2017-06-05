@@ -107,11 +107,10 @@ function create_worm_animation(wcon_data_obj, num_worms) {
 
     */
     const max_height = WORMVIZ_PARAMS.worm_petri_dish.max_height;
-    const dish_centre = [dish_radius, dish_radius];
     // Allow margin for the full circle stroke to be visible
     const margin = WORMVIZ_PARAMS.worm_petri_dish.margin;
-    const svg_width = dish_radius*2 + margin.left + margin.right;
-    const svg_height = dish_radius*2 + margin.top + margin.bottom;
+    const svg_width = max_height + margin.left + margin.right;
+    const svg_height = max_height + margin.top + margin.bottom;
 
     function getLimitsNestedArray(aa) {
         return [d3.min(aa, a => d3.min(a)),
@@ -127,11 +126,11 @@ function create_worm_animation(wcon_data_obj, num_worms) {
     // set the chart scale to accommodate the data extent
     let scaleX = d3.scaleLinear()
         .domain([limitsX[0] - rangeX/3, limitsX[1] + rangeX/3])
-        .range([0, dish_radius*2]);
+        .range([0, max_height]);
 
     let scaleY = d3.scaleLinear()
         .domain([limitsY[0] - rangeY/3, limitsY[1] + rangeY/3])
-        .range([0, dish_radius*2]);
+        .range([0, max_height]);
 
     ///////////////////
     // Pan and zoom
@@ -150,22 +149,22 @@ function create_worm_animation(wcon_data_obj, num_worms) {
 
     let chart = svg.append("g")
             .attr("class", "chart")
-            .attr("width", dish_radius*2)
-            .attr("height", dish_radius*2)
+            .attr("width", max_height)
+            .attr("height", max_height)
             .attr("transform", "translate(" + String(margin.left) + ", " +
                                               String(margin.top) + ")");
 
     let view = chart.append("g")
         .attr("class", "view")
-        .attr("width", dish_radius*2)
-        .attr("height", dish_radius*2);
+        .attr("width", max_height)
+        .attr("height", max_height);
 
     // TODO: put everything above BEFORE the CSV file loads.
 
     // Axes
     let xAxis = d3.axisBottom().scale(scaleX);
     let xAxisGroup = chart.append("g")
-        .attr("transform", "translate(0, " + String(dish_radius*2) + ")")
+        .attr("transform", "translate(0, " + String(max_height) + ")")
         .call(xAxis);
 
     let yAxis = d3.axisLeft().scale(scaleY);
@@ -191,13 +190,6 @@ function create_worm_animation(wcon_data_obj, num_worms) {
     }
 
 
-
-    // Dish outline
-    view.append("circle")
-        .attr("class", "dish_outline")
-        .attr("cx", dish_centre[0])
-        .attr("cy", dish_centre[1])
-        .attr("r", dish_radius);
 
     // TODO: loop to animate all worms here instead of just one ([0])
     const worm_index = 0;
