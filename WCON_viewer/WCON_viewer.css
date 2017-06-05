@@ -58,32 +58,34 @@ path.tail {
     stroke-linecap: round;
     stroke-width: 2px;
 }
-#wormvisualization svg {
-    style: outline: thin solid black;
-    stroke: #000;
-    fill: none;
-    stoke-width: 4;
+
+
+#wormVisualization .chart {
 }
 
-circle {
+#wormVisualization g.view {
+    background: rgba(255, 0, 0, 0.325);
+}
+
+#wormVisualization circle.dish_outline {
     stroke: black;
     stroke-width: 5px;
     fill: none;
 }
 
-.worm_path {
+#wormVisualization .worm_path {
     stroke: green;
     stroke-width: 2;
     fill: none;
 }
 
-.worm_skeleton_nan {
+#wormVisualization .worm_skeleton_nan {
     stroke: gray;
     stroke-width: 2;
     fill: none;
 }
 
-.worm_skeleton {
+#wormVisualization .worm_skeleton {
     stroke: blue;
     stroke-width: 2;
     fill: none;
@@ -121,9 +123,3 @@ thead {
 .bad {
     color: red;
 }
-
-/*
-#wormVisualization .chart {
-    background: green;
-    /*opacity: 0.125;*/
-}*/
