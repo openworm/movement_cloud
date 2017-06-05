@@ -110,6 +110,8 @@ function create_worm_animation(wcon_data_obj, num_worms) {
     const dish_centre = [dish_radius, dish_radius];
     // Allow margin for the full circle stroke to be visible
     const margin = {"left": 50, "top": 25, "right": 25, "bottom": 25};
+    const svg_width = dish_radius*2 + margin.left + margin.right;
+    const svg_height = dish_radius*2 + margin.top + margin.bottom;
 
     function getLimitsNestedArray(aa) {
         return [d3.min(aa, a => d3.min(a)),
@@ -132,15 +134,31 @@ function create_worm_animation(wcon_data_obj, num_worms) {
         .range([0, dish_radius*2]);
 
     ///////////////////
+    // Pan and zoom
+    let viz_zoom = d3.zoom()
+        // Do not allow zooming out i.e. < 1, and 
+        // zooming to 10x size is probably enough.
+        .scaleExtent([1, 10]) 
+        .on("zoom", zoomed);
+
     // Create visual elements
     var svg = d3.select("#wormVisualization").selectAll("svg")
-        .attr("width", dish_radius*2 + margin.left + margin.right)
-        .attr("height", dish_radius*2 + margin.top + margin.bottom)
+        .attr("width", svg_width)
+        .attr("height", svg_height)
+            // Enable pan and zoom
+            .call(viz_zoom);
 
     let chart = svg.append("g")
             .attr("class", "chart")
+            .attr("width", dish_radius*2)
+            .attr("height", dish_radius*2)
             .attr("transform", "translate(" + String(margin.left) + ", " +
                                               String(margin.top) + ")");
+
+    let view = chart.append("g")
+        .attr("class", "view")
+        .attr("width", dish_radius*2)
+        .attr("height", dish_radius*2);
 
     // TODO: put everything above BEFORE the CSV file loads.
 
@@ -155,8 +173,27 @@ function create_worm_animation(wcon_data_obj, num_worms) {
         //.attr("transform", "translate(0 0)")
         .call(yAxis);
 
+    // Pan and zoom
+    function zoomed() {
+        let t = d3.event.transform;
+        // The original svg box must be contained entirely within the
+        // larger, zoomed bounding box.
+        t.x = d3.min([t.x, 0]);
+        t.y = d3.min([t.y, 0]);
+        t.x = d3.max([t.x, (1-t.k) * svg_width]);
+        t.y = d3.max([t.y, (1-t.k) * svg_height]);
+        view.attr("transform", t);
+        
+        // Rescale the ticks on the axes according to our new zoom level
+        // i.e. more zoom = more ticks
+        xAxisGroup.call(xAxis.scale(d3.event.transform.rescaleX(scaleX)));
+        yAxisGroup.call(yAxis.scale(d3.event.transform.rescaleY(scaleY)));
+    }
+
+
+
     // Dish outline
-    chart.append("circle")
+    view.append("circle")
         .attr("class", "dish_outline")
         .attr("cx", dish_centre[0])
         .attr("cy", dish_centre[1])
@@ -186,12 +223,12 @@ function create_worm_animation(wcon_data_obj, num_worms) {
     }
 
     let lineFunction = d3.line().x(d=>scaleX(d.x)).y(d=>scaleY(d.y));
-    chart.append("path")
+    let worm_path_DOM = view.append("path")
         .attr("class", "worm_path")
         .attr("d", lineFunction(fullHeadPath));
 
     // Start at frame 0
-    let worm_skeleton_DOM = chart.append("path")
+    let worm_skeleton_DOM = view.append("path")
         .attr("class", "worm_skeleton")
         .attr("d", lineFunction(getSkeleton(worm_index, 0)));
 
