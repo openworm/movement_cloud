@@ -182,8 +182,8 @@ function createXfilterParams(paramObject, rawInputData) {
 	    "suffix": "",
 	    "scale": "linear",
 	    "bucket_width": 1,
-	    "rangeRound":[0,220],
-	    "stratify": 5
+	    "rangeRound":[0,200],
+	    "stratify": 1
 	};
 	paramObject['charts'].push(fieldName);
 	paramObject['results_display'].push(fieldName);

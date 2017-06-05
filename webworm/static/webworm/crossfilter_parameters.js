@@ -1,5 +1,5 @@
 var XFILTER_PARAMS = {
-    "report_title": "OpenWorm Movement Database: [EXAMPLE] Crossfilter of Results",
+    "report_title": "No Records in last search. Crossfilter Example Only.",
     "data_file": dataFilePath,
     "num_display_fields": 4,
     "data_fields": {

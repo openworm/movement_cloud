@@ -70,7 +70,7 @@ $(document).ready(function() {
 			    (selectedParamIndices[paramName] === "core")) {
 			    // Insert entries only from the full table, and not core.
 			    var data = [];
-			    data.push(paramName + 
+			    data.push('<p>' + paramName + '</p>' + 
 				      '<input type="hidden" readonly' +
 				      ' name="' + paramName + '_isFeature" />');
 			    confirmParamTable.row.add(data);
@@ -98,8 +98,12 @@ $(document).ready(function() {
 		    for (var i=0; i<selectLength; i++) {
 			if (selectedParamIndices[origData[i][0]]) {
 			    delete selectedParamIndices[origData[i][0]];
-			    confirmParamTable.row( function(idx, data, node){
-				    return data[0] === origData[i][0]?true:false;
+			    // The jquery gymnastics is required to deal with
+			    //   the extra <input> tag inserted into the final
+			    //   table.
+			    confirmParamTable.row( function(idx, data, node) {
+				    return $('p','<div>' + data[0] + '</div>').text() === 
+					origData[i][0]?true:false;
 				}).remove();
 			    // Tell sister table to deselect too
 			    paramTable.row( function(idx,data, node) {
