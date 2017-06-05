@@ -106,10 +106,10 @@ function create_worm_animation(wcon_data_obj, num_worms) {
     /* Create worm animation
 
     */
-    const dish_radius = WORMVIZ_PARAMS.worm_petri_dish.radius;
+    const max_height = WORMVIZ_PARAMS.worm_petri_dish.max_height;
     const dish_centre = [dish_radius, dish_radius];
     // Allow margin for the full circle stroke to be visible
-    const margin = {"left": 50, "top": 25, "right": 25, "bottom": 25};
+    const margin = WORMVIZ_PARAMS.worm_petri_dish.margin;
     const svg_width = dish_radius*2 + margin.left + margin.right;
     const svg_height = dish_radius*2 + margin.top + margin.bottom;
 
