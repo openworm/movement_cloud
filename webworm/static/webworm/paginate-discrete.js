@@ -134,6 +134,18 @@ for (var disIdx=0; disIdx<discreteFieldMetadata.length; disIdx++) {
 	    buttons: [
 		      'selectAll',
 		      'selectNone',
+                      {
+			  text: 'Select Searched',
+			  action: function (e, dt, node, config) {
+			      dt.rows({search:'applied'}).select();
+			  }
+		      },
+                      {
+			  text: 'Deselect Searched',
+			  action: function (e, dt, node, config) {
+			      dt.rows({search:'applied'}).deselect();
+			  }
+		      },
 		      ],
 	    select: {
 		style: 'multi'

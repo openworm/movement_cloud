@@ -75,8 +75,9 @@ def processSearchField(key, db_filter, getRequest, dbRecords):
     #  this as the intended idiom in Python 3 to execute dynamic code driven by
     #  variables (in our case - "db_filter" which is a variable string but needed to 
     #  be code text when applied to a function parameter.)
-    returnDbRecords = [Experiments.objects.none()];
+    returnDbRecords = [];
     if key in getRequest:
+        returnDbRecords = [Experiments.objects.none()];
         searchList = getRequest[key].split(',');
         if searchList:
             # *CWL* Django creates null lists as [''] which translates into python
@@ -97,6 +98,8 @@ def processSearchField(key, db_filter, getRequest, dbRecords):
                     if searchTerm != '':
                         exec('returnDbRecords[0] = returnDbRecords[0] | dbRecords.filter(' + 
                              db_filter + '=searchTerm);');
+    else:
+        returnDbRecords[0] = dbRecords;
     return returnDbRecords[0];
 
 # Produces a list of features data rows given a list of headers
@@ -143,26 +146,30 @@ def featuresNotNone(headers, row):
     return True;
 
 def eliminateNonFeatureRows(featuresHeader, inList):
-    outList = [x for x in inList if featuresNotNone(featuresHeader, x)];
+    # If there are no features, just return the original list.
+    outList = [];
+    if len(featuresHeader) == 0:
+        outList = inList;
+    else:
+        outList = [x for x in inList if featuresNotNone(featuresHeader, x)];
     return outList;
 
-def processSearchConfiguration(getRequest, experimentsList):
+def processSearchConfiguration(getRequest, dbRecords):
     global discreteFields;
-    returnList = experimentsList;
     if 'start_date' in getRequest:
         start = getRequest['start_date'];
         if start:
-            returnList = returnList.filter(date__gte=start);
+            dbRecords = dbRecords.filter(date__gte=start);
     if 'end_date' in getRequest:
         end = getRequest['end_date'];
         if end:
-            returnList = returnList.filter(date__lte=end);
+            dbRecords = dbRecords.filter(date__lte=end);
     for tag,field in discreteFields.items():
-        returnList = processSearchField(tag, field[0]+'__name__exact', 
-                                        getRequest, returnList);
-    return returnList;
+        dbRecords = processSearchField(tag, field[0]+'__name__exact', 
+                                       getRequest, dbRecords);
+    return dbRecords;
 
-def constructSearchContext(featuresInfo, results_list, context):
+def constructSearchContext(featuresInfo, dbRecords, context):
     featuresList = featuresInfo[0];
     headerList = featuresInfo[1];
     # Clone the list for only the features
@@ -172,11 +179,16 @@ def constructSearchContext(featuresInfo, results_list, context):
     headerList.insert(0,'strain');
     headerList.insert(0,'timestamp');
     dataList = [list(item) for item in 
-                results_list.values_list('date','strain__name','strain__allele__name')];
+                dbRecords.values_list('date','strain__name','strain__allele__name')];
     slicedList = [item[1:3] for item in dataList];
     dateList = [[item] for item in 
                 [entry[0].strftime("%Y%m%d%H%M") for entry in dataList]];
-    tempList = [list(item) for item in zip(dateList,slicedList,featuresList)];
+    # If there are no features, we do not attempt to zip the empty list in
+    tempList = [];
+    if len(featuresHeaderList) == 0:
+        tempList = [list(item) for item in zip(dateList,slicedList)];
+    else:
+        tempList = [list(item) for item in zip(dateList,slicedList,featuresList)];
     returnList = [dict(zip(headerList,listLine)) for listLine in 
                   [[item for sublist in l for item in sublist] for l in tempList]];
     returnList = eliminateNonFeatureRows(featuresHeaderList, returnList);
