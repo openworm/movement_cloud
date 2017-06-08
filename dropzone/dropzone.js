@@ -7,22 +7,28 @@ if(document.readyState === "complete") {
 }
 
 function upload(files) {
+    let upload_results = document.getElementById("upload_results_element");
     let formData = new FormData(),
         xhr = new XMLHttpRequest();
-        
-    for(let x=0; x<files.length; x++) {
-        formData.append("file[]", files[x]);
+    
+    console.log("Dropped " + String(files.length) + " files.");
+    for(let i=0; i<files.length; i++) {
+        formData.append("file[]", files[i]);
     }
     
-    xhr.onload = function() {
-        let upload_results = document.getElementById("upload_results_element");
+    xhr.onreadystatechange = function() {
+        if(xhr.readyState === XMLHttpRequest.DONE) {
+            alert(xhr.responseText);
+        }
 
-        upload_results.innerHTML = "YES IT IS DONE!";
+        //console.log(xhr.response);
+        upload_results.innerHTML = this.response;
     }
 
     console.log("Let's upload files: ", formData);
-    xhr.open('post', 'upload_handler.py');
-    xhr.send("OOOOGAHCHAKAH");
+    xhr.open('POST', 'upload_handler.py', true); // async = true
+    xhr.send(formData); //'{"Michael": 13, "Carolyn": 5}'
+    
 
 }
 
