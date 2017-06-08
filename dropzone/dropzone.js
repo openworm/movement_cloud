@@ -21,9 +21,8 @@ function upload(files) {
     }
 
     console.log("Let's upload files: ", formData);
-    xhr.open('post', 'upload_handler2.py');
-    xhr.send(formData);
-
+    xhr.open('post', 'upload_handler.py');
+    xhr.send("OOOOGAHCHAKAH");
 
 }
 
