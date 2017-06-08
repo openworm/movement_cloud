@@ -13,7 +13,7 @@ function upload(files) {
     
     console.log("Dropped " + String(files.length) + " files.");
     for(let i=0; i<files.length; i++) {
-        formData.append("file[]", files[i]);
+        formData.append("file", files[i]);
     }
     
     xhr.onreadystatechange = function() {
