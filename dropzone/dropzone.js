@@ -21,13 +21,13 @@ function upload(files) {
             alert(xhr.responseText);
         }
 
-        //console.log(xhr.response);
+        console.log(xhr.response);
         upload_results.innerHTML = this.response;
     }
 
     console.log("Let's upload files: ", formData);
     xhr.open('POST', 'upload_handler.py', true); // async = true
-    xhr.send(formData); //'{"Michael": 13, "Carolyn": 5}'
+    xhr.send(formData); 
     
 
 }
