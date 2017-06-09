@@ -11,7 +11,7 @@ class FileUploadHTTPRequestHandler(SimpleHTTPRequestHandler):
     files in the same folder as this script.
 
     """
-    protocol_version = "HTTP/1.0"
+    protocol_version = "HTTP/1.1"
 
     def do_POST(self):
         """Handle a POST request."""
