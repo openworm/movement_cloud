@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Handle WCON uploads from our site
-"""
 import re
 import sys
 import os
@@ -10,13 +7,17 @@ from http.server import SimpleHTTPRequestHandler, HTTPServer
 
 
 class FileUploadHTTPRequestHandler(SimpleHTTPRequestHandler):
+    """An HTTP Server that accepts POST requests and saves them as
+    files in the same folder as this script.
+
+    """
     protocol_version = "HTTP/1.0"
 
     def do_POST(self):
-        """Serve a POST request."""
+        """Handle a POST request."""
         # Save files received in the POST
         wasSuccess, files_uploaded = self.handle_file_uploads()
-        
+
         # Compose a response to the client
         response_obj = {
             "wasSuccess": wasSuccess,
@@ -39,12 +40,12 @@ class FileUploadHTTPRequestHandler(SimpleHTTPRequestHandler):
         line_str = self.rfile.readline().decode('utf-8')
         self.char_remaining -= len(line_str)
         return line_str
-        
+
     def handle_file_uploads(self):
         """
         Take the post request and save any files received to the same folder
         as this script.
-        
+
         Returns
             wasSuccess: bool: whether the process was a success
             files_uploaded: list of string: files that were created
@@ -64,13 +65,13 @@ class FileUploadHTTPRequestHandler(SimpleHTTPRequestHandler):
             self.log_message("Content did NOT begin with boundary as " +
                              "it should")
             return False, []
-        
+
         files_uploaded = []
         while self.char_remaining > 0:
             # Breaking out of this loop on anything except a boundary
             # an end-of-file will be a failure, so let's assume that
             wasSuccess = False
-        
+
             # Content-Disposition: form-data; name="file"; filename="README.md"
             line_str = self.read_line()
             filename = re.findall('Content-Disposition.*name="file"; ' +
@@ -93,7 +94,7 @@ class FileUploadHTTPRequestHandler(SimpleHTTPRequestHandler):
 
             # Blank line
             line_str = self.read_line()
-                    
+
             # First real line of code
             preline = self.read_line()
             # Loop through the POST until we find another boundary line,
@@ -116,16 +117,17 @@ class FileUploadHTTPRequestHandler(SimpleHTTPRequestHandler):
                 else:
                     outfile.write(preline.encode('utf-8'))
                     preline = line_str
-    
+
         return wasSuccess, files_uploaded
 
         
-httpd = HTTPServer(("", 8000), FileUploadHTTPRequestHandler)
-sa = httpd.socket.getsockname()
-print("Serving HTTP on", sa[0], "port", sa[1], "...")
-try:
-    httpd.serve_forever()
-except KeyboardInterrupt:
-    print("\nKeyboard interrupt received, exiting.")
-    httpd.server_close()
-    sys.exit(0)
+if __name__ == "__main__":
+    httpd = HTTPServer(("", 8000), FileUploadHTTPRequestHandler)
+    sa = httpd.socket.getsockname()
+    print("Serving HTTP on", sa[0], "port", sa[1], "...")
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        print("\nKeyboard interrupt received, exiting.")
+        httpd.server_close()
+        sys.exit(0)
