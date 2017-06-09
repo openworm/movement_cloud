@@ -15,6 +15,7 @@ class FileUploadHTTPRequestHandler(SimpleHTTPRequestHandler):
 
     def do_POST(self):
         """Handle a POST request."""
+        self.log_message(str(self.headers))
         # Save files received in the POST
         wasSuccess, files_uploaded = self.handle_file_uploads()
 
@@ -31,7 +32,7 @@ class FileUploadHTTPRequestHandler(SimpleHTTPRequestHandler):
 
         # Send our response code, header, and data
         self.send_response(200)
-        self.send_header("Content-type", "Application/json")
+        self.send_header("Content-type", "text/plain")
         self.send_header("Content-Length", len(response_str))
         self.end_headers()
         self.wfile.write(response_str.encode('utf-8'))

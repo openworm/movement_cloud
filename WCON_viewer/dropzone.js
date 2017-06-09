@@ -10,7 +10,12 @@ if(document.readyState === "complete") {
 }
 
 function createDropzoneMethods() {
-    let dropzone = document.getElementById("dropzone_element");
+    // When we start, the initial worm visualization should be running
+    document.getElementById("upload_file_button").style.display = 'block';
+    document.getElementById("upload_area").style.display = 'none';
+    document.getElementById("WCON_display").style.display = 'block';
+
+    let dropzone = document.getElementById("dropzone");
 
     dropzone.ondragover = function() {
         this.className = "dropzone dragover";
@@ -30,6 +35,15 @@ function createDropzoneMethods() {
 
         upload_files(e.dataTransfer.files)
     }    
+
+    let upload_button = document.getElementById("upload_file_button");
+
+    upload_button.onclick = function() {
+        document.getElementById("upload_file_button").style.display = 'none';
+        document.getElementById("upload_area").style.display = 'block';
+        document.getElementById("WCON_display").style.display = 'block';
+    }
+    
 }
 
 function upload_files(files) {
@@ -43,12 +57,21 @@ function upload_files(files) {
     }
 
     xhr.onreadystatechange = function() {
+        // Handle the times this function was invoked with blank response text
+        let responseText = xhr.responseText === '' ? '{}' : xhr.responseText;
+        let responseJSON = JSON.parse(responseText);
         if(xhr.readyState === XMLHttpRequest.DONE) {
-            alert(xhr.responseText);
-        }
+            alert("The files " + responseJSON.files_uploaded +
+                  " have been uploaded.");
 
-        console.log(xhr.response);
-        upload_results.innerHTML = this.response;
+            // Now that the WCON file has been loaded, hide the upload field
+            document.getElementById("upload_file_button").style.display = 'block';
+            document.getElementById("upload_area").style.display = 'none';
+            document.getElementById("WCON_display").style.display = 'block';
+
+            view_WCON_data_file(responseJSON.files_uploaded)
+        }
+        console.log(responseJSON);
     }
 
     console.log("Let's upload files: ", formData);
