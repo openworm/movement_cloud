@@ -15,7 +15,7 @@ class FileUploadHTTPRequestHandler(SimpleHTTPRequestHandler):
 
     def do_POST(self):
         """Handle a POST request."""
-        self.log_message(str(self.headers))
+        #self.log_message(str(self.headers))
         # Save files received in the POST
         wasSuccess, files_uploaded = self.handle_file_uploads()
 
