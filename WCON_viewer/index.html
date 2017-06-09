@@ -4,48 +4,67 @@
         <meta charset='utf-8'>
         <title>WCON Viewer</title>
 
-        <link rel="stylesheet" href="WCON_viewer.css">
-        <script src="wormviz_parameters.js"></script>
+        <link rel="stylesheet" href="WCON_viewer.css?version=2">
+        <script src="wormviz_parameters.js?version=2"></script>
 
         <script src="d3.v4.min.js" defer></script>
         <script src="babel.min.js" defer></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/5.1.5/ajv.min.js"></script>
 
-        <script src="WCON_viewer_helpers.js" defer></script>
-        <script src="WCON_viewer.js" defer></script>
+        <script src="WCON_viewer_helpers.js?version=2" defer></script>
+        <script src="WCON_viewer.js?version=3" defer></script>
+        <script src="dropzone.js?version=9" defer></script>
     </head>
 </html>
 <body>
     <div id="header">
         <h1>WCON Viewer</h1>
     </div>
-
-    <div id="wormVisualization">
-        <svg></svg>
+    <button id="upload_file_button">UPLOAD ANOTHER FILE</button>
+    <div id="upload_area">
+        <div id="dropzone" class="dropzone">
+            Drop one WCON file here to upload
+        </div>
+        
+        <div id="upload_results_element">
+        </div>
     </div>
+    <div id="WCON_display">
+        <div id="file_info_container"><h3>FILE INFORMATION:</h3>
+            <div id="file_info">
+            </div>
+        </div>
     
-    <div id="worm_picker"><h4>PICK A WORM:</h4>
-        <select id="wormDropDownMenu"">
-        </select>
-    </div>
-
-    <div id="file_info"><h3>FILE INFORMATION:</h3>
-    </div>
-
-    <div id="metadata"><h3>METADATA:</h3>
-    </div>
-
-    <div id="units"><h3>UNITS:</h3>
-    </div>
-
-    <div id="data_info"><h3>DATA:</h3>
-    </div>
-
-    <div id="footer">
-        <div class="links">
-            <a href="https://github.com/openworm/tracker-commons/blob/master/WCON_format.md">WCON Specification</a>
-            <a href="https://github.com/openworm/tracker-commons/blob/master/wcon_schema.json">WCON Schema</a>
-            <a href="https://github.com/openworm/tracker-commons">WCON Parsers</a>
+        <div id="wormVisualization">
+            <svg></svg>
+        </div>
+        
+        <div id="worm_picker"><h4>PICK A WORM:</h4>
+            <select id="wormDropDownMenu"">
+            </select>
+        </div>
+    
+        <div id="metadata_container"><h3>METADATA:</h3>
+            <div id="metadata">
+            </div>
+        </div>
+    
+        <div id="units_container"><h3>UNITS:</h3>
+            <div id="units">
+            </div>
+        </div>
+    
+        <div id="data_info_container"><h3>DATA:</h3>
+            <div id="data_info">
+            </div>
+        </div>
+    
+        <div id="footer"><h3>Worm tracker Commons Object Notation (WCON)</h3>
+            <div class="links">
+                <a href="https://github.com/openworm/tracker-commons/blob/master/WCON_format.md">WCON Specification</a>
+                <a href="https://github.com/openworm/tracker-commons/blob/master/wcon_schema.json">WCON Schema</a>
+                <a href="https://github.com/openworm/tracker-commons">WCON Parsers</a>
+            </div>
         </div>
     </div>
 </body>
