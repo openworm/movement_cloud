@@ -67,26 +67,20 @@ path.tail {
     background: rgba(255, 0, 0, 0.325);
 }
 
-#wormVisualization circle.dish_outline {
-    stroke: black;
-    stroke-width: 5px;
-    fill: none;
-}
-
 #wormVisualization .worm_path {
-    stroke: green;
+    stroke: Gray;
     stroke-width: 2;
     fill: none;
 }
 
 #wormVisualization .worm_skeleton_nan {
-    stroke: gray;
+    stroke: SteelBlue;
     stroke-width: 2;
     fill: none;
 }
 
 #wormVisualization .worm_skeleton {
-    stroke: blue;
+    stroke: RoyalBlue;
     stroke-width: 2;
     fill: none;
 }
@@ -124,6 +118,24 @@ thead {
     color: red;
 }
 
+.slider_info {
+    display: block;
+    width: 300px;
+    font-family: monospace;
+}
+
+.slider_info frame_info {
+    float: left;
+}
+
+.slider_info .time_info {
+    float: right;
+}
+
+.time_slider {
+    width: 300px;
+    display: block;
+}
 
 .dropzone {
     width: 300px;

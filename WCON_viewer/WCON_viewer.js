@@ -188,7 +188,8 @@ function display_wcon(wcon_obj) {
     tabulate(d3.select("#data_info"), wcon_data_info, wcon_data_columns);
 
     // Animate the worm's data
-    create_worm_animation(d3.select("#wormVisualization"), wcon_obj.data[0]);
+    create_worm_animation(d3.select("#wormVisualization"),
+                          wcon_obj.data[0], wcon_obj.units);
                           
     // Allow a choice of unique_worm_ids
     d3.select("#worm_picker").selectAll("select")
@@ -209,7 +210,8 @@ function display_wcon(wcon_obj) {
 
         // Restart the worm animation with the new worm choice
         create_worm_animation(d3.select("#wormVisualization"),
-                              wcon_obj.data[selectList.value])
+                              wcon_obj.data[selectList.value],
+                              wcon_obj.units)
     }
     if(document.readyState === 'complete') {
         selectList.addEventListener("change", worm_picker_selection_made);

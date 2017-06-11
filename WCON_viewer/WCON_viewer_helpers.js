@@ -102,7 +102,7 @@ function syntaxHighlight(json) {
 
 
 ////////////////////////////////////////////
-function create_worm_animation(DOM_viz, worm_data_obj) {
+function create_worm_animation(DOM_viz, worm_data_obj, units) {
     /* Create worm animation
     
         Parameters
@@ -262,13 +262,23 @@ function create_worm_animation(DOM_viz, worm_data_obj) {
 
     let frame_index = 0;
     const num_frames = worm_data_obj.t.length;
-
+    let time_info = d3.selectAll(".time_info");
+    let frame_info = d3.selectAll(".frame_info");
+    let time_slider = d3.selectAll(".time_slider");
+    time_slider
+        .property("min", 0)
+        .property("max", num_frames);
     // TODO: have the frames arrive at the correct time.
     // TODO: add an svg representing the head of the worm.
 
     // Animate the worm's skeleton over time
     d3.timer(function() {
         frame_index++;
+        let cur_time = d3.format(".2f")(worm_data_obj.t[frame_index]);
+        frame_info.text("Frame " + d3.format("d")(frame_index));
+        time_info.text("Time " + cur_time + units.t);
+        time_slider.property("value", frame_index);
+
         // Reset the animation if it has reached the end
         if (frame_index >= num_frames) { frame_index = 0; }
 
