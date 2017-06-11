@@ -267,21 +267,31 @@ function create_worm_animation(DOM_viz, worm_data_obj, units) {
     let time_slider = d3.selectAll(".time_slider");
     time_slider
         .property("min", 0)
-        .property("max", num_frames);
+        .property("max", num_frames-1);
+
+    let animation_stopped = false;
+    d3.select("#start_animation_button")
+        .on("click", function() { animation_stopped = false; });
+    d3.select("#stop_animation_button")
+        .on("click", function() { animation_stopped = true; });
+
     // TODO: have the frames arrive at the correct time.
     // TODO: add an svg representing the head of the worm.
 
-    // Animate the worm's skeleton over time
-    d3.timer(function() {
-        frame_index++;
+    d3.select("#time_slider_element").on("input", function() {
+        frame_index = this.value;
+        animation_stopped = true;
+        draw_frame();
+    });
+
+    function draw_frame() {
+        // Display the time and frame # and a slider
         let cur_time = d3.format(".2f")(worm_data_obj.t[frame_index]);
         frame_info.text("Frame " + d3.format("d")(frame_index));
         time_info.text("Time " + cur_time + units.t);
         time_slider.property("value", frame_index);
 
-        // Reset the animation if it has reached the end
-        if (frame_index >= num_frames) { frame_index = 0; }
-
+        // Move the worm to its position in the latest frame
         if(worm_data_obj.x[frame_index][0] !== null) {
             let skeleton_line = lineFunction(getSkeleton(frame_index));
             worm_skeleton_DOM
@@ -294,5 +304,17 @@ function create_worm_animation(DOM_viz, worm_data_obj, units) {
                 .classed("worm_skeleton", false)
                 .classed("worm_skeleton_nan", true);
         }
+    }
+
+    // Animate the worm's skeleton over time
+    d3.timer(function() {
+        if(animation_stopped) { return; }
+
+        frame_index++;
+        // Reset the animation if it has reached the end
+        if (frame_index >= num_frames) { frame_index = 0; }
+
+        // Draw the new frame
+        draw_frame();
     });
 }

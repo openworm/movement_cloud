@@ -124,6 +124,10 @@ thead {
     font-family: monospace;
 }
 
+.slider_buttons {
+    display: block;
+}
+
 .slider_info frame_info {
     float: left;
 }
