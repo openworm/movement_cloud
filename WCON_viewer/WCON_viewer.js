@@ -26,7 +26,11 @@ view_WCON_data_file(WORMVIZ_PARAMS.initial_WCON_data_file);
 function clear_WCON_view() {
     /* Clear all existing DOM elements used to display WCON information,
        so that a new worm can be displayed. */
-    
+
+    // Stop the animation if it exists
+    console.log("flushing all timers1 !");
+    d3.timerFlush();
+
     // Clear previous results (if any)
     d3.select("#file_info").selectAll("*").remove();
 
@@ -35,7 +39,7 @@ function clear_WCON_view() {
     d3.select("#wormDropDownMenu").selectAll("*").remove()
     d3.select("#metadata").selectAll("*").remove()
     d3.select("#units").selectAll("*").remove()
-    d3.select("#data_info").selectAll("*").remove()    
+    d3.select("#data_info").selectAll("*").remove()
 }
 
 function view_WCON_data_file(WCON_data_file) {
@@ -43,7 +47,6 @@ function view_WCON_data_file(WCON_data_file) {
         This method loads the schema and worm data, validates it
         against the schema, and displays the WCON file.
     */
-
     // Clear the existing view
     clear_WCON_view();
     console.log("Loading file: " + WCON_data_file);
@@ -190,7 +193,7 @@ function display_wcon(wcon_obj) {
     // Animate the worm's data
     create_worm_animation(d3.select("#wormVisualization"),
                           wcon_obj.data[0], wcon_obj.units);
-                          
+
     // Allow a choice of unique_worm_ids
     d3.select("#worm_picker").selectAll("select")
         // First selectAll from the non-existent "option" list otherwise

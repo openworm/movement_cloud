@@ -73,19 +73,27 @@ path.tail {
     fill: none;
 }
 
-#wormVisualization .worm_skeleton_nan {
-    stroke: SteelBlue;
-    stroke-width: 2;
-    fill: none;
-}
-
 #wormVisualization .worm_skeleton {
     stroke: RoyalBlue;
     stroke-width: 2;
     fill: none;
 }
 
+#wormVisualization .worm_skeleton_nan {
+    stroke: SteelBlue;
+    stroke-width: 2;
+    fill: none;
+}
 
+#wormVisualization .worm_head {
+    stroke: DarkRed;
+    fill: DarkRed;
+}
+
+#wormVisualization .worm_head_nan {
+    stroke: IndianRed;
+    fill: IndianRed;
+}
 
 
 /* For JSON syntax highlighting */

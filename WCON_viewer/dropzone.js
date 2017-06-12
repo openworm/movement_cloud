@@ -36,18 +36,15 @@ function createDropzoneMethods() {
         upload_files(e.dataTransfer.files)
     }    
 
-    let upload_button = document.getElementById("upload_file_button");
-
-    upload_button.onclick = function() {
+    d3.select("#upload_file_button").on("click", function() {
         document.getElementById("upload_file_button").style.display = 'none';
         document.getElementById("upload_area").style.display = 'block';
         document.getElementById("WCON_display").style.display = 'block';
-    }
+    });
     
 }
 
 function upload_files(files) {
-    let upload_results = document.getElementById("upload_results_element");
     let formData = new FormData(),
         xhr = new XMLHttpRequest();
 

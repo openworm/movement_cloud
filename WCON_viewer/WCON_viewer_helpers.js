@@ -112,8 +112,13 @@ function create_worm_animation(DOM_viz, worm_data_obj, units) {
                  the vizualization
         
         worm_data_obj: the data of the worm to animate
+
     */
-    // Clear the old visualization
+    // Clear the timers for the old animation, if any
+    console.log("flushing all timers2 !");
+    d3.timerFlush();
+
+    // Clear the old visualization, if any exists
     DOM_viz.selectAll("svg")
         // remove all child elements of the svg element
         .selectAll("*").remove();
@@ -260,6 +265,13 @@ function create_worm_animation(DOM_viz, worm_data_obj, units) {
         .attr("class", "worm_skeleton")
         .attr("d", lineFunction(getSkeleton(0)));
 
+    let worm_head_DOM = view.append("circle")
+        .attr("class", "worm_head")
+        // There is no simple way to obtain a reasonable head radius
+        // in terms of the data's coordinate system, so instead we 
+        // simply hardcode a pixel radius.
+        .attr("r", 5);
+
     let frame_index = 0;
     const num_frames = worm_data_obj.t.length;
     let time_info = d3.selectAll(".time_info");
@@ -269,18 +281,20 @@ function create_worm_animation(DOM_viz, worm_data_obj, units) {
         .property("min", 0)
         .property("max", num_frames-1);
 
-    let animation_stopped = false;
-    d3.select("#start_animation_button")
-        .on("click", function() { animation_stopped = false; });
-    d3.select("#stop_animation_button")
-        .on("click", function() { animation_stopped = true; });
-
-    // TODO: have the frames arrive at the correct time.
-    // TODO: add an svg representing the head of the worm.
+    let toggle_button = d3.select("#toggle_animation_button");
+    toggle_button.on("click", function() {
+            if(toggle_button.node().innerHTML === "PLAY") {
+                animation_timer = createAnimationTimer();
+                toggle_button.node().innerHTML = "PAUSE"
+            } else {
+                animation_timer.stop();
+                toggle_button.node().innerHTML = "PLAY";
+            }
+        });
 
     d3.select("#time_slider_element").on("input", function() {
         frame_index = this.value;
-        animation_stopped = true;
+        animation_timer.stop();
         draw_frame();
     });
 
@@ -298,23 +312,40 @@ function create_worm_animation(DOM_viz, worm_data_obj, units) {
                 .classed("worm_skeleton", true)
                 .classed("worm_skeleton_nan", false)
                 .attr("d", skeleton_line);
+            
+            worm_head_DOM
+                .classed("worm_head", true)
+                .classed("worm_head_nan", false)
+                .attr("cx", scaleX(worm_data_obj.x[frame_index][0]))
+                .attr("cy", scaleY(worm_data_obj.y[frame_index][0]));
         } else {
             // If the skeleton is just NaNs, go "grey" and don't move.
             worm_skeleton_DOM
                 .classed("worm_skeleton", false)
                 .classed("worm_skeleton_nan", true);
+
+            worm_head_DOM
+                .classed("worm_head", false)
+                .classed("worm_head_nan", true);
         }
     }
 
     // Animate the worm's skeleton over time
-    d3.timer(function() {
-        if(animation_stopped) { return; }
+    let animation_timer = createAnimationTimer();
 
-        frame_index++;
-        // Reset the animation if it has reached the end
-        if (frame_index >= num_frames) { frame_index = 0; }
+    function createAnimationTimer() {
+        console.log("creating a timer!");
 
-        // Draw the new frame
-        draw_frame();
-    });
+        // Toggle the "PLAY" button to accept "PAUSE" instead
+        d3.select("#toggle_animation_button").node().innerHTML = "PAUSE";
+
+        return d3.timer(function() {
+            frame_index++;
+            // Reset the animation if it has reached the end
+            if (frame_index >= num_frames) { frame_index = 0; }
+    
+            // Draw the new frame
+            draw_frame();
+        });
+    }
 }
