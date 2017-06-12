@@ -28,7 +28,6 @@ function clear_WCON_view() {
        so that a new worm can be displayed. */
 
     // Stop the animation if it exists
-    console.log("flushing all timers1 !");
     d3.timerFlush();
 
     // Clear previous results (if any)

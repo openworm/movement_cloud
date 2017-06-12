@@ -7,7 +7,7 @@ var WORMVIZ_PARAMS = {
     "worm_petri_dish": {
         "max_height": 400,
         "max_width": 650,
-        "margin": {"left": 50, "top": 25, "right": 25, "bottom": 25},
+        "margin": {"left": 0, "top": 25, "right": 0, "bottom": 1},
         "NUM_WORMS": 5,
         "m": 12
     }

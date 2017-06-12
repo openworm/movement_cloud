@@ -115,7 +115,6 @@ function create_worm_animation(DOM_viz, worm_data_obj, units) {
 
     */
     // Clear the timers for the old animation, if any
-    console.log("flushing all timers2 !");
     d3.timerFlush();
 
     // Clear the old visualization, if any exists
@@ -207,17 +206,88 @@ function create_worm_animation(DOM_viz, worm_data_obj, units) {
     // TODO: put everything above BEFORE the CSV file loads.
 
     // Axes
-    let xAxis = d3.axisBottom().scale(scaleX).ticks(5); // 5 tick marks
+    let xAxis = d3.axisTop().scale(scaleX).ticks(0);
     let xAxisGroup = chart.append("g")
         .attr("transform", "translate(0, " + String(max_height) + ")")
         .call(xAxis);
 
 
-    let yAxis = d3.axisLeft().scale(scaleY);
+    let yAxis = d3.axisRight().scale(scaleY).ticks(0);
     let yAxisGroup = chart.append("g")
         //.attr("transform", "translate(0 0)")
         .call(yAxis);
 
+    ///////////////////////////
+    // Create distance scale element
+
+    function create_distance_scale(k=1) {
+
+        let distance_scale_line = d3.line()
+            .x(d => d.x)
+            .y(d => d.y)
+            .curve(d3.curveBasis);
+
+        // Here we find the nearest distance metric (log 10) to 
+        // 20% of the screen width, to use as our distance scale legend.
+        let ideal_range_scale_length = 0.2 * width;
+        let ideal_domain_scale_length = (scaleX.invert(ideal_range_scale_length) - scaleX.invert(0)) / k;
+        let rounded_domain_scale_decimal_places = Math.round(Math.log10(ideal_domain_scale_length));
+        let rounded_domain_scale_length = Math.pow(10, rounded_domain_scale_decimal_places);
+        let rounded_range_scale_length = (scaleX(rounded_domain_scale_length) - scaleX(0)) * k;
+
+        // Format only the number of decimal places needed for the legend
+        // e.g. 0.1 mm or 0.01mm, but not 0.10mm    
+        let d3_format_needed = ".0f";
+        if(rounded_domain_scale_decimal_places < 0) {
+            d3_format_needed = "." + String(Math.abs(rounded_domain_scale_decimal_places)) + "f";
+        }
+    
+        // DEBUG output
+        //console.log("ideal range, domain:", ideal_range_scale_length, ideal_domain_scale_length);
+        //console.log("rounded range, domain", rounded_range_scale_length, rounded_domain_scale_length);
+    
+        // Put the position 10% above and to the right of the bottom-left
+        // corner, or closer if the dimensions are too small 
+        let scale_pos = [Math.min(0.1 * width, width - 160),
+                         Math.min(0.9 * height, height - 20)];
+        let distance_scale1 = chart.selectAll("#distance-scale1");
+
+        // Remove any current scale
+        distance_scale1.selectAll("*").remove();
+
+        distance_scale1
+                .data([rounded_range_scale_length])
+            .enter().append("g")
+                .attr("class", "distance-scale")
+                .attr("id", "distance-scale1")
+                .attr("transform", "translate(" + String(scale_pos[0]) + ", " +
+                                                  String(scale_pos[1]) + ")")
+                .attr("width", d => d);
+    
+        distance_scale1.append('text')
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("text-anchor", "start")
+            .text(d3.format(d3_format_needed)(rounded_domain_scale_length)
+                  + units.x);
+    
+        distance_scale1.append('path')
+            .attr("class", "distance-scale-line")
+            .attr("d", function(d, i) {
+                var lineData = [
+                    {"x": 0, "y": 10},
+                    {"x": d, "y": 10}
+                ];
+        
+                return distance_scale_line(lineData);
+            });
+    }
+
+    // DEBUG: for some reason this must be called twice initially
+    create_distance_scale();
+    create_distance_scale();
+
+    ///////////////////////////
     // Pan and zoom
     function zoomed() {
         let t = d3.event.transform;
@@ -233,6 +303,7 @@ function create_worm_animation(DOM_viz, worm_data_obj, units) {
         // i.e. more zoom = more ticks
         xAxisGroup.call(xAxis.scale(d3.event.transform.rescaleX(scaleX)));
         yAxisGroup.call(yAxis.scale(d3.event.transform.rescaleY(scaleY)));
+        create_distance_scale(t.k);
     }
 
     // Path of the worm's head across the whole video
@@ -334,8 +405,6 @@ function create_worm_animation(DOM_viz, worm_data_obj, units) {
     let animation_timer = createAnimationTimer();
 
     function createAnimationTimer() {
-        console.log("creating a timer!");
-
         // Toggle the "PLAY" button to accept "PAUSE" instead
         d3.select("#toggle_animation_button").node().innerHTML = "PAUSE";
 

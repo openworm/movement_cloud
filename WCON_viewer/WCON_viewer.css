@@ -95,6 +95,21 @@ path.tail {
     fill: IndianRed;
 }
 
+#wormVisualization .distance-scale {
+    font-size: 11px;
+    line-height: 11px;
+    position: absolute;
+    font-weight: 500;
+    color: #000;
+}
+
+#wormVisualization .distance-scale-line {
+    stroke: #000;
+    stroke-width: 1;
+    stroke-opacity: 1;
+    opacity: 1;
+    fill: #000;
+}
 
 /* For JSON syntax highlighting */
 pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
