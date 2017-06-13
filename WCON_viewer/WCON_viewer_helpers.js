@@ -421,7 +421,6 @@ function create_worm_animation(DOM_viz, worm_data_obj, units) {
         d3.select("#toggle_animation_button").node().innerHTML = "PAUSE";
 
         return d3.timer(function() {
-            console.log("welcome to frame " + frame_index);
             frame_index++;
             // Reset the animation if it has reached the end
             if (frame_index >= num_frames) { frame_index = 0; }

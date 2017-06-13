@@ -166,10 +166,16 @@ function display_wcon(wcon_obj) {
         frame_rate = 1 / frame_rate;
     }
 
+    /* Take wcon_obj.data.t[1] / wcon_obj.data.t[0] as the frame rate, but
+        it might vary frame-by-frame, so it's not clear how to show the
+        frame rate; I suppose we could show minimum and maximum frame rate.
+    */
+    /*
     data_info.append("div")
         .attr("class", "frame_rate")
             .append("span")
             .text("Frame rate: " + frame_rate + " frames per second");
+    */
 
     // TRACKS COUNT DATA
     // Go through all tracks and grab the length of t and other data
