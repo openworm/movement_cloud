@@ -63,36 +63,59 @@ path.tail {
 #wormVisualization .chart {
 }
 
+#wormVisualization .chart .chart_border {
+    fill: none;
+    stroke: #000;
+    stroke-width: 2px;
+}
+
 #wormVisualization g.view {
     background: rgba(255, 0, 0, 0.325);
 }
 
-#wormVisualization circle.dish_outline {
-    stroke: black;
-    stroke-width: 5px;
-    fill: none;
-}
-
 #wormVisualization .worm_path {
-    stroke: green;
-    stroke-width: 2;
-    fill: none;
-}
-
-#wormVisualization .worm_skeleton_nan {
-    stroke: gray;
+    stroke: LightGray;
     stroke-width: 2;
     fill: none;
 }
 
 #wormVisualization .worm_skeleton {
-    stroke: blue;
+    stroke: RoyalBlue;
     stroke-width: 2;
     fill: none;
 }
 
+#wormVisualization .worm_skeleton_nan {
+    stroke: SteelBlue;
+    stroke-width: 2;
+    fill: none;
+}
 
+#wormVisualization .worm_head {
+    stroke: DarkRed;
+    fill: DarkRed;
+}
 
+#wormVisualization .worm_head_nan {
+    stroke: IndianRed;
+    fill: IndianRed;
+}
+
+#wormVisualization .distance-scale {
+    font-size: 11px;
+    line-height: 11px;
+    position: absolute;
+    font-weight: 500;
+    color: #000;
+}
+
+#wormVisualization .distance-scale-line {
+    stroke: #000;
+    stroke-width: 1;
+    stroke-opacity: 1;
+    opacity: 1;
+    fill: #000;
+}
 
 /* For JSON syntax highlighting */
 pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
@@ -122,4 +145,41 @@ thead {
 
 .bad {
     color: red;
+}
+
+.slider_info {
+    display: block;
+    width: 300px;
+    font-family: monospace;
+}
+
+.slider_buttons {
+    display: block;
+}
+
+.slider_info frame_info {
+    float: left;
+}
+
+.slider_info .time_info {
+    float: right;
+}
+
+.time_slider {
+    width: 300px;
+    display: block;
+}
+
+.dropzone {
+    width: 300px;
+    height: 300px;
+    border: 2px dashed #ccc;
+    color: #ccc;
+    line-height: 300px;
+    text-align: center;
+}
+
+.dropzone.dragover {
+    border-color: #000;
+    color: #000;
 }

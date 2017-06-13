@@ -1,11 +1,13 @@
 var WORMVIZ_PARAMS = {
-    "report_title": "Open Worm Movement Database: Crossfilter of Results",
-    "data_file": "worm_mock_data.csv",
+    "initial_WCON_data_file": "example.wcon",
     "schema_url": "https://raw.githubusercontent.com/openworm/tracker-commons/master/wcon_schema.json",
+    
+    "display_despite_schema_errors": true,
     
     "worm_petri_dish": {
         "max_height": 400,
-        "margin" = {"left": 50, "top": 25, "right": 25, "bottom": 25}
+        "max_width": 650,
+        "margin": {"left": 0, "top": 1, "right": 0, "bottom": 1},
         "NUM_WORMS": 5,
         "m": 12
     }

@@ -20,67 +20,91 @@ TODO: Warn that unzipping cannot be handled, or else just handle it!
 
 */
 
-let wcon_objj; // DEBUG used for debugging
+// Initialize the page with an example
+view_WCON_data_file(WORMVIZ_PARAMS.initial_WCON_data_file);
 
-const wcon_file_name = "smaller.wcon";  // DEBUG: hardcoded for now
+function clear_WCON_view() {
+    /* Clear all existing DOM elements used to display WCON information,
+       so that a new worm can be displayed. */
 
-// Load the worm schema, and use this information to render some explanation
-// of what the WCON format is
-d3.json(WORMVIZ_PARAMS.schema_url, function(error1, schema_obj) {
-    // Load this specific WCON file
-    d3.json(wcon_file_name, function(error2, wcon_obj) {
-        if (error1) { console.log(error1); }
-        if (error2) { console.log(error2); }
+    // Stop any existing animations
+    d3.timerFlush();
+    stop_animation();
 
-        // FILE INFORMATION    
-        let file_info = d3.select("#file_info");
+    // Clear previous results (if any)
+    d3.select("#file_info").selectAll("*").remove();
+
+    // Clear any previous results
+    d3.select("#wormVisualization").selectAll("svg").selectAll("*").remove()
+    d3.select("#wormDropDownMenu").selectAll("*").remove()
+    d3.select("#metadata").selectAll("*").remove()
+    d3.select("#units").selectAll("*").remove()
+    d3.select("#data_info").selectAll("*").remove()
+}
+
+function view_WCON_data_file(WCON_data_file) {
+    /*
+        This method loads the schema and worm data, validates it
+        against the schema, and displays the WCON file.
+    */
+    // Clear the existing view
+    clear_WCON_view();
+    console.log("Loading file: " + WCON_data_file);
+    d3.select("#file_info").append("div")
+        .attr("class", "file_info")
+        .text("LOADING FILE, PLEASE WAIT...");
+
+    // Load the WCON schema
+    d3.json(WORMVIZ_PARAMS.schema_url, function(error1, schema_obj) {
+        // Load this specific WCON file
+        d3.json(WCON_data_file, function(error2, wcon_obj) {
+            if (error1) { console.log(error1); }
+            if (error2) { console.log(error2); }
+
+            // Clear the existing view    
+            clear_WCON_view();
+
+            // FILE INFORMATION    
+            let file_info = d3.select("#file_info");
+        
+            // Display the file name
+            file_info.append("div")
+                .attr("class", "file_info")
+                .text("File name: " + String(WCON_data_file));
     
-        file_info.append("div")
-            .attr("class", "file_info")
-            .text("File name: " + String(wcon_file_name));
-
-        let validation_state = file_info.append("div")
-                .attr("class", "validation_state")
-
+            let validation_state = file_info.append("div")
+                    .attr("class", "validation_state")
     
-        // VALIDATE WCON FILE AGAINST SCHEMA    
-        let isValidWCON = false;
-        let ajv = new Ajv();
-        if (!ajv.validate(schema_obj, wcon_obj)) {
-            isValidWCON = false;
-
-            // If it did not validate, show the errors
-            validation_state
-                .append("h3").attr("class", "bad").text("SCHEMA VALIDATION ERRORS:")
-                .append("pre")
-                    .node().innerHTML = syntaxHighlight(ajv.errors);
-        } else {
-            isValidWCON = true;
-
-            validation_state
-                    .append("span").text("Validation state: ")
-                    .append("span").attr("class", "good").text("VALIDATED");
-        }
-
-        // Only show the WCON information if the previous schema test passed,
-        // otherwise the parser behaviour is undefined.
-        //if(isValidWCON) {  // DEBUG: for now don't be strict
-            // WCON FILE INFORMATION
-            display_wcon(wcon_obj); 
-        //}
-        // FOOTER
-        let footer = d3.select("#footer");
+        
+            // VALIDATE WCON FILE AGAINST SCHEMA    
+            let isValidWCON = false;
+            let ajv = new Ajv();
+            if (!ajv.validate(schema_obj, wcon_obj)) {
+                isValidWCON = false;
     
-        footer.insert("div",".links").attr("class", "title")
-            .append("h3").text(schema_obj.title);
+                // If it did not validate, show the errors
+                validation_state
+                    .append("h3").attr("class", "bad").text("SCHEMA VALIDATION ERRORS:")
+                    .append("pre")
+                        .node().innerHTML = syntaxHighlight(ajv.errors);
+            } else {
+                isValidWCON = true;
     
-        footer.insert("div",".links").attr("class", "description")
-            .append("p").text(schema_obj.description);
-
-
+                validation_state
+                        .append("span").text("Validation state: ")
+                        .append("span").attr("class", "good").text("VALIDATED");
+            }
+    
+            // Only show the WCON information if the previous schema test
+            // passed, or if we've given permission to try to display
+            // despite the schema not validating.
+            if(isValidWCON || WORMVIZ_PARAMS.display_despite_schema_errors) {
+                // WCON FILE INFORMATION
+                display_wcon(wcon_obj);
+            }
+        });
     });
-});
-
+}
 
 function display_wcon(wcon_obj) {
     /* 
@@ -94,8 +118,6 @@ function display_wcon(wcon_obj) {
         TODO: check for any custom fields, and list them and mention
         that this parser will not show them.
     */
-    wcon_objj = wcon_obj;  // DEBUG
-
     // Show metadata in a nice syntax-highlighed JSON block.
     d3.select("#metadata").append("div")
         .attr("class", "metadata")
@@ -144,10 +166,16 @@ function display_wcon(wcon_obj) {
         frame_rate = 1 / frame_rate;
     }
 
+    /* Take wcon_obj.data.t[1] / wcon_obj.data.t[0] as the frame rate, but
+        it might vary frame-by-frame, so it's not clear how to show the
+        frame rate; I suppose we could show minimum and maximum frame rate.
+    */
+    /*
     data_info.append("div")
         .attr("class", "frame_rate")
             .append("span")
             .text("Frame rate: " + frame_rate + " frames per second");
+    */
 
     // TRACKS COUNT DATA
     // Go through all tracks and grab the length of t and other data
@@ -169,6 +197,36 @@ function display_wcon(wcon_obj) {
     tabulate(d3.select("#data_info"), wcon_data_info, wcon_data_columns);
 
     // Animate the worm's data
-    create_worm_animation(wcon_obj.data, unique_worm_ids.length);
-}
+    create_worm_animation(d3.select("#wormVisualization"),
+                          wcon_obj.data[0], wcon_obj.units);
 
+    // Allow a choice of unique_worm_ids
+    d3.select("#worm_picker").selectAll("select")
+        // First selectAll from the non-existent "option" list otherwise
+        // .enter will miss the first array element
+        .selectAll("option")
+        .data(worm_ids).enter()
+            .insert("option")
+            .attr("value", (d, i) => String(i))
+            .text((d, i) => d)
+            // Let's select the first item by default
+            .attr("selected", (d, i) => (i === 0) ? "selected" : null);
+
+    // Now listen for changes to the worm selection list
+    let selectList = document.getElementById("wormDropDownMenu");
+    function worm_picker_selection_made(changeEvent) {
+        console.log(selectList.value);
+
+        // Restart the worm animation with the new worm choice
+        create_worm_animation(d3.select("#wormVisualization"),
+                              wcon_obj.data[selectList.value],
+                              wcon_obj.units)
+    }
+    if(document.readyState === 'complete') {
+        selectList.addEventListener("change", worm_picker_selection_made);
+    } else {
+        document.addEventListener('DOMContentLoaded', function() {
+            selectList.addEventListener("change", worm_picker_selection_made);
+        });
+    }
+}
