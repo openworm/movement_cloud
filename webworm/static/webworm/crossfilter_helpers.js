@@ -176,13 +176,15 @@ function createXfilterParams(paramObject, rawInputData) {
     paramObject['datasetview_chart_index'] = paramObject['num_display_fields'] - 1;
     for (var i=0; i< numFeatures; i++) {
 	let fieldName = crossfilterHeader[i];
+	// *CWL* Keeping this around in case I still need to use it.
+	//	let fieldRange = getExtremes(rawInputData, fieldName);
 	paramObject['data_fields'][fieldName] = { 
 	    "data_type": "numeric",
 	    "display_name": fieldName,
 	    "suffix": "",
 	    "scale": "linear",
 	    "bucket_width": 1,
-	    "rangeRound":[0,200],
+	    "rangeRound":[0,$('#crossfilterPane').width()/3.5],
 	    "stratify": 1
 	};
 	paramObject['charts'].push(fieldName);
