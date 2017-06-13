@@ -63,12 +63,18 @@ path.tail {
 #wormVisualization .chart {
 }
 
+#wormVisualization .chart .chart_border {
+    fill: none;
+    stroke: #000;
+    stroke-width: 2px;
+}
+
 #wormVisualization g.view {
     background: rgba(255, 0, 0, 0.325);
 }
 
 #wormVisualization .worm_path {
-    stroke: Gray;
+    stroke: LightGray;
     stroke-width: 2;
     fill: none;
 }

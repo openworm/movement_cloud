@@ -114,8 +114,9 @@ function create_worm_animation(DOM_viz, worm_data_obj, units) {
         worm_data_obj: the data of the worm to animate
 
     */
-    // Clear the timers for the old animation, if any
+    // Stop any existing animations
     d3.timerFlush();
+    stop_animation();
 
     // Clear the old visualization, if any exists
     DOM_viz.selectAll("svg")
@@ -189,7 +190,10 @@ function create_worm_animation(DOM_viz, worm_data_obj, units) {
         .attr("width", svg_width)
         .attr("height", svg_height)
             // Enable pan and zoom
-            .call(viz_zoom);
+            .call(viz_zoom)
+            // Make the scroll wheel a dead zone when we've zoomed the max,
+            // rather than suddenly scrolling up or down the page
+            .on("wheel", function() { d3.event.preventDefault(); });
 
     let chart = svg.append("g")
             .attr("class", "chart")
@@ -197,6 +201,11 @@ function create_worm_animation(DOM_viz, worm_data_obj, units) {
             .attr("height", height)
             .attr("transform", "translate(" + String(margin.left) + ", " +
                                               String(margin.top) + ")");
+
+    chart.append("rect")
+        .attr("class", "chart_border")
+        .attr("width", width)
+        .attr("height", height);
 
     let view = chart.append("g")
         .attr("class", "view")
@@ -206,7 +215,7 @@ function create_worm_animation(DOM_viz, worm_data_obj, units) {
     // TODO: put everything above BEFORE the CSV file loads.
 
     // Axes
-    let xAxis = d3.axisTop().scale(scaleX).ticks(0);
+    /*let xAxis = d3.axisTop().scale(scaleX).ticks(0);
     let xAxisGroup = chart.append("g")
         .attr("transform", "translate(0, " + String(max_height) + ")")
         .call(xAxis);
@@ -216,6 +225,7 @@ function create_worm_animation(DOM_viz, worm_data_obj, units) {
     let yAxisGroup = chart.append("g")
         //.attr("transform", "translate(0 0)")
         .call(yAxis);
+    */
 
     ///////////////////////////
     // Create distance scale element
@@ -291,6 +301,7 @@ function create_worm_animation(DOM_viz, worm_data_obj, units) {
     // Pan and zoom
     function zoomed() {
         let t = d3.event.transform;
+
         // The original svg box must be contained entirely within the
         // larger, zoomed bounding box.
         t.x = d3.min([t.x, 0]);
@@ -301,8 +312,8 @@ function create_worm_animation(DOM_viz, worm_data_obj, units) {
         
         // Rescale the ticks on the axes according to our new zoom level
         // i.e. more zoom = more ticks
-        xAxisGroup.call(xAxis.scale(d3.event.transform.rescaleX(scaleX)));
-        yAxisGroup.call(yAxis.scale(d3.event.transform.rescaleY(scaleY)));
+        //xAxisGroup.call(xAxis.scale(d3.event.transform.rescaleX(scaleX)));
+        //yAxisGroup.call(yAxis.scale(d3.event.transform.rescaleY(scaleY)));
         create_distance_scale(t.k);
     }
 
@@ -355,6 +366,7 @@ function create_worm_animation(DOM_viz, worm_data_obj, units) {
     let toggle_button = d3.select("#toggle_animation_button");
     toggle_button.on("click", function() {
             if(toggle_button.node().innerHTML === "PLAY") {
+                animation_timer.stop();
                 animation_timer = createAnimationTimer();
                 toggle_button.node().innerHTML = "PAUSE"
             } else {
@@ -365,7 +377,7 @@ function create_worm_animation(DOM_viz, worm_data_obj, units) {
 
     d3.select("#time_slider_element").on("input", function() {
         frame_index = this.value;
-        animation_timer.stop();
+        stop_animation();
         draw_frame();
     });
 
@@ -409,6 +421,7 @@ function create_worm_animation(DOM_viz, worm_data_obj, units) {
         d3.select("#toggle_animation_button").node().innerHTML = "PAUSE";
 
         return d3.timer(function() {
+            console.log("welcome to frame " + frame_index);
             frame_index++;
             // Reset the animation if it has reached the end
             if (frame_index >= num_frames) { frame_index = 0; }
@@ -416,5 +429,22 @@ function create_worm_animation(DOM_viz, worm_data_obj, units) {
             // Draw the new frame
             draw_frame();
         });
+    }
+}
+
+
+function stop_animation() {
+    function eventFire(el, etype){
+      if (el.fireEvent) {
+        el.fireEvent('on' + etype);
+      } else {
+        var evObj = document.createEvent('Events');
+        evObj.initEvent(etype, true, false);
+        el.dispatchEvent(evObj);
+      }
+    }
+    let toggle_button = document.getElementById('toggle_animation_button');
+    if(toggle_button.innerHTML === "PAUSE") {
+        eventFire(toggle_button, 'click');
     }
 }

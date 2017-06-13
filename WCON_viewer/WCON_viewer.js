@@ -27,8 +27,9 @@ function clear_WCON_view() {
     /* Clear all existing DOM elements used to display WCON information,
        so that a new worm can be displayed. */
 
-    // Stop the animation if it exists
+    // Stop any existing animations
     d3.timerFlush();
+    stop_animation();
 
     // Clear previous results (if any)
     d3.select("#file_info").selectAll("*").remove();
