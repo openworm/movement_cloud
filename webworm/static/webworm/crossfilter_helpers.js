@@ -632,3 +632,31 @@ function resultsList(grouping_dimension) {
             .text(d => valueFormatted(d, cur_field));
     }
 }
+
+function resultsTable(grouping_dimension) {
+    // Re-run the results list, by erasing it and creating it again
+
+    let div = d3.select("#results-list");
+    // Clear the existing results
+    div.selectAll("table").remove();
+
+    // Create a table with one row for each record in the crossfilter construct
+    let table = div.append("table").attr("class", "display").attr("class","nowrap")
+	.attr("border",1);
+    let tableHead = table.append("thead").append("tr");
+    let tableBody = table.append("tbody");
+    let trs = tableBody.selectAll("tr").data(grouping_dimension.top(XFILTER_PARAMS.max_results))
+        .enter().append("tr");
+    /*
+    let trs = tableBody.selectAll("tr").data(grouping_dimension.top(Infinity))
+        .enter().append("tr");
+    */
+
+    // Loop over all columns we are supposed to display in the results
+    for(let len = XFILTER_PARAMS.results_display.length, i=0; i<len; i++) {
+        let cur_field = XFILTER_PARAMS.results_display[i];
+
+        tableHead.append("td").html(XFILTER_PARAMS.data_fields[cur_field].display_name);
+        trs.append("td").html(d => valueFormatted(d, cur_field));
+    }
+}

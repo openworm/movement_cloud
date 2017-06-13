@@ -107,7 +107,8 @@ function create_crossfilter(data_rows) {
     // whenever the brush moves and other events like that
     function renderAll() {
         chart_DOM_elements.each(render);
-        resultsList(x_filter_dimension[XFILTER_PARAMS.datasetview_chart_index]);
+	//        resultsList(x_filter_dimension[XFILTER_PARAMS.datasetview_chart_index]);
+        resultsTable(x_filter_dimension[XFILTER_PARAMS.datasetview_chart_index]);
         d3.select('#active').text(formatWholeNumber(xfilter_all.value()));
 
         redraw_datasetview();
