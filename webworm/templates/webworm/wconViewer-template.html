@@ -1,22 +1,4 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset='utf-8'>
-        <title>WCON Viewer</title>
-
-        <link rel="stylesheet" href="WCON_viewer.css">
-        <script src="wormviz_parameters.js"></script>
-
-        <script src="d3.v4.min.js" defer></script>
-        <script src="babel.min.js" defer></script>
-        <script src="ajv.min.js"></script>
-
-        <script src="WCON_viewer_helpers.js" defer></script>
-        <script src="WCON_viewer.js" defer></script>
-        <script src="dropzone.js" defer></script>
-    </head>
-</html>
-<body>
+<div id="wconViewerPane">
     <div id="header">
         <h1>WCON Viewer</h1>
     </div>
@@ -26,7 +8,7 @@
         <div id="dropzone" class="dropzone">
             Drop one WCON file here to upload
         </div>
-        
+
         <div id="upload_results_element">
         </div>
     </div>
@@ -43,7 +25,7 @@
             <select id="wormDropDownMenu"">
             </select>
         </div>
-        
+
         <div id="wormVisualization">
             <svg></svg>
             <div class="slider">
@@ -57,22 +39,22 @@
                 </div>
             </div>
         </div>
-        
+
         <div id="metadata_container"><h3>METADATA:</h3>
             <div id="metadata">
             </div>
         </div>
-    
+
         <div id="units_container"><h3>UNITS:</h3>
             <div id="units">
             </div>
         </div>
-    
+
         <div id="data_info_container"><h3>DATA:</h3>
             <div id="data_info">
             </div>
         </div>
-    
+
         <hr />
 
         <div id="footer"><h3>Worm tracker Commons Object Notation (WCON)</h3>
@@ -83,4 +65,4 @@
             </div>
         </div>
     </div>
-</body>
+</div>  

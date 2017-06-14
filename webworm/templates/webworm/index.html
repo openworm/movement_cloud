@@ -6,7 +6,8 @@
   <ul class="nav nav-tabs" id="tabsUL">
     <li class="active"><a data-toggle="tab" href="#searchPane">Filter Tools</a></li>
     <li><a data-toggle="tab" href="#crossfilterPane">Crossfilter Results</a></li>
- </ul>
+    <li><a data-toggle="tab" href="#wconViewerPane">WCON Viewer</a></li>
+  </ul>
 
   <div class="tab-content">
     <!-- Search Tool Panel -->
@@ -39,6 +40,7 @@
     hasCFData = true;
   }
   var dataFilePath = "{% static 'webworm/worm_mock_data.csv' %}";
+  var wconFilePath = "{% static 'webworm/example.wcon' %}";
   var crossfilterData = {{ results_list|safe }};
   var crossfilterHeader = {{ features_headers|safe }};
   var discreteFieldData = {{ discrete_field_counts|safe }};
@@ -50,6 +52,7 @@
 <script src="{% static 'webworm/paginate-cf-parameters.js' %}"></script>
 
 <script src="{% static 'webworm/crossfilter_parameters.js' %}"></script>
+<script src="{% static 'webworm/wormviz_parameters.js' %}"></script>
 
 <script src="{% static 'webworm/crossfilter.min.js' %}"></script>
 <script src="{% static 'webworm/d3.v4.min.js' %}"></script>
@@ -58,5 +61,10 @@
 <script src="{% static 'webworm/crossfilter_bar_chart.js' %}"></script>
 <script src="{% static 'webworm/crossfilter_helpers.js' %}"></script>
 <script src="{% static 'webworm/crossfilter_main.js' %}"></script>
+
+<script src="{% static 'webworm/dropzone.js' %}"></script>
+<script src="{% static 'webworm/WCON_viewer_helpers.js' %}"></script>
+<script src="{% static 'webworm/WCON_viewer.js' %}"></script>
+<script src="{% static 'webworm/ajv.min.js' %}"></script>
 
 {% endblock %}

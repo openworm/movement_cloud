@@ -443,7 +443,7 @@ function stop_animation() {
       }
     }
     let toggle_button = document.getElementById('toggle_animation_button');
-    if(toggle_button.innerHTML === "PAUSE") {
+    if(toggle_button != null && toggle_button.innerHTML === "PAUSE") {
         eventFire(toggle_button, 'click');
     }
 }
