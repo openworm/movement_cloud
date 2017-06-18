@@ -6,7 +6,7 @@
   <ul class="nav nav-tabs" id="tabsUL">
     <li class="active"><a data-toggle="tab" href="#searchPane">Filter Tools</a></li>
     <li><a data-toggle="tab" href="#crossfilterPane">Crossfilter Results</a></li>
-    <li><a data-toggle="tab" href="#wconViewerPane">WCON Viewer</a></li>
+    <li><a data-toggle="tab" href="#wconViewPane">WCON Viewer</a></li>
   </ul>
 
   <div class="tab-content">
@@ -19,14 +19,13 @@
     <div class="tab-pane fade" id="crossfilterPane">
       {% include "webworm/crossfilter-template.html" %}
     </div>
-  </div>
 
-<!-- *CWL* FOR MICHAEL - Output of Data that can be sent to client from server for
-     Crossfiltering
-  {% for item in results_list %}
-  <p>{{ item }}</p>
-  {% endfor %}
--->
+    <!-- WCON Viewer Panel -->
+    <div class="tab-pane fade" id="wconViewPane">
+      {% include "webworm/wconViewer-template.html" %}
+    </div>
+
+  </div>
 
 </div>
 
