@@ -4,6 +4,10 @@
 //
 "use strict";
 
+// Exposing the crossfilter element so buttons like Download can gain
+//   access to the data elements.
+var globalCF;
+
 if (hasCFData) {
     XFILTER_PARAMS = createXfilterParams(XFILTER_PARAMS, crossfilterData);
     generateXfilterDerivedColumns(crossfilterData);
@@ -58,10 +62,34 @@ function create_crossfilter(data_rows) {
     // Array that holds the currently selected "in-filter" selected records
     var rows_selected = [];
 
+    // Defining accumulators for datasize
+    var reduceAdd = function(p, v) {
+	p.datasize += v.datasize;
+	return p;
+    }
+
+    var reduceRemove = function(p, v) {
+	p.datasize -= v.datasize;
+	return p;
+    }
+
+    var reduceInitial = function() {
+	return {
+	    datasize : 0
+	}
+    }
+
     // Create the crossfilter for the relevant dimensions and groups.
     const data_xfilter = crossfilter(data_rows);
+    globalCF = data_xfilter;
     // So we can display the total count of rows selected:
     const xfilter_all = data_xfilter.groupAll();  
+    // Get the sum of data sizes
+    //  *CWL* Note - apparently I cannot re-use xfilter_all here ... reduce()
+    //     appears to apply some side-effect to the variable's contents and
+    //     causes it to return NaNs if I tried.
+    const xfilter_datasizeSum = 
+	data_xfilter.groupAll().reduce(reduceAdd, reduceRemove, reduceInitial);
 
     let x_filter_dimension = [];
     let x_filter_dimension_grouped = [];
@@ -103,6 +131,23 @@ function create_crossfilter(data_rows) {
         d3.select(this).call(method);
     }
 
+    function prettySize(valueInMb) {
+	// within reason
+	let scaleText = [ 'Megabytes', 'Gigabytes', 'Terabytes', 'Petabytes', 'Exabytes' ];
+	let scaleIndex = 0;
+	let val = valueInMb;
+	while (val >= 1000) {
+	    scaleIndex += 1;
+	    val /= 1000.0;
+	}
+	if (scaleIndex >= scaleText.length) {
+	    // Punt on prettying the text, something has to be horribly wrong to exceed Exabytes
+	    return valueInMb + " Mb";
+	} else {
+	    return val.toPrecision(4) + " " + scaleText[scaleIndex];
+	}
+    }
+
     // Re-rendering function, which we will later set to be trigged
     // whenever the brush moves and other events like that
     function renderAll() {
@@ -110,7 +155,7 @@ function create_crossfilter(data_rows) {
 	//        resultsList(x_filter_dimension[XFILTER_PARAMS.datasetview_chart_index]);
         resultsTable(x_filter_dimension[XFILTER_PARAMS.datasetview_chart_index]);
         d3.select('#active').text(formatWholeNumber(xfilter_all.value()));
-
+	d3.select('#datasize').text(prettySize(xfilter_datasizeSum.value().datasize));
         redraw_datasetview();
     }
 

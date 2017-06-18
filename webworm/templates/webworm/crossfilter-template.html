@@ -3,7 +3,7 @@
     <h1 id="crossfilter_report_title"></h1>
   </div>
   <div>
-    <button id="downloadExpr" onclick="downloadResults()" type="button" class="btn btn-danger" disabled="true">Download Experiments</button>
+    <button id="downloadExpr" onclick="downloadResultsList()" type="button" class="btn btn-danger" disabled="true">Download Experiments List</button>
     <a href="javascript:resetAll()" class="reset" style="margin-left: -10px; margin-bottom: 20px">Reset all</a>
     <hr>
   </div>
@@ -17,7 +17,8 @@
   </div>
   
   <aside id='totals'>
-    <span id='active'>-</span> of <span id='total'>-</span> experiments selected.
+    <p><span id='active'>-</span> of <span id='total'>-</span> experiments selected.</p>
+    <p>Total data size selected - <span id='datasize'>0 Mb</span></p>
   </aside>
   
   <div id='lists'>

@@ -3,13 +3,39 @@
 var pretty_month_names = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
 			   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
 
-function downloadResults() {
-    // *CWL* - Michael, how do we go about getting ALL the selected elements and not just
-    //    the ones on display?
+// *CWL* - This is the basic form of getting results from Zenodo. A more
+//   advanced form may take the list and perform post-processing like 
+//   allowing the user to choose the element(s) (e.g. Video data only)
+//   to actually be downloaded. In the latter case, we'd want to separate
+//   the common feature of extracting the specific URLs as its own function.
+function downloadResultsList() {
     var returnText = "";
+    let zenodoFilenames = [
+		     '.hdf5',
+		     '.wcon.zip',
+		     '_features.hdf5',
+		     '_skeletons.hdf5',
+		     '_subsample.avi'
+		     ];
+    /*
     $('.results_list_row').each(function (index,element) {
 	    returnText = returnText + index.toString() + "\n";
 	});
+    */
+    // Get grouping by URL
+    let allCFValues = globalCF.dimension(d => d.url).top(Infinity);
+    for (var idx=0; idx<allCFValues.length; idx++) {
+	if (allCFValues[idx].url != "None") {
+	    let urlPrefix = allCFValues[idx].url + "/files/" + allCFValues[idx].fullname;
+	    for (var fIdx=0; fIdx<zenodoFilenames.length; fIdx++) {
+		returnText = returnText + urlPrefix + zenodoFilenames[fIdx] + "\n";
+	    }
+	}
+    }
+    if (returnText == "") {
+	returnText = "Download Warning: No records found!\n";
+    }
+
     var element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,'+encodeURIComponent(returnText));
     element.setAttribute('download', 'results.txt');
@@ -156,12 +182,22 @@ function initializeParamObject() {
 					      "display_name": "Strain" };
     returnObject['data_fields']['allele'] = { "data_type": "string",
 					      "display_name": "Allele" };
+    returnObject['data_fields']['datasize'] = { "data_type": "numeric",
+						"display_name": "Data Size" };
+    returnObject['data_fields']['url'] = { "data_type": "string",
+					   "display_name": "Zenodo Url" };
+    returnObject['data_fields']['fullname'] = { "data_type": "string",
+						"display_name": "Full Experiment Name" };
     returnObject['charts'] = [ "iso_date", "hour" ];
     returnObject['results_display'] = [ 
 				       "pretty_date",
 				       "pretty_time", 
 				       "strain",  
-				       "allele"
+				       "allele",
+    // The next 3 fields are temporary ... for testing only except maybe for datasize, url.
+				       "datasize",
+				       "url",
+				       //				       "fullname",
 					];
     returnObject['max_results'] = 20;
     return returnObject;

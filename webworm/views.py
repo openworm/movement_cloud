@@ -154,6 +154,20 @@ def eliminateNonFeatureRows(featuresHeader, inList):
         outList = [x for x in inList if featuresNotNone(featuresHeader, x)];
     return outList;
 
+def noneToText(inList):
+    for rowIdx, row in enumerate(inList):
+        for idx, item in enumerate(row):
+            if item == None:
+                row[idx] = "None";
+    return inList;
+
+def noneToZero(inList):
+    for rowIdx, row in enumerate(inList):
+        for idx, item in enumerate(row):
+            if item == None:
+                row[idx] = 0;
+    return inList;
+
 def processSearchConfiguration(getRequest, dbRecords):
     global discreteFields;
     if 'start_date' in getRequest:
@@ -174,21 +188,26 @@ def constructSearchContext(featuresInfo, dbRecords, context):
     headerList = featuresInfo[1];
     # Clone the list for only the features
     featuresHeaderList = headerList[:];
-    # *CWL* Find a way to eliminate this horrid hardcode
+    # *CWL* Find a way to eliminate this horrid hardcode (and reverse order)
+    headerList.insert(0,'datasize');
+    headerList.insert(0,'url');
+    headerList.insert(0,'fullname');
     headerList.insert(0,'allele');
     headerList.insert(0,'strain');
     headerList.insert(0,'timestamp');
     dataList = [list(item) for item in 
-                dbRecords.values_list('date','strain__name','strain__allele__name')];
-    slicedList = [item[1:3] for item in dataList];
+                dbRecords.values_list('date','strain__name','strain__allele__name',
+                                      'base_name','zenodo_id','original_video_sizemb')];
+    slicedList = noneToText([item[1:5] for item in dataList]);
+    sizeList = noneToZero([item[5:6] for item in dataList]);
     dateList = [[item] for item in 
                 [entry[0].strftime("%Y%m%d%H%M") for entry in dataList]];
     # If there are no features, we do not attempt to zip the empty list in
     tempList = [];
     if len(featuresHeaderList) == 0:
-        tempList = [list(item) for item in zip(dateList,slicedList)];
+        tempList = [list(item) for item in zip(dateList,slicedList,sizeList)];
     else:
-        tempList = [list(item) for item in zip(dateList,slicedList,featuresList)];
+        tempList = [list(item) for item in zip(dateList,slicedList,sizeList,featuresList)];
     returnList = [dict(zip(headerList,listLine)) for listLine in 
                   [[item for sublist in l for item in sublist] for l in tempList]];
     returnList = eliminateNonFeatureRows(featuresHeaderList, returnList);
