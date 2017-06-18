@@ -1,5 +1,5 @@
 var WORMVIZ_PARAMS = {
-    "initial_WCON_data_file": "example.wcon",
+    "initial_WCON_data_file": wconFilePath,
     "schema_url": "https://raw.githubusercontent.com/openworm/tracker-commons/master/wcon_schema.json",
     
     "display_despite_schema_errors": true,
