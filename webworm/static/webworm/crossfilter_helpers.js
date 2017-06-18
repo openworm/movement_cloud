@@ -3,7 +3,12 @@
 var pretty_month_names = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
 			   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
 
-function downloadResults() {
+// *CWL* - This is the basic form of getting results from Zenodo. A more
+//   advanced form may take the list and perform post-processing like 
+//   allowing the user to choose the element(s) (e.g. Video data only)
+//   to actually be downloaded. In the latter case, we'd want to separate
+//   the common feature of extracting the specific URLs as its own function.
+function downloadResultsList() {
     var returnText = "";
     let zenodoFilenames = [
 		     '.hdf5',
