@@ -4,12 +4,33 @@ var pretty_month_names = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
 			   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
 
 function downloadResults() {
-    // *CWL* - Michael, how do we go about getting ALL the selected elements and not just
-    //    the ones on display?
     var returnText = "";
+    let zenodoFilenames = [
+		     '.hdf5',
+		     '.wcon.zip',
+		     '_features.hdf5',
+		     '_skeletons.hdf5',
+		     '_subsample.avi'
+		     ];
+    /*
     $('.results_list_row').each(function (index,element) {
 	    returnText = returnText + index.toString() + "\n";
 	});
+    */
+    // Get grouping by URL
+    let allCFValues = globalCF.dimension(d => d.url).top(Infinity);
+    for (var idx=0; idx<allCFValues.length; idx++) {
+	if (allCFValues[idx].url != "None") {
+	    let urlPrefix = allCFValues[idx].url + "/files/" + allCFValues[idx].fullname;
+	    for (var fIdx=0; fIdx<zenodoFilenames.length; fIdx++) {
+		returnText = returnText + urlPrefix + zenodoFilenames[fIdx] + "\n";
+	    }
+	}
+    }
+    if (returnText == "") {
+	returnText = "Download Warning: No records found!\n";
+    }
+
     var element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,'+encodeURIComponent(returnText));
     element.setAttribute('download', 'results.txt');

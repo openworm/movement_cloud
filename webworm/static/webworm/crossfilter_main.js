@@ -4,6 +4,10 @@
 //
 "use strict";
 
+// Exposing the crossfilter element so buttons like Download can gain
+//   access to the data elements.
+var globalCF;
+
 if (hasCFData) {
     XFILTER_PARAMS = createXfilterParams(XFILTER_PARAMS, crossfilterData);
     generateXfilterDerivedColumns(crossfilterData);
@@ -77,9 +81,13 @@ function create_crossfilter(data_rows) {
 
     // Create the crossfilter for the relevant dimensions and groups.
     const data_xfilter = crossfilter(data_rows);
+    globalCF = data_xfilter;
     // So we can display the total count of rows selected:
     const xfilter_all = data_xfilter.groupAll();  
     // Get the sum of data sizes
+    //  *CWL* Note - apparently I cannot re-use xfilter_all here ... reduce()
+    //     appears to apply some side-effect to the variable's contents and
+    //     causes it to return NaNs if I tried.
     const xfilter_datasizeSum = 
 	data_xfilter.groupAll().reduce(reduceAdd, reduceRemove, reduceInitial);
 
