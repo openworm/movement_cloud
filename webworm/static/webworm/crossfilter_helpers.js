@@ -156,12 +156,22 @@ function initializeParamObject() {
 					      "display_name": "Strain" };
     returnObject['data_fields']['allele'] = { "data_type": "string",
 					      "display_name": "Allele" };
+    returnObject['data_fields']['datasize'] = { "data_type": "numeric",
+						"display_name": "Data Size" };
+    returnObject['data_fields']['url'] = { "data_type": "string",
+					   "display_name": "Zenodo Url" };
+    returnObject['data_fields']['fullname'] = { "data_type": "string",
+						"display_name": "Full Experiment Name" };
     returnObject['charts'] = [ "iso_date", "hour" ];
     returnObject['results_display'] = [ 
 				       "pretty_date",
 				       "pretty_time", 
 				       "strain",  
-				       "allele"
+				       "allele",
+    // The next 3 fields are temporary ... for testing only except maybe for datasize, url.
+				       "datasize",
+				       "url",
+				       //				       "fullname",
 					];
     returnObject['max_results'] = 20;
     return returnObject;
