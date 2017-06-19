@@ -3,6 +3,11 @@
 var pretty_month_names = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
 			   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
 
+function stripZenodoId(inId) {
+    let outId = inId.substring(0,inId.indexOf("#"));
+    return outId;
+}
+
 // *CWL* - This is the basic form of getting results from Zenodo. A more
 //   advanced form may take the list and perform post-processing like 
 //   allowing the user to choose the element(s) (e.g. Video data only)
@@ -17,16 +22,18 @@ function downloadResultsList() {
 		     '_skeletons.hdf5',
 		     '_subsample.avi'
 		     ];
+    let zenodoPrefix = 'https://sandbox.zenodo.org/record/';
     /*
     $('.results_list_row').each(function (index,element) {
 	    returnText = returnText + index.toString() + "\n";
 	});
     */
-    // Get grouping by URL
-    let allCFValues = globalCF.dimension(d => d.url).top(Infinity);
+    // Get grouping by Zenodo Id
+    let allCFValues = globalCF.dimension(d => d.zenodo_id).top(Infinity);
     for (var idx=0; idx<allCFValues.length; idx++) {
-	if (allCFValues[idx].url != "None") {
-	    let urlPrefix = allCFValues[idx].url + "/files/" + allCFValues[idx].fullname;
+	if (allCFValues[idx].zenodo_id != "None") {
+	    let urlPrefix = zenodoPrefix + stripZenodoId(allCFValues[idx].zenodo_id) + 
+		"/files/" + allCFValues[idx].fullname;
 	    for (var fIdx=0; fIdx<zenodoFilenames.length; fIdx++) {
 		returnText = returnText + urlPrefix + zenodoFilenames[fIdx] + "\n";
 	    }
@@ -184,8 +191,8 @@ function initializeParamObject() {
 					      "display_name": "Allele" };
     returnObject['data_fields']['datasize'] = { "data_type": "numeric",
 						"display_name": "Data Size" };
-    returnObject['data_fields']['url'] = { "data_type": "string",
-					   "display_name": "Zenodo Url" };
+    returnObject['data_fields']['zenodo_id'] = { "data_type": "string",
+					   "display_name": "Zenodo Id" };
     returnObject['data_fields']['fullname'] = { "data_type": "string",
 						"display_name": "Full Experiment Name" };
     returnObject['charts'] = [ "iso_date", "hour" ];
@@ -196,7 +203,7 @@ function initializeParamObject() {
 				       "allele",
     // The next 3 fields are temporary ... for testing only except maybe for datasize, url.
 				       "datasize",
-				       "url",
+				       "zenodo_id",
 				       //				       "fullname",
 					];
     returnObject['max_results'] = 20;
