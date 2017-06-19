@@ -190,7 +190,7 @@ def constructSearchContext(featuresInfo, dbRecords, context):
     featuresHeaderList = headerList[:];
     # *CWL* Find a way to eliminate this horrid hardcode (and reverse order)
     headerList.insert(0,'datasize');
-    headerList.insert(0,'url');
+    headerList.insert(0,'zenodo_id');
     headerList.insert(0,'fullname');
     headerList.insert(0,'allele');
     headerList.insert(0,'strain');
