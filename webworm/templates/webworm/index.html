@@ -36,6 +36,7 @@
   if ({{ results_count }} > 0) {
     $('#tabsUL a[href="#crossfilterPane"]').trigger('click');
     $('#downloadExpr').prop('disabled', false);
+    $('#generateCsv').prop('disabled', false);
     hasCFData = true;
   }
   var dataFilePath = "{% static 'webworm/worm_mock_data.csv' %}";

@@ -13,36 +13,41 @@ function stripZenodoId(inId) {
 //   allowing the user to choose the element(s) (e.g. Video data only)
 //   to actually be downloaded. In the latter case, we'd want to separate
 //   the common feature of extracting the specific URLs as its own function.
+//
+// 2017/9/1 This version will produce a dummy list (real zenodo IDs, fake URL) 
+//   in a format that will support
+//   the use of a linux script to aid with the download in a separate phase.
 function downloadResultsList() {
     var returnText = "";
     let zenodoFilenames = [
-		     '.hdf5',
-		     '.wcon.zip',
-		     '_features.hdf5',
-		     '_skeletons.hdf5',
-		     '_subsample.avi'
-		     ];
-    let zenodoPrefix = 'https://sandbox.zenodo.org/record/';
-    /*
-    $('.results_list_row').each(function (index,element) {
-	    returnText = returnText + index.toString() + "\n";
-	});
-    */
+			   { 'extension':'.hdf5', 'tag':'chk_fullvid'},
+			   { 'extension':'.wcon.zip', 'tag':'chk_wcon'},
+			   { 'extension':'_features.hdf5', 'tag':'chk_features'},
+			   { 'extension':'_skeletons.hdf5', 'tag':'chk_skeleton'},
+			   { 'extension':'_subsample.avi', 'tag':'chk_vidsample'},
+			   ];
+    let zenodoUrlPrefix = 'https://sandbox.zenodo.org/records';
     // Get grouping by Zenodo Id
     let allCFValues = globalCF.dimension(d => d.zenodo_id).top(Infinity);
     for (var idx=0; idx<allCFValues.length; idx++) {
-	if (allCFValues[idx].zenodo_id != "None") {
-	    let urlPrefix = zenodoPrefix + stripZenodoId(allCFValues[idx].zenodo_id) + 
-		"/files/" + allCFValues[idx].fullname;
-	    for (var fIdx=0; fIdx<zenodoFilenames.length; fIdx++) {
-		returnText = returnText + urlPrefix + zenodoFilenames[fIdx] + "\n";
+	// *CWL* - Temp hack - faking data for testing purposes only.
+	//	if (allCFValues[idx].zenodo_id != "None") {
+	if (allCFValues[idx].zenodo_id == "None") {
+	    allCFValues[idx].zenodo_id = "78152#.WYnnMIpLeit";
+	}
+	let zenodoId = stripZenodoId(allCFValues[idx].zenodo_id);
+	// Construct Ajax GET request from Zenodo id
+	let zenodoURL = zenodoUrlPrefix + '/' +  zenodoId;
+	for (var fIdx=0; fIdx<zenodoFilenames.length; fIdx++) {
+	    // Probe for file list from zenodo ID
+	    if ($('#' + zenodoFilenames[fIdx]['tag'])[0].checked) {
+		returnText = returnText + zenodoId + " " + zenodoURL + "/dummyname" + zenodoFilenames[fIdx]['extension'] + "\n";
 	    }
 	}
     }
     if (returnText == "") {
 	returnText = "Download Warning: No records found!\n";
     }
-
     var element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,'+encodeURIComponent(returnText));
     element.setAttribute('download', 'results.txt');
@@ -674,6 +679,39 @@ function resultsList(grouping_dimension) {
             .attr("class", "display_field" + String(i))
             .text(d => valueFormatted(d, cur_field));
     }
+}
+
+function getCsvFromResults() {
+    // Ideally sort by strain I guess.
+    var data = globalCF.dimension(d => d.zenodo_id).top(Infinity);
+
+    var csvContent = "";
+    // Attempt at processing a header for now. It is unclear if variable numbers of
+    //   Zenodo file URLs will mess with this next time.
+    if (data.length > 0) {
+	var header = Object.keys(data[0]).join(',');
+	csvContent += header + "\n";
+    }
+    data.forEach( function(inner, index) {
+	  var innerContent = Object.keys(inner).map(function(k){
+		  return inner[k];
+	      }).join(',');
+	  csvContent += innerContent + "\n";
+	});
+    /*
+    data.forEach(function(infoArray, index) {
+	    dataString = infoArray.join(",");
+	    csvContent += index < data.length ? dataString+ "\n" : dataString;
+	});
+    alert(csvContent);
+    */
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,'+encodeURIComponent(csvContent));
+    element.setAttribute('download', 'results.csv');
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element); 
 }
 
 function resultsTable(grouping_dimension) {
