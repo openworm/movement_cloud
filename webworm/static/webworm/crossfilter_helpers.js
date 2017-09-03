@@ -3,6 +3,10 @@
 var pretty_month_names = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
 			   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
 
+// *CWL* - This is no longer required given the latest version of the database.
+//   This was used to strip out the ID from the older format in the form of
+//   xxxxx#yyyyyyyyy where yyyyyyyyy is some text string. This code is retained
+//   as reference.
 function stripZenodoId(inId) {
     let outId = inId.substring(0,inId.indexOf("#"));
     return outId;
@@ -30,31 +34,64 @@ function downloadResultsList() {
     // Get grouping by Zenodo Id
     let allCFValues = globalCF.dimension(d => d.zenodo_id).top(Infinity);
     for (var idx=0; idx<allCFValues.length; idx++) {
-	// *CWL* - Temp hack - faking data for testing purposes only.
-	//	if (allCFValues[idx].zenodo_id != "None") {
-	if (allCFValues[idx].zenodo_id == "None") {
-	    allCFValues[idx].zenodo_id = "78152#.WYnnMIpLeit";
-	}
-	let zenodoId = stripZenodoId(allCFValues[idx].zenodo_id);
-	// Construct Ajax GET request from Zenodo id
-	let zenodoURL = zenodoUrlPrefix + '/' +  zenodoId;
-	for (var fIdx=0; fIdx<zenodoFilenames.length; fIdx++) {
-	    // Probe for file list from zenodo ID
-	    if ($('#' + zenodoFilenames[fIdx]['tag'])[0].checked) {
-		returnText = returnText + zenodoId + " " + zenodoURL + "/dummyname" + zenodoFilenames[fIdx]['extension'] + "\n";
+	let zenodoId = allCFValues[idx].zenodo_id;
+	if (zenodoId != 'None') {
+	    // Construct Ajax GET request from Zenodo id
+	    let zenodoURL = zenodoUrlPrefix + '/' +  zenodoId;
+	    for (var fIdx=0; fIdx<zenodoFilenames.length; fIdx++) {
+		// Probe for file list from zenodo ID
+		if ($('#' + zenodoFilenames[fIdx]['tag'])[0].checked) {
+		    returnText = returnText + zenodoId + " " + zenodoURL + "/dummyname" + zenodoFilenames[fIdx]['extension'] + "\n";
+		}
 	    }
 	}
     }
     if (returnText == "") {
-	returnText = "Download Warning: No records found!\n";
+	alert("Download Warning: No records found!\n");
+    } else {
+	var zip = new JSZip();
+	zip.file("download_package/Readme.md", 
+		 'Change permissions of download_zenodo.sh first - chmod 755 download_zenodo.sh\n' +
+		 'Usage: ./download_zenodo.sh <data file> <output folder>\n');
+	// A serious hack ... quick-and-dirty first-cut to avoid having to work with serving
+	//   static text files from Django.
+	zip.file("download_package/download_zenodo.sh",
+		 '#!/bin/bash\n' +
+		 'if [ "$#" -ne 2 ];\n' +
+		 'then\n' +
+		 '  echo "download_zenodo.sh <data list file> <download folder>";\n' +
+		 '  exit -1;\n' +
+		 'fi\n' +
+		 'input="$1"\n' +
+		 'output="$2"\n' +
+		 'mkdir -p "$output"\n' +
+		 'while read id fname\n' +
+		 'do\n' +
+		 '  echo $id $fname\n' +
+		 '  newdir="$output/$id"\n' +
+		 '  url="https://sandbox.zenodo.org/record/$id/files/$fname"\n' +
+		 '  mkdir -p $newdir\n' +
+		 '  pushd $newdir\n' +
+		 '  wget -t0 -c $url\n' +
+		 '  popd\n' +
+		 'done < "$input"\n' +
+		 'echo "----- Script Complete -----"\n');
+	zip.file("download_package/download_files.txt", returnText);
+	zip.generateAsync({type:"blob"})
+	    .then(function(content) {
+		    // see FileSaver.js
+		    saveAs(content, "download_package.zip");
+		});
+	/*
+	  var element = document.createElement('a');
+	  element.setAttribute('href', 'data:text/plain;charset=utf-8,'+encodeURIComponent(returnText));
+	  element.setAttribute('download', 'results.txt');
+	  element.style.display = 'none';
+	  document.body.appendChild(element);
+	  element.click();
+	  document.body.removeChild(element);
+	*/
     }
-    var element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,'+encodeURIComponent(returnText));
-    element.setAttribute('download', 'results.txt');
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
 }
 
 function parseDate(d) {

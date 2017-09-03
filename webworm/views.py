@@ -260,6 +260,12 @@ def index(request):
     if loadDefault:
         # All experiments are chosen by default
         results_list = Experiments.objects.order_by('base_name');
+
+#        print(str(results_list.count()));
+#        print(str(results_list.values_list('featuresmeans__length')));
+#        print(str(results_list.values_list('zenodofiles__filename')));
+#        print(str(ZenodoFiles.objects.all().values_list('filename')));
+
         featuresInfo = processFeatures(defaultCoreFeatures, results_list);
         constructSearchContext(featuresInfo, results_list, context);        
 
