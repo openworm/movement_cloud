@@ -5,7 +5,7 @@
   <div>
     <div class="row">
       <div class="col-sm-3">
-	<button id="generateCsv" onclick="getCsvFromResults()" type="button" class="btn btn-success" disabled="true">Get CSV File</button>
+	<button id="generateCsv" onclick="getCsvFromResults()" type="button" class="btn btn-success" disabled="true">Get Features Means Data</button>
       </div>
       <div class="col-sm-3">
 	<button id="downloadExpr" onclick="downloadResultsList()" type="button" class="btn btn-danger" disabled="true">Get Experiments Data + Download Script (Linux)</button>
@@ -38,12 +38,10 @@
 	</div>
       </div>
     </div>
-    <div class="row">
-      <a href="javascript:resetAll()" class="reset" style="margin-left: -10px; margin-bottom: 20px">Reset all</a>
-    </div>
     <hr>
   </div>
   <div id='charts'>
+      <a href="javascript:resetAll()" class="reset" style="margin-left: -10px; margin-bottom: 20px">Reset all</a>
   </div>
   
   <div id="daySelectionDiv"></div>
