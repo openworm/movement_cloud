@@ -38,6 +38,11 @@
     <!-- Keeping the last old one used: Buttons + Select + Bootstrap
     <script type="text/javascript" src="https://cdn.datatables.net/v/bs/dt-1.10.13/b-1.2.4/se-1.2.0/datatables.min.js"></script>
     -->
+    <!-- JsZip - https://stuk.github.io/jszip/ -->
+    <script src="{% static 'extern/dist/jszip.min.js' %}"></script>
+    <!-- FileSaver (JsZip output dependency) - https://github.com/eligrey/FileSaver.js -->
+    <script src="{% static 'extern/dist/FileSaver.min.js' %}"></script>
+    
   </head>
 
   <header class="jumbotron subhead" id="overview">
@@ -49,7 +54,8 @@
           <th>
             <h1>Open Worm Movement Database</h1>
             <p class="lead">
-              <p>Total number of experiments in database = {{ db_experiment_count }} </p>
+            <p><b>Total number of experiments in database = {{ db_experiment_count }}</b></p>
+	    <p>Tooltip information available by hovering mouse over tabs</p>
             </p>
           </th>
         </tr>

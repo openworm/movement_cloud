@@ -3,55 +3,6 @@
 var pretty_month_names = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
 			   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
 
-function stripZenodoId(inId) {
-    let outId = inId.substring(0,inId.indexOf("#"));
-    return outId;
-}
-
-// *CWL* - This is the basic form of getting results from Zenodo. A more
-//   advanced form may take the list and perform post-processing like 
-//   allowing the user to choose the element(s) (e.g. Video data only)
-//   to actually be downloaded. In the latter case, we'd want to separate
-//   the common feature of extracting the specific URLs as its own function.
-function downloadResultsList() {
-    var returnText = "";
-    let zenodoFilenames = [
-		     '.hdf5',
-		     '.wcon.zip',
-		     '_features.hdf5',
-		     '_skeletons.hdf5',
-		     '_subsample.avi'
-		     ];
-    let zenodoPrefix = 'https://sandbox.zenodo.org/record/';
-    /*
-    $('.results_list_row').each(function (index,element) {
-	    returnText = returnText + index.toString() + "\n";
-	});
-    */
-    // Get grouping by Zenodo Id
-    let allCFValues = globalCF.dimension(d => d.zenodo_id).top(Infinity);
-    for (var idx=0; idx<allCFValues.length; idx++) {
-	if (allCFValues[idx].zenodo_id != "None") {
-	    let urlPrefix = zenodoPrefix + stripZenodoId(allCFValues[idx].zenodo_id) + 
-		"/files/" + allCFValues[idx].fullname;
-	    for (var fIdx=0; fIdx<zenodoFilenames.length; fIdx++) {
-		returnText = returnText + urlPrefix + zenodoFilenames[fIdx] + "\n";
-	    }
-	}
-    }
-    if (returnText == "") {
-	returnText = "Download Warning: No records found!\n";
-    }
-
-    var element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,'+encodeURIComponent(returnText));
-    element.setAttribute('download', 'results.txt');
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-}
-
 function parseDate(d) {
     // Parse the date.
     // (this function is like d3.time.format, but faster)
@@ -86,11 +37,17 @@ function ts_prettyDate(timestamp) {
     let day = parseInt(ts_getDate(timestamp));
     let digit = day%10;
     if (digit == 1) {
-	suffix = "st";
+	if (Math.floor(day/10) != 1) { 
+	    suffix = "st";
+	}
     } else if (digit == 2) {
-	suffix = "nd";
+	if (Math.floor(day/10) != 1) { 
+	    suffix = "nd";
+	}
     } else if (digit == 3) {
-	suffix = "rd";
+	if (Math.floor(day/10) != 1) { 
+	    suffix = "rd";
+	}
     }
     return pretty_month_names[month-1] + " " + day.toString() + suffix +
 	" " + ts_getYear(timestamp);
@@ -187,38 +144,42 @@ function initializeParamObject() {
 						   "bucket_width": 1 };
     returnObject['data_fields']['strain'] = { "data_type": "string",
 					      "display_name": "Strain" };
+    returnObject['data_fields']['gene'] = { "data_type": "string",
+					      "display_name": "Gene" };
     returnObject['data_fields']['allele'] = { "data_type": "string",
 					      "display_name": "Allele" };
-    returnObject['data_fields']['datasize'] = { "data_type": "numeric",
-						"display_name": "Data Size" };
     returnObject['data_fields']['zenodo_id'] = { "data_type": "string",
 					   "display_name": "Zenodo Id" };
-    returnObject['data_fields']['fullname'] = { "data_type": "string",
-						"display_name": "Full Experiment Name" };
+    returnObject['data_fields']['filesize'] = { "data_type": "numeric",
+					   "display_name": "File Size" };
+    returnObject['data_fields']['filetype'] = { "data_type": "string",
+					   "display_name": "File Type" };
+    returnObject['data_fields']['url'] = { "data_type": "string",
+					   "display_name": "File Download URL" };
     returnObject['charts'] = [ "iso_date", "hour" ];
     returnObject['results_display'] = [ 
+				       "strain",  
+				       "gene",
+				       "allele",
 				       "pretty_date",
 				       "pretty_time", 
-				       "strain",  
-				       "allele",
-    // The next 3 fields are temporary ... for testing only except maybe for datasize, url.
-				       "datasize",
 				       "zenodo_id",
-				       //				       "fullname",
+				       "filetype",
+				       "filesize",
 					];
     returnObject['max_results'] = 20;
     return returnObject;
 }
 
 function createXfilterParams(paramObject, rawInputData) {
-    // Reset the object.
-    let numFeatures = crossfilterHeader.length;
+    // Reinitialize the existing default object.
+    let numFeatures = selectedFeaturesNames.length;
     paramObject = initializeParamObject();
     paramObject['num_display_fields'] = paramObject['num_display_fields'] + 
 	numFeatures;
     paramObject['datasetview_chart_index'] = paramObject['num_display_fields'] - 1;
     for (var i=0; i< numFeatures; i++) {
-	let fieldName = crossfilterHeader[i];
+	let fieldName = selectedFeaturesNames[i];
 	// *CWL* Keeping this around in case I still need to use it.
 	//	let fieldRange = getExtremes(rawInputData, fieldName);
 	paramObject['data_fields'][fieldName] = { 
@@ -360,6 +321,8 @@ function createDataSetView(data_xfilter_size, data_rows, dataset_group_dimension
 
 
 ///////////////////////////////////////////////////////
+// *CWL* - This is a test feature. Retained for reference
+//  only.
 function createRadioButtons(data_xfilter, renderAll) {
 
     const radio_button_grouping_field = XFILTER_PARAMS.radio_button_grouping_field;
@@ -643,6 +606,8 @@ function createRadioButtons(data_xfilter, renderAll) {
 }
 
 ////////////////////////////////////////////////
+// *CWL* - This is an older implementation.
+//     Deprecated and retained for reference.
 function resultsList(grouping_dimension) {
     // Re-run the results list, by erasing it and creating it again
 

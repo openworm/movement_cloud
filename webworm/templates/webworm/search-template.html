@@ -3,9 +3,12 @@
     <div class="form-group" >
       <div id="searchMethodPanes">
 	<ul class="nav nav-pills">
-	  <li class="active"><a data-toggle="pill" href="#parametersPane">Filter By Feature</a></li>
-	  <li><a data-toggle="pill" href="#discretePane">Filter Discrete Values</a></li>
-	  <li><a data-toggle="pill" href="#confirmSearchPane">Review and Confirm</a></li>
+	  <li class="active"><a title="Choose subset of Features to apply crossfilter against."
+				data-toggle="pill" href="#parametersPane">1. Filter By Feature</a></li>
+	  <li><a title="Restrict what gets crossfiltered based on Database field values (e.g. Strain of the worms.)"
+		 data-toggle="pill" href="#discretePane">2. Filter Discrete Values</a></li>
+	  <li><a title="Restrict the date-range of records. Review choices made in previous two tabs. Submit choices for crossfiltering. You will be taken to the 'Crossfilter Features/Get Data' tab, and the chosen restrictions will apply there."
+		 data-toggle="pill" href="#confirmSearchPane">3. Review and Confirm</a></li>
 	</ul>
 	
 	<div class="tab-content">

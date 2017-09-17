@@ -1,0 +1,20 @@
+<div id="crossfilter_pane">
+  <ul class="nav nav-pills" id="xFilterPills">
+    <li class="active"><a title="Drag mouse along bar charts to select range. Available experiments automatically updated."
+			  data-toggle="pill" href="#xFilterPane">Crossfilter Tool</a></li>
+    <li><a title="Choose Features to get metadata for. Get Linux package to download experiment data from Zenodo."
+	   data-toggle="pill" href="#xFilterResultsPane">Get Data</a></li>
+  </ul>
+
+  <div class="tab-content">
+    <!-- Cross Filter Panel -->
+    <div class="tab-pane fade in active" id="xFilterPane">
+      {% include "webworm/crossfilter-template.html" %}
+    </div>
+
+    <!-- Panel to produce results from Crossfitler Tool -->
+    <div class="tab-pane fade" id="xFilterResultsPane">
+      {% include "webworm/crossfilter-genData-template.html" %}
+    </div>
+  </div>
+</div>

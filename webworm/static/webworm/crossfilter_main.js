@@ -62,20 +62,20 @@ function create_crossfilter(data_rows) {
     // Array that holds the currently selected "in-filter" selected records
     var rows_selected = [];
 
-    // Defining accumulators for datasize
+    // Defining accumulators for filesize
     var reduceAdd = function(p, v) {
-	p.datasize += v.datasize;
+	p.filesize += v.filesize;
 	return p;
     }
 
     var reduceRemove = function(p, v) {
-	p.datasize -= v.datasize;
+	p.filesize -= v.filesize;
 	return p;
     }
 
     var reduceInitial = function() {
 	return {
-	    datasize : 0
+	    filesize : 0
 	}
     }
 
@@ -88,7 +88,7 @@ function create_crossfilter(data_rows) {
     //  *CWL* Note - apparently I cannot re-use xfilter_all here ... reduce()
     //     appears to apply some side-effect to the variable's contents and
     //     causes it to return NaNs if I tried.
-    const xfilter_datasizeSum = 
+    const xfilter_filesizeSum = 
 	data_xfilter.groupAll().reduce(reduceAdd, reduceRemove, reduceInitial);
 
     let x_filter_dimension = [];
@@ -131,18 +131,18 @@ function create_crossfilter(data_rows) {
         d3.select(this).call(method);
     }
 
-    function prettySize(valueInMb) {
+    function prettySize(valueInBytes) {
 	// within reason
-	let scaleText = [ 'Megabytes', 'Gigabytes', 'Terabytes', 'Petabytes', 'Exabytes' ];
+	let scaleText = [ 'Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB' ];
 	let scaleIndex = 0;
-	let val = valueInMb;
+	let val = valueInBytes;
 	while (val >= 1000) {
 	    scaleIndex += 1;
 	    val /= 1000.0;
 	}
 	if (scaleIndex >= scaleText.length) {
 	    // Punt on prettying the text, something has to be horribly wrong to exceed Exabytes
-	    return valueInMb + " Mb";
+	    return valueInBytes + " Bytes";
 	} else {
 	    return val.toPrecision(4) + " " + scaleText[scaleIndex];
 	}
@@ -154,8 +154,11 @@ function create_crossfilter(data_rows) {
         chart_DOM_elements.each(render);
 	//        resultsList(x_filter_dimension[XFILTER_PARAMS.datasetview_chart_index]);
         resultsTable(x_filter_dimension[XFILTER_PARAMS.datasetview_chart_index]);
+        genDataTable(x_filter_dimension[XFILTER_PARAMS.datasetview_chart_index]);
         d3.select('#active').text(formatWholeNumber(xfilter_all.value()));
-	d3.select('#datasize').text(prettySize(xfilter_datasizeSum.value().datasize));
+	d3.select('#datasize').text(prettySize(xfilter_filesizeSum.value().filesize));
+        d3.select('#genDataActive').text(formatWholeNumber(xfilter_all.value()));
+	d3.select('#genDataDatasize').text(prettySize(xfilter_filesizeSum.value().filesize));
         redraw_datasetview();
     }
 
@@ -223,6 +226,8 @@ function create_crossfilter(data_rows) {
 
     // Render the total.
     d3.selectAll('#total')
+        .text(formatWholeNumber(data_xfilter.size()));
+    d3.selectAll('#genDataTotal')
         .text(formatWholeNumber(data_xfilter.size()));
 
     renderAll();

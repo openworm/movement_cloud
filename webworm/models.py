@@ -181,13 +181,12 @@ class Experiments(models.Model):
     arena = models.ForeignKey(Arenas, models.DO_NOTHING, blank=True, null=True)
     habituation = models.ForeignKey('Habituations', models.DO_NOTHING, blank=True, null=True)
     experimenter = models.ForeignKey(Experimenters, models.DO_NOTHING, blank=True, null=True)
-    # *CWL* Manual change made from 700 to 255 here because of complaints from MySQL
     original_video = models.CharField(unique=True, max_length=255)
     original_video_sizemb = models.FloatField(db_column='original_video_sizeMB', blank=True, null=True)  # Field name made lowercase.
     exit_flag = models.ForeignKey(ExitFlags, models.DO_NOTHING)
     results_dir = models.CharField(max_length=200, blank=True, null=True)
     youtube_id = models.CharField(max_length=40, blank=True, null=True)
-    zenodo_id = models.CharField(max_length=40, blank=True, null=True)
+    zenodo_id = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -205,7 +204,7 @@ class Features(models.Model):
 
 
 class FeaturesMeans(models.Model):
-    experiment = models.OneToOneField(Experiments, models.DO_NOTHING, unique=True, blank=True, null=True)
+    experiment = models.ForeignKey(Experiments, models.DO_NOTHING, unique=True, blank=True, null=True)
     worm_index = models.FloatField(blank=True, null=True)
     n_frames = models.FloatField(blank=True, null=True)
     n_valid_skel = models.FloatField(blank=True, null=True)
@@ -882,64 +881,74 @@ class FeaturesMeans(models.Model):
     path_curvature_backward_abs = models.FloatField(blank=True, null=True)
     path_curvature_backward_neg = models.FloatField(blank=True, null=True)
     path_curvature_backward_pos = models.FloatField(blank=True, null=True)
-    coil_time = models.FloatField(blank=True, null=True)
-    inter_coil_time = models.FloatField(blank=True, null=True)
-    inter_coil_distance = models.FloatField(blank=True, null=True)
+    coils_time = models.FloatField(blank=True, null=True)
+    inter_coils_time = models.FloatField(blank=True, null=True)
+    inter_coils_distance = models.FloatField(blank=True, null=True)
     coils_frequency = models.FloatField(blank=True, null=True)
     coils_time_ratio = models.FloatField(blank=True, null=True)
-    omega_turn_time = models.FloatField(blank=True, null=True)
-    omega_turn_time_abs = models.FloatField(blank=True, null=True)
-    omega_turn_time_neg = models.FloatField(blank=True, null=True)
-    omega_turn_time_pos = models.FloatField(blank=True, null=True)
-    inter_omega_time = models.FloatField(blank=True, null=True)
-    inter_omega_time_abs = models.FloatField(blank=True, null=True)
-    inter_omega_time_neg = models.FloatField(blank=True, null=True)
-    inter_omega_time_pos = models.FloatField(blank=True, null=True)
-    inter_omega_distance = models.FloatField(blank=True, null=True)
-    inter_omega_distance_abs = models.FloatField(blank=True, null=True)
-    inter_omega_distance_neg = models.FloatField(blank=True, null=True)
-    inter_omega_distance_pos = models.FloatField(blank=True, null=True)
+    omega_turns_time = models.FloatField(blank=True, null=True)
+    omega_turns_time_abs = models.FloatField(blank=True, null=True)
+    omega_turns_time_neg = models.FloatField(blank=True, null=True)
+    omega_turns_time_pos = models.FloatField(blank=True, null=True)
+    inter_omega_turns_time = models.FloatField(blank=True, null=True)
+    inter_omega_turns_time_abs = models.FloatField(blank=True, null=True)
+    inter_omega_turns_time_neg = models.FloatField(blank=True, null=True)
+    inter_omega_turns_time_pos = models.FloatField(blank=True, null=True)
+    inter_omega_turns_distance = models.FloatField(blank=True, null=True)
+    inter_omega_turns_distance_abs = models.FloatField(blank=True, null=True)
+    inter_omega_turns_distance_neg = models.FloatField(blank=True, null=True)
+    inter_omega_turns_distance_pos = models.FloatField(blank=True, null=True)
     omega_turns_frequency = models.FloatField(blank=True, null=True)
     omega_turns_time_ratio = models.FloatField(blank=True, null=True)
-    upsilon_turn_time = models.FloatField(blank=True, null=True)
-    upsilon_turn_time_abs = models.FloatField(blank=True, null=True)
-    upsilon_turn_time_neg = models.FloatField(blank=True, null=True)
-    upsilon_turn_time_pos = models.FloatField(blank=True, null=True)
-    inter_upsilon_time = models.FloatField(blank=True, null=True)
-    inter_upsilon_time_abs = models.FloatField(blank=True, null=True)
-    inter_upsilon_time_neg = models.FloatField(blank=True, null=True)
-    inter_upsilon_time_pos = models.FloatField(blank=True, null=True)
-    inter_upsilon_distance = models.FloatField(blank=True, null=True)
-    inter_upsilon_distance_abs = models.FloatField(blank=True, null=True)
-    inter_upsilon_distance_neg = models.FloatField(blank=True, null=True)
-    inter_upsilon_distance_pos = models.FloatField(blank=True, null=True)
+    upsilon_turns_time = models.FloatField(blank=True, null=True)
+    upsilon_turns_time_abs = models.FloatField(blank=True, null=True)
+    upsilon_turns_time_neg = models.FloatField(blank=True, null=True)
+    upsilon_turns_time_pos = models.FloatField(blank=True, null=True)
+    inter_upsilon_turns_time = models.FloatField(blank=True, null=True)
+    inter_upsilon_turns_time_abs = models.FloatField(blank=True, null=True)
+    inter_upsilon_turns_time_neg = models.FloatField(blank=True, null=True)
+    inter_upsilon_turns_time_pos = models.FloatField(blank=True, null=True)
+    inter_upsilon_turns_distance = models.FloatField(blank=True, null=True)
+    inter_upsilon_turns_distance_abs = models.FloatField(blank=True, null=True)
+    inter_upsilon_turns_distance_neg = models.FloatField(blank=True, null=True)
+    inter_upsilon_turns_distance_pos = models.FloatField(blank=True, null=True)
     upsilon_turns_frequency = models.FloatField(blank=True, null=True)
     upsilon_turns_time_ratio = models.FloatField(blank=True, null=True)
     forward_time = models.FloatField(blank=True, null=True)
     forward_distance = models.FloatField(blank=True, null=True)
     inter_forward_time = models.FloatField(blank=True, null=True)
     inter_forward_distance = models.FloatField(blank=True, null=True)
-    forward_motion_frequency = models.FloatField(blank=True, null=True)
-    forward_motion_time_ratio = models.FloatField(blank=True, null=True)
-    forward_motion_distance_ratio = models.FloatField(blank=True, null=True)
+    forward_frequency = models.FloatField(blank=True, null=True)
+    forward_time_ratio = models.FloatField(blank=True, null=True)
+    forward_distance_ratio = models.FloatField(blank=True, null=True)
     paused_time = models.FloatField(blank=True, null=True)
     paused_distance = models.FloatField(blank=True, null=True)
     inter_paused_time = models.FloatField(blank=True, null=True)
     inter_paused_distance = models.FloatField(blank=True, null=True)
-    paused_motion_frequency = models.FloatField(blank=True, null=True)
-    paused_motion_time_ratio = models.FloatField(blank=True, null=True)
-    paused_motion_distance_ratio = models.FloatField(blank=True, null=True)
+    paused_frequency = models.FloatField(blank=True, null=True)
+    paused_time_ratio = models.FloatField(blank=True, null=True)
+    paused_distance_ratio = models.FloatField(blank=True, null=True)
     backward_time = models.FloatField(blank=True, null=True)
     backward_distance = models.FloatField(blank=True, null=True)
     inter_backward_time = models.FloatField(blank=True, null=True)
     inter_backward_distance = models.FloatField(blank=True, null=True)
-    backward_motion_frequency = models.FloatField(blank=True, null=True)
-    backward_motion_time_ratio = models.FloatField(blank=True, null=True)
-    backward_motion_distance_ratio = models.FloatField(blank=True, null=True)
+    backward_frequency = models.FloatField(blank=True, null=True)
+    backward_time_ratio = models.FloatField(blank=True, null=True)
+    backward_distance_ratio = models.FloatField(blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'features_means'
+
+
+class FileTypes(models.Model):
+    name = models.CharField(unique=True, max_length=20, blank=True, null=True)
+    extension = models.CharField(unique=True, max_length=20, blank=True, null=True)
+    description = models.CharField(max_length=700, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'file_types'
 
 
 class Foods(models.Model):
@@ -967,7 +976,7 @@ class Habituations(models.Model):
 
 
 class ResultsSummary(models.Model):
-    experiment = models.OneToOneField(Experiments, models.DO_NOTHING, primary_key=True)
+    experiment = models.ForeignKey(Experiments, models.DO_NOTHING, primary_key=True)
     n_valid_frames = models.IntegerField(blank=True, null=True)
     n_missing_frames = models.IntegerField(blank=True, null=True)
     n_segmented_skeletons = models.IntegerField(blank=True, null=True)
@@ -979,6 +988,7 @@ class ResultsSummary(models.Model):
     fps = models.FloatField(blank=True, null=True)
     total_time = models.FloatField(blank=True, null=True)
     mask_file_sizemb = models.FloatField(db_column='mask_file_sizeMB', blank=True, null=True)  # Field name made lowercase.
+    upload_sizemb = models.FloatField(db_column='upload_sizeMB', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         managed = False
@@ -986,9 +996,10 @@ class ResultsSummary(models.Model):
 
 
 class SegwormComparisons(models.Model):
-    experiment = models.ForeignKey(Experiments, models.DO_NOTHING)
-    segworm_feature = models.ForeignKey('SegwormInfo', models.DO_NOTHING)
+    experiment = models.ForeignKey(Experiments, models.DO_NOTHING, primary_key=True)
+    segworm_info = models.ForeignKey('SegwormInfo', models.DO_NOTHING)
     n_mutual_skeletons = models.IntegerField(blank=True, null=True)
+    n_switched_head_tail = models.IntegerField(blank=True, null=True)
     error_05th = models.FloatField(blank=True, null=True)
     error_50th = models.FloatField(blank=True, null=True)
     error_95th = models.FloatField(blank=True, null=True)
@@ -1045,3 +1056,17 @@ class VentralSides(models.Model):
     class Meta:
         managed = False
         db_table = 'ventral_sides'
+
+
+class ZenodoFiles(models.Model):
+    id = models.CharField(primary_key=True, max_length=120)
+    zenodo = models.ForeignKey(Experiments, models.DO_NOTHING, blank=True, null=True)
+    filename = models.CharField(max_length=250, blank=True, null=True)
+    filesize = models.BigIntegerField(blank=True, null=True)
+    checksum = models.CharField(max_length=32, blank=True, null=True)
+    download_link = models.CharField(max_length=2083, blank=True, null=True)
+    file_type = models.ForeignKey(FileTypes, models.DO_NOTHING, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'zenodo_files'
