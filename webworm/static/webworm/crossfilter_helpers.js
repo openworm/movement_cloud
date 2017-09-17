@@ -3,97 +3,6 @@
 var pretty_month_names = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
 			   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
 
-// *CWL* - This is no longer required given the latest version of the database.
-//   This was used to strip out the ID from the older format in the form of
-//   xxxxx#yyyyyyyyy where yyyyyyyyy is some text string. This code is retained
-//   as reference.
-function stripZenodoId(inId) {
-    let outId = inId.substring(0,inId.indexOf("#"));
-    return outId;
-}
-
-// *CWL* - This is the basic form of getting results from Zenodo. A more
-//   advanced form may take the list and perform post-processing like 
-//   allowing the user to choose the element(s) (e.g. Video data only)
-//   to actually be downloaded. In the latter case, we'd want to separate
-//   the common feature of extracting the specific URLs as its own function.
-//
-// 2017/9/1 This version will produce a dummy list (real zenodo IDs, fake URL) 
-//   in a format that will support
-//   the use of a linux script to aid with the download in a separate phase.
-function downloadResultsList() {
-    var returnText = "";
-    let zenodoFilenames = [
-			   { 'extension':'.hdf5', 'tag':'chk_fullvid'},
-			   { 'extension':'.wcon.zip', 'tag':'chk_wcon'},
-			   { 'extension':'_features.hdf5', 'tag':'chk_features'},
-			   { 'extension':'_skeletons.hdf5', 'tag':'chk_skeleton'},
-			   { 'extension':'_subsample.avi', 'tag':'chk_vidsample'},
-			   ];
-    let zenodoUrlPrefix = 'https://sandbox.zenodo.org/records';
-    // Get grouping by Zenodo Id
-    let allCFValues = globalCF.dimension(d => d.zenodo_id).top(Infinity);
-    for (var idx=0; idx<allCFValues.length; idx++) {
-	let zenodoId = allCFValues[idx].zenodo_id;
-	if (zenodoId != 'None') {
-	    // Construct Ajax GET request from Zenodo id
-	    let zenodoURL = zenodoUrlPrefix + '/' +  zenodoId;
-	    for (var fIdx=0; fIdx<zenodoFilenames.length; fIdx++) {
-		// Probe for file list from zenodo ID
-		if ($('#' + zenodoFilenames[fIdx]['tag'])[0].checked) {
-		    returnText = returnText + zenodoId + " " + zenodoURL + "/dummyname" + zenodoFilenames[fIdx]['extension'] + "\n";
-		}
-	    }
-	}
-    }
-    if (returnText == "") {
-	alert("Download Warning: No records found!\n");
-    } else {
-	var zip = new JSZip();
-	zip.file("download_package/Readme.md", 
-		 'Change permissions of download_zenodo.sh first - chmod 755 download_zenodo.sh\n' +
-		 'Usage: ./download_zenodo.sh <data file> <output folder>\n');
-	// A serious hack ... quick-and-dirty first-cut to avoid having to work with serving
-	//   static text files from Django.
-	zip.file("download_package/download_zenodo.sh",
-		 '#!/bin/bash\n' +
-		 'if [ "$#" -ne 2 ];\n' +
-		 'then\n' +
-		 '  echo "download_zenodo.sh <data list file> <download folder>";\n' +
-		 '  exit -1;\n' +
-		 'fi\n' +
-		 'input="$1"\n' +
-		 'output="$2"\n' +
-		 'mkdir -p "$output"\n' +
-		 'while read id fname\n' +
-		 'do\n' +
-		 '  echo $id $fname\n' +
-		 '  newdir="$output/$id"\n' +
-		 '  url="https://sandbox.zenodo.org/record/$id/files/$fname"\n' +
-		 '  mkdir -p $newdir\n' +
-		 '  pushd $newdir\n' +
-		 '  wget -t0 -c $url\n' +
-		 '  popd\n' +
-		 'done < "$input"\n' +
-		 'echo "----- Script Complete -----"\n');
-	zip.file("download_package/download_files.txt", returnText);
-	zip.generateAsync({type:"blob"})
-	    .then(function(content) {
-		    // see FileSaver.js
-		    saveAs(content, "download_package.zip");
-		});
-	/*
-	  var element = document.createElement('a');
-	  element.setAttribute('href', 'data:text/plain;charset=utf-8,'+encodeURIComponent(returnText));
-	  element.setAttribute('download', 'results.txt');
-	  element.style.display = 'none';
-	  document.body.appendChild(element);
-	  element.click();
-	  document.body.removeChild(element);
-	*/
-    }
-}
-
 function parseDate(d) {
     // Parse the date.
     // (this function is like d3.time.format, but faster)
@@ -128,11 +37,17 @@ function ts_prettyDate(timestamp) {
     let day = parseInt(ts_getDate(timestamp));
     let digit = day%10;
     if (digit == 1) {
-	suffix = "st";
+	if (Math.floor(day/10) != 1) { 
+	    suffix = "st";
+	}
     } else if (digit == 2) {
-	suffix = "nd";
+	if (Math.floor(day/10) != 1) { 
+	    suffix = "nd";
+	}
     } else if (digit == 3) {
-	suffix = "rd";
+	if (Math.floor(day/10) != 1) { 
+	    suffix = "rd";
+	}
     }
     return pretty_month_names[month-1] + " " + day.toString() + suffix +
 	" " + ts_getYear(timestamp);
@@ -229,38 +144,42 @@ function initializeParamObject() {
 						   "bucket_width": 1 };
     returnObject['data_fields']['strain'] = { "data_type": "string",
 					      "display_name": "Strain" };
+    returnObject['data_fields']['gene'] = { "data_type": "string",
+					      "display_name": "Gene" };
     returnObject['data_fields']['allele'] = { "data_type": "string",
 					      "display_name": "Allele" };
-    returnObject['data_fields']['datasize'] = { "data_type": "numeric",
-						"display_name": "Data Size" };
     returnObject['data_fields']['zenodo_id'] = { "data_type": "string",
 					   "display_name": "Zenodo Id" };
-    returnObject['data_fields']['fullname'] = { "data_type": "string",
-						"display_name": "Full Experiment Name" };
+    returnObject['data_fields']['filesize'] = { "data_type": "numeric",
+					   "display_name": "File Size" };
+    returnObject['data_fields']['filetype'] = { "data_type": "string",
+					   "display_name": "File Type" };
+    returnObject['data_fields']['url'] = { "data_type": "string",
+					   "display_name": "File Download URL" };
     returnObject['charts'] = [ "iso_date", "hour" ];
     returnObject['results_display'] = [ 
+				       "strain",  
+				       "gene",
+				       "allele",
 				       "pretty_date",
 				       "pretty_time", 
-				       "strain",  
-				       "allele",
-    // The next 3 fields are temporary ... for testing only except maybe for datasize, url.
-				       "datasize",
 				       "zenodo_id",
-				       //				       "fullname",
+				       "filetype",
+				       "filesize",
 					];
     returnObject['max_results'] = 20;
     return returnObject;
 }
 
 function createXfilterParams(paramObject, rawInputData) {
-    // Reset the object.
-    let numFeatures = crossfilterHeader.length;
+    // Reinitialize the existing default object.
+    let numFeatures = selectedFeaturesNames.length;
     paramObject = initializeParamObject();
     paramObject['num_display_fields'] = paramObject['num_display_fields'] + 
 	numFeatures;
     paramObject['datasetview_chart_index'] = paramObject['num_display_fields'] - 1;
     for (var i=0; i< numFeatures; i++) {
-	let fieldName = crossfilterHeader[i];
+	let fieldName = selectedFeaturesNames[i];
 	// *CWL* Keeping this around in case I still need to use it.
 	//	let fieldRange = getExtremes(rawInputData, fieldName);
 	paramObject['data_fields'][fieldName] = { 
@@ -402,6 +321,8 @@ function createDataSetView(data_xfilter_size, data_rows, dataset_group_dimension
 
 
 ///////////////////////////////////////////////////////
+// *CWL* - This is a test feature. Retained for reference
+//  only.
 function createRadioButtons(data_xfilter, renderAll) {
 
     const radio_button_grouping_field = XFILTER_PARAMS.radio_button_grouping_field;
@@ -685,6 +606,8 @@ function createRadioButtons(data_xfilter, renderAll) {
 }
 
 ////////////////////////////////////////////////
+// *CWL* - This is an older implementation.
+//     Deprecated and retained for reference.
 function resultsList(grouping_dimension) {
     // Re-run the results list, by erasing it and creating it again
 
@@ -716,39 +639,6 @@ function resultsList(grouping_dimension) {
             .attr("class", "display_field" + String(i))
             .text(d => valueFormatted(d, cur_field));
     }
-}
-
-function getCsvFromResults() {
-    // Ideally sort by strain I guess.
-    var data = globalCF.dimension(d => d.zenodo_id).top(Infinity);
-
-    var csvContent = "";
-    // Attempt at processing a header for now. It is unclear if variable numbers of
-    //   Zenodo file URLs will mess with this next time.
-    if (data.length > 0) {
-	var header = Object.keys(data[0]).join(',');
-	csvContent += header + "\n";
-    }
-    data.forEach( function(inner, index) {
-	  var innerContent = Object.keys(inner).map(function(k){
-		  return inner[k];
-	      }).join(',');
-	  csvContent += innerContent + "\n";
-	});
-    /*
-    data.forEach(function(infoArray, index) {
-	    dataString = infoArray.join(",");
-	    csvContent += index < data.length ? dataString+ "\n" : dataString;
-	});
-    alert(csvContent);
-    */
-    var element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,'+encodeURIComponent(csvContent));
-    element.setAttribute('download', 'results.csv');
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element); 
 }
 
 function resultsTable(grouping_dimension) {

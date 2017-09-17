@@ -4,9 +4,12 @@
 <div class="container" id="master">
 
   <ul class="nav nav-tabs" id="tabsUL">
-    <li class="active"><a data-toggle="tab" href="#searchPane">Filter Tools</a></li>
-    <li><a data-toggle="tab" href="#crossfilterPane">Crossfilter Results</a></li>
-    <li><a data-toggle="tab" href="#wconViewPane">WCON Viewer</a></li>
+    <li class="active"><a title="Select Features to Crossfilter on. Add restrictions to Database field values. Optional." 
+			  data-toggle="tab" href="#searchPane">Select/Filter Tools</a></li>
+    <li><a title="Find desired experiments by restricting Features value ranges. Download Features metadata or full experiment data." 
+	   data-toggle="tab" href="#crossfilterPane">Crossfilter Features/Get Data</a></li>
+    <li><a title="View Worm data and animation using WCON movement data format."
+	   data-toggle="tab" href="#wconViewPane">WCON Viewer</a></li>
   </ul>
 
   <div class="tab-content">
@@ -42,7 +45,8 @@
   var dataFilePath = "{% static 'webworm/worm_mock_data.csv' %}";
   var wconFilePath = "{% static 'webworm/example.wcon' %}";
   var crossfilterData = {{ results_list|safe }};
-  var crossfilterHeader = {{ features_headers|safe }};
+  var selectedFeaturesNames = {{ selected_features_names|safe }};
+  var allFeaturesNames = {{ all_features_names|safe }};
   var discreteFieldData = {{ discrete_field_counts|safe }};
   var discreteFieldMetadata = {{ discrete_field_meta|safe }};
   var discreteFieldNames = {{ discrete_field_names|safe }};
@@ -60,6 +64,7 @@
 
 <script src="{% static 'webworm/crossfilter_bar_chart.js' %}"></script>
 <script src="{% static 'webworm/crossfilter_helpers.js' %}"></script>
+<script src="{% static 'webworm/crossfilter_genData.js' %}"></script>
 <script src="{% static 'webworm/crossfilter_main.js' %}"></script>
 
 <script src="{% static 'webworm/dropzone.js' %}"></script>
