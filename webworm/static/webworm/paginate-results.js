@@ -4,6 +4,8 @@ var zenodoLinkIndex = 10;
 
 var confirmResultsTable;
 
+// *CWL* This is the old function for faking a list of data URLs to download.
+//   Retaining only for reference.
 function processResults() {
     var returnText = "";
     var data = confirmResultsTable.rows().data();

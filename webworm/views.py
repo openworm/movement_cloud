@@ -32,19 +32,27 @@ defaultCoreFeatures = [
     'midbody_speed_abs',
     ];
 
-# Experiment Data file types
-#   This is probably best implemented as part of the database, so the server and
-#   client codes won't have to be kept consistent in the face of changes.
+# A way to organize the header fields for all data.
+#  *CWL* Figure out a way to eliminate the fragile code of using manual indices
+#  for zenodoIdIdx, and timestampIdx.
+fieldHeaders = [
+    { 'label': 'timestamp', 'field': 'date' },
+    { 'label': 'zenodo_id', 'field': 'zenodo_id' },
+    { 'label': 'allele', 'field': 'strain__allele__name' },
+    { 'label': 'gene', 'field': 'strain__gene__name' },
+    { 'label': 'strain', 'field': 'strain__name' },
+    { 'label': 'base_name', 'field': 'base_name' },
+    ];
+zenodoIdIdx = 4; # counted in reverse order because we insert into the head
+timestampIdx = 5; # counted in reverse order
+
+# The URL Prefix to Zenodo. In production this would be 'https://zenodo.org/record/'
 zenodo_url_prefix = 'https://sandbox.zenodo.org/record/';
-fileTypes = {
-    'full': ('.hdf5','Full Video Data'),
-    'wcon': ('.wcon.zip','WCON Movement Data'),
-    'features': ('_features.hdf5','Features Data'),
-    'skeletons': ('_skeletons.hdf5','Skeleton Data'),
-    'sample': ('_subsample.avi','Video Sample')
-    };
 
 # Support functions
+def setContext(context, newStuff):
+    for item in newStuff:
+        context[item['name']] = item['variable'];
 
 def getFileTypeFromName(dataFileName):
     # Check for .hdf5 last please.
@@ -62,6 +70,15 @@ def getFileTypeFromName(dataFileName):
     else:
         fileType = 'Error';
     return fileType;
+
+def getZenodoUrl(zenodoId, dataFileName):
+    zenodo_download_url = zenodo_url_prefix + str(zenodoId) + '/files/' + dataFileName;
+    return zenodo_download_url;
+
+def transformTimestamps(inTable):
+    for row in inTable:
+        if row[timestampIdx] != None:
+            row[timestampIdx] = row[timestampIdx].strftime("%Y%m%d%H%M");
 
 def getDiscreteFieldCounts(experimentsDb, fieldName, fieldList, nullNameString):
     counts = {};
@@ -125,19 +142,22 @@ def processSearchField(key, db_filter, getRequest, dbRecords):
     return returnDbRecords[0];
 
 # Produces a list of data rows (one row per record in database)
-#    given a list of features names. If any feature has 'None' as
-#    its data value, the row is dropped.
+#    given a list of features names. 
 def getDataWithFeatures(selectedFeatures, dbRecords):
-    dbQuery = [];
-    dbQuery.insert(0,[]);
+    start = time.time();
+    headerNames = [];
     resultData = [];
-    featureExecString = '';
+    execList = [];
     for feature in selectedFeatures:
-        featureExecString += '"featuresmeans__' + feature + '",';
-    exec('dbQuery[0] = dbRecords.values_list(' + featureExecString + '"date","strain__name",' +
-         '"strain__gene__name","strain__allele__name","zenodo_id");');
-    resultData = [list(item) for item in dbQuery[0]];
-    return resultData;
+        headerNames.insert(0,feature);
+        execList.insert(0,'featuresmeans__' + feature);
+    for header in fieldHeaders:
+        headerNames.insert(0,header['label']);
+        execList.insert(0,header['field']);
+    dbQuery = dbRecords.values_list(*execList);
+    resultData = [list(item) for item in dbQuery];
+    timetaken = time.time() - start;
+    return (headerNames,resultData);
 
 # Produces a list of features names given a GET request construct
 def getFeaturesNamesFromGet(getRequest):
@@ -149,7 +169,7 @@ def getFeaturesNamesFromGet(getRequest):
             selectedFeatures.append(name);
     return selectedFeatures;
 
-def getFeaturesNames(featuresFields, context):
+def getAllFeaturesNames(featuresFields):
     # This is clunky, there has to be a better way to do this (filter out
     #   features table's metadata columns.)
     features_field_list = tuple(x for x in featuresFields
@@ -161,7 +181,7 @@ def getFeaturesNames(featuresFields, context):
                                 (x.name != "first_frame")
                                 );
     features_name_list = [x.name for x in features_field_list];
-    context['all_features_names'] = features_name_list;
+    return features_name_list;
     
 # *CWL* This code originally checked for None, but it turned out to be
 #   cleaner for the entire table to have all None values changed to
@@ -172,7 +192,7 @@ def featuresNotNone(feature_list, row):
             return False;
     return True;
 
-def eliminateNonFeatureRows(featuresNames, inTable):
+def eliminateEmptySelectedFeatureRows(featuresNames, inTable):
     # If there are no features, just return the original list.
     outTable = [];
     if len(featuresNames) == 0:
@@ -210,9 +230,11 @@ def processSearchConfiguration(getRequest, dbRecords):
                                        getRequest, dbRecords);
     return dbRecords;
 
-def constructSearchContext(resultData, featuresNames, context):
+def constructSearchContext(inData, featuresNames, selectedFeatures, context):
     # Clone the list of names for header processing
-    header = featuresNames[:];
+    header = inData[0][:];
+
+    resultData = inData[1];
 
     # Forced by Database structure in order to allow for related elements to be found
     # *CWL* Warning - this will NOT scale as we get more rows in this database.
@@ -221,79 +243,55 @@ def constructSearchContext(resultData, featuresNames, context):
     #       database.
     zenodoDb = ZenodoFiles.objects.all();
 
-    # *CWL* Find a way to eliminate this horrid hardcode (and reverse order)
-    header.insert(0,'url');
-    header.insert(0,'filetype');
-    header.insert(0,'filesize');
-    header.insert(0,'zenodo_id');
-    header.insert(0,'allele');
-    header.insert(0,'gene');
-    header.insert(0,'strain');
-    header.insert(0,'timestamp');
+    # insert into the end of lists
+    header.insert(len(header),'url');
+    header.insert(len(header),'filetype');
+    header.insert(len(header),'filesize');
 
     augmentedDataTable = [];
-    post_feature_idx = len(featuresNames);
-    zenodo_idx = post_feature_idx + 4;
     for row in resultData:
-        zenodoId = row[zenodo_idx];
+        zenodoId = row[zenodoIdIdx];
         if zenodoId != None:
             zenodoElements = zenodoDb.filter(zenodo=zenodoId).values_list('filename','filesize');
             for element in zenodoElements:
                 # Replicate the original row for each zenodo file record found
                 augmentedRow = [];
-                # insert original features data
-                idx = post_feature_idx-1;
-                while (idx >= 0):
-                    augmentedRow.insert(0,row[idx]);
-                    idx = idx - 1;
+                # insert original data
+                for field in row:
+                    augmentedRow.insert(len(augmentedRow),field);
                 # construct file URL
                 zenodo_filename = element[0];
-                zenodo_download_url = zenodo_url_prefix + str(zenodoId) + '/files/' + zenodo_filename;
-                augmentedRow.insert(0,zenodo_download_url);
+                zenodo_download_url = getZenodoUrl(zenodoId, zenodo_filename);
+                augmentedRow.insert(len(augmentedRow), zenodo_download_url);
                 # file type
                 zenodo_filetype = getFileTypeFromName(zenodo_filename);
-                augmentedRow.insert(0,zenodo_filetype);
+                augmentedRow.insert(len(augmentedRow), zenodo_filetype);
                 # file size
-                zenodo_filesize = element[1];
-                augmentedRow.insert(0,zenodo_filesize);
-                # Copy other fields
-                idx = zenodo_idx;
-                while (idx > post_feature_idx):
-                    augmentedRow.insert(0,row[idx]);
-                    idx = idx - 1;
-                # transform timestamp
-                augmentedRow.insert(0, row[post_feature_idx].strftime("%Y%m%d%H%M"));
-                augmentedDataTable.insert(0,augmentedRow[:]);
+                augmentedRow.insert(len(augmentedRow), element[1]);
+                # Make sure we insert a copy
+                augmentedDataTable.insert(len(augmentedDataTable),augmentedRow[:]);
         else:
             # Replicate the original row with empty zenodo entries
             augmentedRow = [];
-            # insert original features data
-            idx = post_feature_idx-1;
-            while (idx >= 0):
-                augmentedRow.insert(0,row[idx]);
-                idx = idx - 1;
+            # insert original data
+            for field in row:
+                augmentedRow.insert(len(augmentedRow),field);
             # file URL
-            augmentedRow.insert(0,'None');
+            augmentedRow.insert(len(augmentedRow),'None');
             # file type
-            augmentedRow.insert(0,'None');
+            augmentedRow.insert(len(augmentedRow),'None');
             # file size
-            augmentedRow.insert(0, 0);
-            # Zenodo Id is 'None' and not None
-            augmentedRow.insert(0,'None');
-            # copy other fields
-            idx = zenodo_idx-1;
-            while (idx > post_feature_idx):
-                augmentedRow.insert(0,row[idx]);
-                idx = idx - 1;
-            # transform timestamp
-            augmentedRow.insert(0, row[post_feature_idx].strftime("%Y%m%d%H%M"));
-            augmentedDataTable.insert(0,augmentedRow[:]);
-    
+            augmentedRow.insert(len(augmentedRow), 0);
+            # Make sure we insert a copy
+            augmentedDataTable.insert(len(augmentedDataTable),augmentedRow[:]);
+
+    transformTimestamps(augmentedDataTable);
     returnTable = [dict(zip(header,row)) for row in noneToText(augmentedDataTable)];
-    returnTable = eliminateNonFeatureRows(featuresNames, returnTable);
+    returnTable = eliminateEmptySelectedFeatureRows(selectedFeatures, returnTable);
     results_count = len(returnTable);
 
-    context['selected_features_names'] = featuresNames;
+    context['selected_features_names'] = selectedFeatures;
+    context['data_header'] = header;
     context['results_list'] = returnTable;
     context['results_count'] = results_count;
 
@@ -308,14 +306,14 @@ def index(request):
     db_experiment_count = experimentsDb.count();
 
     getDiscreteFieldMetadata(experimentsDb, context);
-    getFeaturesNames(FeaturesMeans._meta.get_fields(), context);
+    all_features_names = getAllFeaturesNames(FeaturesMeans._meta.get_fields());
+    context['all_features_names'] = all_features_names;
 
     experiment_date_min = experimentsDb.aggregate(Min('date')).get('date__min');
     experiment_date_max = experimentsDb.aggregate(Max('date')).get('date__max');
 
     # Parameters for Search
-    results_count = 0;
-    results_list = None;
+    filteredDb = None;
 
     # Produce list of core features
     coreFeaturesObjects = Features.objects.all();
@@ -328,22 +326,25 @@ def index(request):
     returnList = [];
     # If anything else loads, loadDefault is set to False
     loadDefault = True;
+    featuresToCrossfilter = defaultCoreFeatures;
     if request.method == "GET":
         # Look for crossfilter requests first.
         if (request.GET.__contains__("crossfilter")):
             loadDefault = False;
-            results_list = processSearchConfiguration(request.GET, 
-                                                      Experiments.objects.order_by('base_name'));
-            featuresNames = getFeaturesNamesFromGet(request.GET);
-            experimentsData = getDataWithFeatures(featuresNames, results_list);
-            constructSearchContext(experimentsData, featuresNames, context);        
+            filteredDb = processSearchConfiguration(request.GET, 
+                                                    Experiments.objects.order_by('base_name'));
+            selectedFeatures = getFeaturesNamesFromGet(request.GET);
+            filteredData = getDataWithFeatures(all_features_names, filteredDb);
+            constructSearchContext(filteredData, all_features_names, selectedFeatures, context);
 
     # If the previous phase did not result in any loads from the database, load default
     if loadDefault:
         # All experiments are chosen by default
-        results_list = Experiments.objects.order_by('base_name');
-        experimentsData = getDataWithFeatures(defaultCoreFeatures, results_list);
-        constructSearchContext(experimentsData, defaultCoreFeatures, context);
+        filteredDb = Experiments.objects.order_by('base_name');
+        allFeaturesData = getDataWithFeatures(all_features_names, filteredDb);
+#        experimentsData = getDataWithFeatures(defaultCoreFeatures, filteredDb);
+        construct_start = time.time();
+        constructSearchContext(allFeaturesData, all_features_names, defaultCoreFeatures, context);
 
     # Produce static database context information
     context['db_experiment_count'] = db_experiment_count;

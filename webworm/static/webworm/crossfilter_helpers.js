@@ -1,5 +1,30 @@
 "use strict";
 
+// Equivalent to python dict(zip(['AB', 'CD', 'EF', 'GH'],[1, 2, 3, 4])) in javascript
+// Modified from: https://gist.github.com/ThomasG77/2186830
+//
+// *CWL* Not used, but retained in case it gets too expensive to ship dictionaries from
+//   server to client.
+var dict_zip = function (keys, dataTable) {
+    returnTable = [];
+    let numRows = dataTable.length;
+    if (numRows > 0) {
+	for (var rowIdx=0; rowIdx<numRows; rowIdx++) {
+	    let rowLen = dataTable[rowIdx].length;
+	    if (keys.length === rowLen) {
+		var dictionary = {};
+		for (var i=0; i<rowLen; i++) {
+		    dictionary[keys[i]] = dataTable[rowIdx][i];
+		}
+		returnTable.push(dictionary);
+	    } else {
+		console.log('Incompatible key and table column lengths at row ' + rowIdx);
+	    }
+	}
+    }
+    return returnTable;
+}
+
 var pretty_month_names = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
 			   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
 
@@ -142,6 +167,8 @@ function initializeParamObject() {
 						   "suffix": "",
 						   "scale": "linear",
 						   "bucket_width": 1 };
+    returnObject['data_fields']['base_name'] = { "data_type": "string",
+					      "display_name": "Experiment Name" };
     returnObject['data_fields']['strain'] = { "data_type": "string",
 					      "display_name": "Strain" };
     returnObject['data_fields']['gene'] = { "data_type": "string",
@@ -158,6 +185,7 @@ function initializeParamObject() {
 					   "display_name": "File Download URL" };
     returnObject['charts'] = [ "iso_date", "hour" ];
     returnObject['results_display'] = [ 
+				       "base_name",
 				       "strain",  
 				       "gene",
 				       "allele",
@@ -173,13 +201,14 @@ function initializeParamObject() {
 
 function createXfilterParams(paramObject, rawInputData) {
     // Reinitialize the existing default object.
-    let numFeatures = selectedFeaturesNames.length;
+    let numFeatures = allFeaturesNames.length;
+    let numSelectedFeatures = selectedFeaturesNames.length;
     paramObject = initializeParamObject();
     paramObject['num_display_fields'] = paramObject['num_display_fields'] + 
-	numFeatures;
+	numSelectedFeatures;
     paramObject['datasetview_chart_index'] = paramObject['num_display_fields'] - 1;
-    for (var i=0; i< numFeatures; i++) {
-	let fieldName = selectedFeaturesNames[i];
+    for (var i=0; i<numFeatures; i++) {
+	let fieldName = allFeaturesNames[i];
 	// *CWL* Keeping this around in case I still need to use it.
 	//	let fieldRange = getExtremes(rawInputData, fieldName);
 	paramObject['data_fields'][fieldName] = { 
@@ -191,6 +220,10 @@ function createXfilterParams(paramObject, rawInputData) {
 	    "rangeRound":[0,$('#crossfilterPane').width()/3.5],
 	    "stratify": 1
 	};
+    }
+    // Only push features that are selected into the charts and displays
+    for (var i=0; i<numSelectedFeatures; i++) {
+	let fieldName = selectedFeaturesNames[i];
 	paramObject['charts'].push(fieldName);
 	paramObject['results_display'].push(fieldName);
     }
