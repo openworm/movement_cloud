@@ -25,6 +25,7 @@ $(document).ready(function() {
 		},
 	    });
 
+	$('#genDataFeaturesSelected').text(formatWholeNumber(xFilterFeaturesTable.rows('.selected').count()));
 	$('#genDataFeaturesTotal').text(formatWholeNumber(allFeaturesNames.length));
 
 	xFilterFeaturesTable.on( 'select', function ( e, dt, type, indexes ) {

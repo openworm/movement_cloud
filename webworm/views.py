@@ -33,17 +33,17 @@ defaultCoreFeatures = [
     ];
 
 # A way to organize the header fields for all data.
-#  *CWL* Figure out a way to eliminate the fragile code of using manual indices
-#  for zenodoIdIdx, and timestampIdx.
 fieldHeaders = [
+    { 'label': 'youtube_id', 'field': 'youtube_id' },
+    { 'label': 'filename', 'field': 'zenodofiles__filename' },
+    { 'label': 'filesize', 'field': 'zenodofiles__filesize' },
     { 'label': 'timestamp', 'field': 'date' },
-    { 'label': 'zenodo_id', 'field': 'zenodo_id' },
+    { 'label': 'zenodo_id', 'field': 'zenodofiles__zenodo_id' },
     { 'label': 'allele', 'field': 'strain__allele__name' },
     { 'label': 'gene', 'field': 'strain__gene__name' },
     { 'label': 'strain', 'field': 'strain__name' },
     { 'label': 'base_name', 'field': 'base_name' },
     ];
-zenodoIdIdx = 4; # counted in reverse order because we insert into the head
 timestampIdx = 5; # counted in reverse order
 
 # The URL Prefix to Zenodo. In production this would be 'https://zenodo.org/record/'
@@ -233,60 +233,12 @@ def processSearchConfiguration(getRequest, dbRecords):
 def constructSearchContext(inData, featuresNames, selectedFeatures, context):
     # Clone the list of names for header processing
     header = inData[0][:];
-
     resultData = inData[1];
 
-    # Forced by Database structure in order to allow for related elements to be found
-    # *CWL* Warning - this will NOT scale as we get more rows in this database.
-    #       The best way out of this is to have ZenodoFiles have Experiments as its
-    #       many-to-one foreign key. Each "values_list" call is a probe into the
-    #       database.
-    zenodoDb = ZenodoFiles.objects.all();
-
-    # insert into the end of lists
-    header.insert(len(header),'url');
-    header.insert(len(header),'filetype');
-    header.insert(len(header),'filesize');
-
-    augmentedDataTable = [];
-    for row in resultData:
-        zenodoId = row[zenodoIdIdx];
-        if zenodoId != None:
-            zenodoElements = zenodoDb.filter(zenodo=zenodoId).values_list('filename','filesize');
-            for element in zenodoElements:
-                # Replicate the original row for each zenodo file record found
-                augmentedRow = [];
-                # insert original data
-                for field in row:
-                    augmentedRow.insert(len(augmentedRow),field);
-                # construct file URL
-                zenodo_filename = element[0];
-                zenodo_download_url = getZenodoUrl(zenodoId, zenodo_filename);
-                augmentedRow.insert(len(augmentedRow), zenodo_download_url);
-                # file type
-                zenodo_filetype = getFileTypeFromName(zenodo_filename);
-                augmentedRow.insert(len(augmentedRow), zenodo_filetype);
-                # file size
-                augmentedRow.insert(len(augmentedRow), element[1]);
-                # Make sure we insert a copy
-                augmentedDataTable.insert(len(augmentedDataTable),augmentedRow[:]);
-        else:
-            # Replicate the original row with empty zenodo entries
-            augmentedRow = [];
-            # insert original data
-            for field in row:
-                augmentedRow.insert(len(augmentedRow),field);
-            # file URL
-            augmentedRow.insert(len(augmentedRow),'None');
-            # file type
-            augmentedRow.insert(len(augmentedRow),'None');
-            # file size
-            augmentedRow.insert(len(augmentedRow), 0);
-            # Make sure we insert a copy
-            augmentedDataTable.insert(len(augmentedDataTable),augmentedRow[:]);
-
-    transformTimestamps(augmentedDataTable);
-    returnTable = [dict(zip(header,row)) for row in noneToText(augmentedDataTable)];
+    # We're gonna offload the construction of URL and File Type information to
+    #   the client in this version.
+    transformTimestamps(resultData);
+    returnTable = [dict(zip(header,row)) for row in noneToText(resultData)];
     returnTable = eliminateEmptySelectedFeatureRows(selectedFeatures, returnTable);
     results_count = len(returnTable);
 

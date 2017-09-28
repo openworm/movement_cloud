@@ -9,6 +9,7 @@
 var globalCF;
 
 if (hasCFData) {
+    crossfilterData = augmentCrossfilterData(crossfilterData);
     XFILTER_PARAMS = createXfilterParams(XFILTER_PARAMS, crossfilterData);
     generateXfilterDerivedColumns(crossfilterData);
     processCrossfilterData(crossfilterData);
