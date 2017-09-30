@@ -264,14 +264,13 @@ function initializeParamObject() {
 
 function createXfilterParams(paramObject, rawInputData) {
     // Reinitialize the existing default object.
-    let numFeatures = allFeaturesNames.length;
     let numSelectedFeatures = selectedFeaturesNames.length;
     paramObject = initializeParamObject();
     paramObject['num_display_fields'] = paramObject['num_display_fields'] + 
 	numSelectedFeatures;
     paramObject['datasetview_chart_index'] = paramObject['num_display_fields'] - 1;
-    for (var i=0; i<numFeatures; i++) {
-	let fieldName = allFeaturesNames[i];
+    for (var i=0; i<numSelectedFeatures; i++) {
+	let fieldName = selectedFeaturesNames[i];
 	// *CWL* Keeping this around in case I still need to use it.
 	//	let fieldRange = getExtremes(rawInputData, fieldName);
 	paramObject['data_fields'][fieldName] = { 
@@ -283,10 +282,6 @@ function createXfilterParams(paramObject, rawInputData) {
 	    "rangeRound":[0,$('#crossfilterPane').width()/3.5],
 	    "stratify": 1
 	};
-    }
-    // Only push features that are selected into the charts and displays
-    for (var i=0; i<numSelectedFeatures; i++) {
-	let fieldName = selectedFeaturesNames[i];
 	paramObject['charts'].push(fieldName);
 	paramObject['results_display'].push(fieldName);
     }

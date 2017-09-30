@@ -171,3 +171,19 @@ for (var disIdx=0; disIdx<discreteFieldMetadata.length; disIdx++) {
     discreteTable.on('deselect', 
 		     deselectEventFactory(discreteTable, confirmTable, discreteIndex));
 }
+
+var selectDiscreteTableRowsFromState = function() {
+    for (var disIdx=0; disIdx<discreteTables.length; disIdx++) {
+	let filterState = prevAdvancedFilterState[discreteFieldMetadata[disIdx]];
+	if (filterState) {
+	    discreteTables[disIdx].rows().every( function(rowIdx,tableLoop,rowLoop) {
+		    // if found, select.
+		    if (filterState[this.data()[0]]) {
+			// alert('found' + this.data()[0]);
+			this.select();
+		    }
+		});
+	}
+    }
+}
+selectDiscreteTableRowsFromState();

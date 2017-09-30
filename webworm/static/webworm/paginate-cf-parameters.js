@@ -137,4 +137,19 @@ $(document).ready(function() {
 		    confirmParamTable.draw();
 		}
 	    } );
+
+	var selectCoreFeaturesFromState = function() {
+	    let filterState = prevAdvancedFilterState['filteredFeatures'];
+	    if (Object.keys(filterState).length != 0) {
+		coreParamTable.rows().every( function(rowIdx,tableLoop,rowLoop) {
+			// if found, select.
+			if (filterState[this.data()[0]]) {
+			    // alert('found' + this.data()[0]);
+			    this.select();
+			}
+		    });
+	    }
+	}
+	selectCoreFeaturesFromState();
+	
     } );

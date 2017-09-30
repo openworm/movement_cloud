@@ -50,10 +50,8 @@ timestampIdx = 5; # counted in reverse order
 zenodo_url_prefix = 'https://sandbox.zenodo.org/record/';
 
 # Support functions
-def setContext(context, newStuff):
-    for item in newStuff:
-        context[item['name']] = item['variable'];
 
+# *CWL* Not used anymore. Retaining for reference only.
 def getFileTypeFromName(dataFileName):
     # Check for .hdf5 last please.
     fileType = '';
@@ -71,11 +69,14 @@ def getFileTypeFromName(dataFileName):
         fileType = 'Error';
     return fileType;
 
+# *CWL* Not used anymore. Retaining for reference only.
 def getZenodoUrl(zenodoId, dataFileName):
+    global zenodo_url_prefix;
     zenodo_download_url = zenodo_url_prefix + str(zenodoId) + '/files/' + dataFileName;
     return zenodo_download_url;
 
 def transformTimestamps(inTable):
+    global timestampIdx;
     for row in inTable:
         if row[timestampIdx] != None:
             row[timestampIdx] = row[timestampIdx].strftime("%Y%m%d%H%M");
@@ -104,7 +105,7 @@ def getDiscreteFieldMetadata(experimentsDb, context):
     context['discrete_field_names'] = [field[1] for tag,field in discreteFields.items()];
     context['discrete_field_counts'] = fieldCounts;
 
-def processSearchField(key, db_filter, getRequest, dbRecords):
+def processSearchField(key, db_filter, getRequest, dbRecords, filterState):
     # *CWL* This deals with a bizzarre difference in the way exec() behaves between
     #  Python 2 and Python 3 with regard to local variable assignment inside the
     #  call to exec() I do not yet fully understand. Quite by accident, I discovered
@@ -137,6 +138,10 @@ def processSearchField(key, db_filter, getRequest, dbRecords):
                     if searchTerm != '':
                         exec('returnDbRecords[0] = returnDbRecords[0] | dbRecords.filter(' + 
                              db_filter + '=searchTerm);');
+                        if filterState.get(key) == None:
+                            filterState[key] = {searchTerm:'1'};
+                        else:
+                            filterState[key][searchTerm] = '1';
     else:
         returnDbRecords[0] = dbRecords;
     return returnDbRecords[0];
@@ -144,6 +149,7 @@ def processSearchField(key, db_filter, getRequest, dbRecords):
 # Produces a list of data rows (one row per record in database)
 #    given a list of features names. 
 def getDataWithFeatures(selectedFeatures, dbRecords):
+    global fieldHeaders;
     start = time.time();
     headerNames = [];
     resultData = [];
@@ -215,19 +221,21 @@ def noneToZero(inList):
                 row[idx] = 0;
     return inList;
 
-def processSearchConfiguration(getRequest, dbRecords):
+def processSearchConfiguration(getRequest, dbRecords, filterState):
     global discreteFields;
     if 'start_date' in getRequest:
         start = getRequest['start_date'];
         if start:
+            filterState['start_date'] = start;
             dbRecords = dbRecords.filter(date__gte=start);
     if 'end_date' in getRequest:
         end = getRequest['end_date'];
         if end:
+            filterState['end_date'] = end;
             dbRecords = dbRecords.filter(date__lte=end);
     for tag,field in discreteFields.items():
         dbRecords = processSearchField(tag, field[0]+'__name__exact', 
-                                       getRequest, dbRecords);
+                                       getRequest, dbRecords, filterState);
     return dbRecords;
 
 def constructSearchContext(inData, featuresNames, selectedFeatures, context):
@@ -250,6 +258,7 @@ def constructSearchContext(inData, featuresNames, selectedFeatures, context):
 # Create your views here.
 
 def index(request):
+    global defaultCoreFeatures;
     # Context variables to be passed to client for rendering and client-side processing
     context = {};
 
@@ -279,24 +288,33 @@ def index(request):
     # If anything else loads, loadDefault is set to False
     loadDefault = True;
     featuresToCrossfilter = defaultCoreFeatures;
+    filterState = {};
+    filterState['filteredFeatures'] = {};
     if request.method == "GET":
         # Look for crossfilter requests first.
         if (request.GET.__contains__("crossfilter")):
             loadDefault = False;
             filteredDb = processSearchConfiguration(request.GET, 
-                                                    Experiments.objects.order_by('base_name'));
+                                                    Experiments.objects.order_by('base_name'),
+                                                    filterState);
             selectedFeatures = getFeaturesNamesFromGet(request.GET);
-            filteredData = getDataWithFeatures(all_features_names, filteredDb);
+            for feature in selectedFeatures:
+                filterState['filteredFeatures'][feature] = '1';
+            #            filteredData = getDataWithFeatures(all_features_names, filteredDb);
+            filteredData = getDataWithFeatures(selectedFeatures, filteredDb);
             constructSearchContext(filteredData, all_features_names, selectedFeatures, context);
+            # This is going to have to be a re-package of the desired advanced filter parameters
+            context['prev_advanced_filter_state'] = filterState;
 
     # If the previous phase did not result in any loads from the database, load default
     if loadDefault:
         # All experiments are chosen by default
         filteredDb = Experiments.objects.order_by('base_name');
-        allFeaturesData = getDataWithFeatures(all_features_names, filteredDb);
-#        experimentsData = getDataWithFeatures(defaultCoreFeatures, filteredDb);
+        #       experimentsData = getDataWithFeatures(all_features_names, filteredDb);
+        experimentsData = getDataWithFeatures(defaultCoreFeatures, filteredDb);
         construct_start = time.time();
-        constructSearchContext(allFeaturesData, all_features_names, defaultCoreFeatures, context);
+        constructSearchContext(experimentsData, all_features_names, defaultCoreFeatures, context);
+        context['prev_advanced_filter_state'] = filterState;
 
     # Produce static database context information
     context['db_experiment_count'] = db_experiment_count;
