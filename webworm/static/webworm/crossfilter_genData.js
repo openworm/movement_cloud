@@ -134,6 +134,98 @@ function downloadResultsList() {
 }
 
 function getCsvFromResults() {
+    $('#metadataInput').append('<input type="hidden" id="downloadTag" name="download" value="">');
+    // Stub for getting chart ranges - to be delivered back via GET request
+    XFILTER_PARAMS['charts'].forEach( function(dimension) {
+	    // insert hidden input
+	    let minSuffix = '_f_min';
+	    let maxSuffix = '_f_max';
+	    // special treatment for non-feature charts
+	    if ((dimension == 'iso_date') || (dimension == 'hour')) {
+		minSuffix = '_dl_min';
+		maxSuffix = '_dl_max';
+	    }
+	    $('#metadataInput').append('<input type="hidden" id="' + 
+				       dimension + minSuffix + '_InputList" name="' +
+				       dimension + minSuffix + '" value=""/>');
+	    $('#metadataInput').append('<input type="hidden" id="' + 
+				       dimension + maxSuffix + '_InputList" name="' +
+				       dimension + maxSuffix + '" value=""/>');
+	    let minValue = globalCF.dimension(d => d[dimension]).bottom(1)[0][dimension];
+	    let maxValue = globalCF.dimension(d => d[dimension]).top(1)[0][dimension];
+	    if (dimension == 'iso_date') {
+		minValue = isoToYMD(minValue);
+		maxValue = isoToYMD(maxValue);
+	    }
+	    $('#'+dimension+minSuffix+'_InputList').val(minValue);
+	    $('#'+dimension+maxSuffix+'_InputList').val(maxValue);
+	});
+    // Deliver filtered features via GET request
+    xFilterFeaturesTable.rows({selected: true}).every( function(rowIdx, tblLoop, rowLoop) {
+	    let feature = this.data()[0];
+	    $('#metadataInput').append('<input type="hidden" id="meta_dl_' +
+				       feature + '" name="' +
+				       feature + '_isDownload" value=""/>');
+	});
+    
+    // Deliver previous Advanced filter GET request if appropriate.
+    for (var key in prevAdvancedFilterState) {
+	if (key == 'filteredFeatures') {
+	    for (var feature in prevAdvancedFilterState['filteredFeatures']) {
+		$('#metadataInput').append('<input type="hidden" id="meta_' +
+					   feature + '" name="' +
+					   feature + '_isFeature" value=""/>');
+	    }
+	} else if (key == 'start_date') {
+	    $('#metadataInput').append('<input type="hidden" id="meta_start_date" ' +
+				       'name="start_date" value="' +
+				       prevAdvancedFilterState['start_date'] + '"/>');
+	} else if (key == 'end_date') {
+	    $('#metadataInput').append('<input type="hidden" id="meta_end_date" ' +
+				       'name="end_date" value="' +
+				       prevAdvancedFilterState['end_date'] + '"/>');
+	} else {
+	    // discrete lists
+	    createDiscreteHiddenInput('#metadataInput');
+	}
+    }
+    $('#metadataForm').submit();
+}
+
+function isoToYMD(inDate) {
+    date = new Date(inDate);
+    year = date.getFullYear();
+    month = date.getMonth()+1;
+    dt = date.getDate();
+    if (dt < 10) {
+	dt = '0' + dt;
+    }
+    if (month < 10) {
+	month = '0' + month;
+    }
+    return year + '-' + month + '-' + dt;
+}
+
+function generateDownloadData() {
+    // produce CSV from newly constructed array
+    let csvContent = '';
+    let headerCsv = downloadHeaders.join(',');
+    csvContent += headerCsv + "\n";
+    downloadData.forEach( function(row, index) {
+	    let csvRow = row.join(',');
+	    csvContent += csvRow + "\n";
+	});
+
+    let element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,'+encodeURIComponent(csvContent));
+    element.setAttribute('download', 'results.csv');
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element); 
+}
+
+function getCsvFromResults_______2() {
     let data = globalCF.dimension(d => d.zenodo_id).top(Infinity);
     let filteredFeatures = [];
     xFilterFeaturesTable.rows({selected: true}).every( function(rowIdx, tblLoop, rowLoop) {

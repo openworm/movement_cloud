@@ -3,10 +3,11 @@ var discreteElementsPerRow = 2;
 var discreteConfirmElementsPerRow = 4;
 var hiddenDiscreteIndex = 1;
 
-// On Form Submission, populate the discrete search parameters
-var submitFunction = function() {
+
+function createDiscreteHiddenInput(domTag) {
     for (var disIdx=0; disIdx<discreteFieldMetadata.length; disIdx++) {
 	var fieldString = '';
+	var discreteFieldName = discreteFieldMetadata[disIdx];
 	confirmTables[disIdx].rows().every( function(index) {
 		var data = this.data();
 		fieldString += data[0] + ',';
@@ -14,8 +15,17 @@ var submitFunction = function() {
 	// remove last excess comma
         fieldString = fieldString.substring(0, fieldString.length - 1);
 	//	alert(fieldString);
-	$('#'+discreteFieldMetadata[disIdx]+'InputList').val(fieldString);
+	// Insert hidden input HTML elements
+	$(domTag).append('<input type="hidden" id="' + 
+			 discreteFieldName + 'InputList" name="' +
+			 discreteFieldName + '" value=""/>');
+	$('#' + discreteFieldName + 'InputList').val(fieldString);
     }
+}
+
+// On Form Submission, populate the discrete search parameters
+var submitFunction = function() {
+    createDiscreteHiddenInput('#hiddenDiscreteInput');
 }
 
 var populateDiscreteTables = function() {

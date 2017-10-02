@@ -89,7 +89,6 @@ $(document).ready(function() {
 		}
 	    } );
 
-
 	// *CWL* In the case of deselection, the operations are symmetric
 	coreParamTable.on('deselect', function ( e, dt, type, indexes ) {
 		if ( type === 'row' ) {
@@ -139,15 +138,22 @@ $(document).ready(function() {
 	    } );
 
 	var selectCoreFeaturesFromState = function() {
-	    let filterState = prevAdvancedFilterState['filteredFeatures'];
-	    if (Object.keys(filterState).length != 0) {
+	    let filteredFeatureState = prevAdvancedFilterState['filteredFeatures'];
+	    if (Object.keys(filteredFeatureState).length != 0) {
 		coreParamTable.rows().every( function(rowIdx,tableLoop,rowLoop) {
 			// if found, select.
-			if (filterState[this.data()[0]]) {
+			if (filteredFeatureState[this.data()[0]]) {
 			    // alert('found' + this.data()[0]);
 			    this.select();
 			}
 		    });
+	    }
+	    // piggyback the dates along with this function
+	    if ('start_date' in prevAdvancedFilterState) {
+		$('#start_date').val(prevAdvancedFilterState['start_date']);
+	    }
+	    if ('end_date' in prevAdvancedFilterState) {
+		$('#end_date').val(prevAdvancedFilterState['end_date']);
 	    }
 	}
 	selectCoreFeaturesFromState();

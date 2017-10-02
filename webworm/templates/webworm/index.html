@@ -43,7 +43,6 @@
     hasCFData = true;
   }
   var prevAdvancedFilterState = {{ prev_advanced_filter_state|safe }};
-  alert(prevAdvancedFilterState['start_date']);
   var dataFilePath = "{% static 'webworm/worm_mock_data.csv' %}";
   var wconFilePath = "{% static 'webworm/example.wcon' %}";
   var crossfilterData = {{ results_list|safe }};
@@ -52,6 +51,8 @@
   var discreteFieldData = {{ discrete_field_counts|safe }};
   var discreteFieldMetadata = {{ discrete_field_meta|safe }};
   var discreteFieldNames = {{ discrete_field_names|safe }};
+  var downloadData = {% if download_data %}{{ download_data|safe }}{% else %}'None'{% endif %};
+  var downloadHeaders = {% if download_header %}{{ download_header|safe }}{% else %}'None'{% endif %};
 </script>
 
 <script src="{% static 'webworm/paginate-discrete.js' %}"></script>
