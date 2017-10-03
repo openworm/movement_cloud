@@ -5,7 +5,7 @@
 
   <ul class="nav nav-tabs" id="tabsUL">
     <li class="active"><a title="Select Features to Crossfilter on. Add restrictions to Database field values. Optional." 
-			  data-toggle="tab" href="#searchPane">Select/Filter Tools</a></li>
+			  data-toggle="tab" href="#searchPane">Advanced Filters</a></li>
     <li><a title="Find desired experiments by restricting Features value ranges. Download Features metadata or full experiment data." 
 	   data-toggle="tab" href="#crossfilterPane">Crossfilter Features/Get Data</a></li>
     <li><a title="View Worm data and animation using WCON movement data format."
@@ -42,6 +42,7 @@
     $('#generateCsv').prop('disabled', false);
     hasCFData = true;
   }
+  var prevAdvancedFilterState = {{ prev_advanced_filter_state|safe }};
   var dataFilePath = "{% static 'webworm/worm_mock_data.csv' %}";
   var wconFilePath = "{% static 'webworm/example.wcon' %}";
   var crossfilterData = {{ results_list|safe }};
@@ -50,6 +51,8 @@
   var discreteFieldData = {{ discrete_field_counts|safe }};
   var discreteFieldMetadata = {{ discrete_field_meta|safe }};
   var discreteFieldNames = {{ discrete_field_names|safe }};
+  var downloadData = {% if download_data %}{{ download_data|safe }}{% else %}'None'{% endif %};
+  var downloadHeaders = {% if download_header %}{{ download_header|safe }}{% else %}'None'{% endif %};
 </script>
 
 <script src="{% static 'webworm/paginate-discrete.js' %}"></script>
