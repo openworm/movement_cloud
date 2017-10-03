@@ -1,6 +1,8 @@
+var xFilterFeaturesTable;
+
 $(document).ready(function() {
 	
-	var xFilterFeaturesTable = $('#xFilterFeaturesTable').DataTable( {
+	xFilterFeaturesTable = $('#xFilterFeaturesTable').DataTable( {
 		dom: 'Blfrtip',
 		buttons: [
 			  'selectAll',
@@ -23,6 +25,7 @@ $(document).ready(function() {
 		},
 	    });
 
+	$('#genDataFeaturesSelected').text(formatWholeNumber(xFilterFeaturesTable.rows('.selected').count()));
 	$('#genDataFeaturesTotal').text(formatWholeNumber(allFeaturesNames.length));
 
 	xFilterFeaturesTable.on( 'select', function ( e, dt, type, indexes ) {
@@ -131,43 +134,143 @@ function downloadResultsList() {
 }
 
 function getCsvFromResults() {
-    // Ideally sort by strain I guess.
-    // *CWL* - Point of Code Fragility. Deleting specific columns of
-    //     the crossfilter results table manually really isn't the
-    //     way to go.
-    var data = globalCF.dimension(d => d.zenodo_id).top(Infinity);
-
-    var csvContent = "";
-    if (data.length > 0) {
-	delete data[0]['timestamp'];
-	delete data[0]['hour'];
-	delete data[0]['iso_date'];
-	delete data[0]['index'];
-	delete data[0]['selected'];
-	var header = Object.keys(data[0]).map(function(k){
-		return k;
-	    }).join(',');
-	csvContent += header + "\n";
+    $('#metadataInput').append('<input type="hidden" id="downloadTag" name="download" value="">');
+    // Stub for getting chart ranges - to be delivered back via GET request
+    XFILTER_PARAMS['charts'].forEach( function(dimension) {
+	    // insert hidden input
+	    let minSuffix = '_f_min';
+	    let maxSuffix = '_f_max';
+	    // special treatment for non-feature charts
+	    if ((dimension == 'iso_date') || (dimension == 'hour')) {
+		minSuffix = '_dl_min';
+		maxSuffix = '_dl_max';
+	    }
+	    $('#metadataInput').append('<input type="hidden" id="' + 
+				       dimension + minSuffix + '_InputList" name="' +
+				       dimension + minSuffix + '" value=""/>');
+	    $('#metadataInput').append('<input type="hidden" id="' + 
+				       dimension + maxSuffix + '_InputList" name="' +
+				       dimension + maxSuffix + '" value=""/>');
+	    let minValue = globalCF.dimension(d => d[dimension]).bottom(1)[0][dimension];
+	    let maxValue = globalCF.dimension(d => d[dimension]).top(1)[0][dimension];
+	    if (dimension == 'iso_date') {
+		minValue = isoToYMD(minValue);
+		maxValue = isoToYMD(maxValue);
+	    }
+	    $('#'+dimension+minSuffix+'_InputList').val(minValue);
+	    $('#'+dimension+maxSuffix+'_InputList').val(maxValue);
+	});
+    // Deliver filtered features via GET request
+    xFilterFeaturesTable.rows({selected: true}).every( function(rowIdx, tblLoop, rowLoop) {
+	    let feature = this.data()[0];
+	    $('#metadataInput').append('<input type="hidden" id="meta_dl_' +
+				       feature + '" name="' +
+				       feature + '_isDownload" value=""/>');
+	});
+    
+    // Deliver previous Advanced filter GET request if appropriate.
+    for (var key in prevAdvancedFilterState) {
+	if (key == 'filteredFeatures') {
+	    for (var feature in prevAdvancedFilterState['filteredFeatures']) {
+		$('#metadataInput').append('<input type="hidden" id="meta_' +
+					   feature + '" name="' +
+					   feature + '_isFeature" value=""/>');
+	    }
+	} else if (key == 'start_date') {
+	    $('#metadataInput').append('<input type="hidden" id="meta_start_date" ' +
+				       'name="start_date" value="' +
+				       prevAdvancedFilterState['start_date'] + '"/>');
+	} else if (key == 'end_date') {
+	    $('#metadataInput').append('<input type="hidden" id="meta_end_date" ' +
+				       'name="end_date" value="' +
+				       prevAdvancedFilterState['end_date'] + '"/>');
+	} else {
+	    // discrete lists
+	    createDiscreteHiddenInput('#metadataInput');
+	}
     }
+    $('#metadataForm').submit();
+}
+
+function isoToYMD(inDate) {
+    date = new Date(inDate);
+    year = date.getFullYear();
+    month = date.getMonth()+1;
+    dt = date.getDate();
+    if (dt < 10) {
+	dt = '0' + dt;
+    }
+    if (month < 10) {
+	month = '0' + month;
+    }
+    return year + '-' + month + '-' + dt;
+}
+
+function generateDownloadData() {
+    // produce CSV from newly constructed array
+    let csvContent = '';
+    let headerCsv = downloadHeaders.join(',');
+    csvContent += headerCsv + "\n";
+    downloadData.forEach( function(row, index) {
+	    let csvRow = row.join(',');
+	    csvContent += csvRow + "\n";
+	});
+
+    let element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,'+encodeURIComponent(csvContent));
+    element.setAttribute('download', 'results.csv');
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element); 
+}
+
+function getCsvFromResults_______2() {
+    let data = globalCF.dimension(d => d.zenodo_id).top(Infinity);
+    let filteredFeatures = [];
+    xFilterFeaturesTable.rows({selected: true}).every( function(rowIdx, tblLoop, rowLoop) {
+	    filteredFeatures.push(this.data());
+	});
+
+    let zenodoIDs = {};
+    let newdata = [];
+    // Start with fixed headers
+    let header = ['strain','gene','allele','base_name','zenodo_id'];
+    filteredFeatures.forEach( function(feature, index) {
+	    header.push(feature);
+	});
+
+    // Remove rows with the same zenodoId, choose columns that show up in header
     data.forEach( function(inner, index) {
-	delete inner['timestamp'];
-	delete inner['hour'];
-	delete inner['iso_date'];
-	delete inner['index'];
-	delete inner['selected'];
-	  var innerContent = Object.keys(inner).map(function(k){
-		  return inner[k];
-	      }).join(',');
-	  csvContent += innerContent + "\n";
+	if (inner['zenodo_id'] != 'None') {
+	    if (zenodoIDs[inner['zenodo_id']] == null) {
+		zenodoIDs[inner['zenodo_id']] = 'Y';
+		let newRow = [];
+		header.forEach( function(key, index) {
+			newRow.push(inner[key]);
+		    });
+		newdata.push(newRow);
+	    }
+	} else {
+	    // If there is no zenodo ID, just add the row.
+	    let newRow = [];
+	    header.forEach( function(key, index) {
+		    newRow.push(inner[key]);
+		});
+	    newdata.push(newRow);
+	}
 	});
-    /*
-    data.forEach(function(infoArray, index) {
-	    dataString = infoArray.join(",");
-	    csvContent += index < data.length ? dataString+ "\n" : dataString;
+
+    // produce CSV from newly constructed array
+    let csvContent = '';
+    let headerCsv = header.join(',');
+    csvContent += headerCsv + "\n";
+    newdata.forEach( function(row, index) {
+	    let csvRow = row.join(',');
+	    csvContent += csvRow + "\n";
 	});
-    alert(csvContent);
-    */
-    var element = document.createElement('a');
+
+    let element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,'+encodeURIComponent(csvContent));
     element.setAttribute('download', 'results.csv');
     element.style.display = 'none';

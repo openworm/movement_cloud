@@ -8,7 +8,11 @@
 //   access to the data elements.
 var globalCF;
 
+if ((downloadData != 'None') && (downloadHeaders != 'None')) {
+    generateDownloadData();
+}
 if (hasCFData) {
+    crossfilterData = augmentCrossfilterData(crossfilterData);
     XFILTER_PARAMS = createXfilterParams(XFILTER_PARAMS, crossfilterData);
     generateXfilterDerivedColumns(crossfilterData);
     processCrossfilterData(crossfilterData);

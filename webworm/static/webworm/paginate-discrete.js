@@ -3,10 +3,11 @@ var discreteElementsPerRow = 2;
 var discreteConfirmElementsPerRow = 4;
 var hiddenDiscreteIndex = 1;
 
-// On Form Submission, populate the discrete search parameters
-var submitFunction = function() {
+
+function createDiscreteHiddenInput(domTag) {
     for (var disIdx=0; disIdx<discreteFieldMetadata.length; disIdx++) {
 	var fieldString = '';
+	var discreteFieldName = discreteFieldMetadata[disIdx];
 	confirmTables[disIdx].rows().every( function(index) {
 		var data = this.data();
 		fieldString += data[0] + ',';
@@ -14,8 +15,17 @@ var submitFunction = function() {
 	// remove last excess comma
         fieldString = fieldString.substring(0, fieldString.length - 1);
 	//	alert(fieldString);
-	$('#'+discreteFieldMetadata[disIdx]+'InputList').val(fieldString);
+	// Insert hidden input HTML elements
+	$(domTag).append('<input type="hidden" id="' + 
+			 discreteFieldName + 'InputList" name="' +
+			 discreteFieldName + '" value=""/>');
+	$('#' + discreteFieldName + 'InputList').val(fieldString);
     }
+}
+
+// On Form Submission, populate the discrete search parameters
+var submitFunction = function() {
+    createDiscreteHiddenInput('#hiddenDiscreteInput');
 }
 
 var populateDiscreteTables = function() {
@@ -171,3 +181,19 @@ for (var disIdx=0; disIdx<discreteFieldMetadata.length; disIdx++) {
     discreteTable.on('deselect', 
 		     deselectEventFactory(discreteTable, confirmTable, discreteIndex));
 }
+
+var selectDiscreteTableRowsFromState = function() {
+    for (var disIdx=0; disIdx<discreteTables.length; disIdx++) {
+	let filterState = prevAdvancedFilterState[discreteFieldMetadata[disIdx]];
+	if (filterState) {
+	    discreteTables[disIdx].rows().every( function(rowIdx,tableLoop,rowLoop) {
+		    // if found, select.
+		    if (filterState[this.data()[0]]) {
+			// alert('found' + this.data()[0]);
+			this.select();
+		    }
+		});
+	}
+    }
+}
+selectDiscreteTableRowsFromState();

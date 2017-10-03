@@ -186,7 +186,6 @@ class Experiments(models.Model):
     exit_flag = models.ForeignKey(ExitFlags, models.DO_NOTHING)
     results_dir = models.CharField(max_length=200, blank=True, null=True)
     youtube_id = models.CharField(max_length=40, blank=True, null=True)
-    zenodo_id = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -1059,12 +1058,12 @@ class VentralSides(models.Model):
 
 
 class ZenodoFiles(models.Model):
-    id = models.CharField(primary_key=True, max_length=120)
-    zenodo = models.ForeignKey(Experiments, models.DO_NOTHING, blank=True, null=True)
+    file_id = models.CharField(primary_key=True, max_length=120)
+    experiment = models.ForeignKey(Experiments, models.DO_NOTHING, blank=True, null=True)
+    zenodo_id = models.IntegerField(blank=True, null=True)
     filename = models.CharField(max_length=250, blank=True, null=True)
     filesize = models.BigIntegerField(blank=True, null=True)
     checksum = models.CharField(max_length=32, blank=True, null=True)
-    download_link = models.CharField(max_length=2083, blank=True, null=True)
     file_type = models.ForeignKey(FileTypes, models.DO_NOTHING, blank=True, null=True)
 
     class Meta:
