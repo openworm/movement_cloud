@@ -1,5 +1,4 @@
 var selectedParamIndices = {};
-var hiddenParamIndex = 5;
 
 $(document).ready(function() {
 
@@ -26,13 +25,6 @@ $(document).ready(function() {
 	    });
 
 	var confirmParamTable = $('#confirmParameters').DataTable( {
-		"columnDefs": [
-	           {
-		       "targets":[hiddenParamIndex],
-		       "visible": false,
-		       "searchable": false
-		   },
-		],
 	    });
 
 	// *CWL* In the case of features, the name of the feature makes for a
@@ -70,38 +62,32 @@ $(document).ready(function() {
 		    var origData = paramTable.rows(indexes).data();
 		    var selectLength = indexes.length;
 		    for (var i=0; i<selectLength; i++) {
+			var paramName = origData[i][0];
+
 			// This particular check is extremely important now
 			//   that we have 2 bound tables.
-			if ((!selectedParamIndices[origData[i][0]]) || 
-			    (selectedParamIndices[origData[i][0]] === "core")) {
+			if ((!selectedParamIndices[paramName]) || 
+			    (selectedParamIndices[paramName] === "core")) {
 			    // Insert entries only from the full table, and not core.
 			    var data = [];
-			    // *CWL* This is an annoying hardcode.
-			    data.push(origData[i][0]); // name of parameter
-			    data.push(origData[i][1]); // min value
-			    data.push('<input type="text" name="' +
-				      origData[i][0] + '_minParam" class="form-control" id="' +
-				      origData[i][0] + '_minParam"></input>');
-			    data.push(origData[i][2]); // max value
-			    data.push('<input type="text" name="' +
-				      origData[i][0] + '_maxParam" class="form-control" id="' +
-				      origData[i][0] + '_maxParam"></input>');
-			    data.push(indexes[i]);
+			    data.push('<p>' + paramName + '</p>' + 
+				      '<input type="hidden" readonly' +
+				      ' name="' + paramName + '_isFeature" />');
 			    confirmParamTable.row.add(data);
-			    selectedParamIndices[origData[i][0]] = "full";
+			    selectedParamIndices[paramName] = "full";
 
 			    // Update the sister table if necessary
 			    coreParamTable.row( function(idx,data, node) {
-				    return data[0] === origData[i][0]?true:false;
+				    return data[0] === paramName?true:false;
 				}).select();
 			}
 		    }
+
 		    // Draw the other two tables
 		    coreParamTable.draw();
 		    confirmParamTable.draw();
 		}
 	    } );
-
 
 	// *CWL* In the case of deselection, the operations are symmetric
 	coreParamTable.on('deselect', function ( e, dt, type, indexes ) {
@@ -111,8 +97,12 @@ $(document).ready(function() {
 		    for (var i=0; i<selectLength; i++) {
 			if (selectedParamIndices[origData[i][0]]) {
 			    delete selectedParamIndices[origData[i][0]];
-			    confirmParamTable.row( function(idx, data, node){
-				    return data[0] === origData[i][0]?true:false;
+			    // The jquery gymnastics is required to deal with
+			    //   the extra <input> tag inserted into the final
+			    //   table.
+			    confirmParamTable.row( function(idx, data, node) {
+				    return $('p','<div>' + data[0] + '</div>').text() === 
+					origData[i][0]?true:false;
 				}).remove();
 			    // Tell sister table to deselect too
 			    paramTable.row( function(idx,data, node) {
@@ -146,4 +136,26 @@ $(document).ready(function() {
 		    confirmParamTable.draw();
 		}
 	    } );
+
+	var selectCoreFeaturesFromState = function() {
+	    let filteredFeatureState = prevAdvancedFilterState['filteredFeatures'];
+	    if (Object.keys(filteredFeatureState).length != 0) {
+		coreParamTable.rows().every( function(rowIdx,tableLoop,rowLoop) {
+			// if found, select.
+			if (filteredFeatureState[this.data()[0]]) {
+			    // alert('found' + this.data()[0]);
+			    this.select();
+			}
+		    });
+	    }
+	    // piggyback the dates along with this function
+	    if ('start_date' in prevAdvancedFilterState) {
+		$('#start_date').val(prevAdvancedFilterState['start_date']);
+	    }
+	    if ('end_date' in prevAdvancedFilterState) {
+		$('#end_date').val(prevAdvancedFilterState['end_date']);
+	    }
+	}
+	selectCoreFeaturesFromState();
+	
     } );

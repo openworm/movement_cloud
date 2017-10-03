@@ -1,5 +1,27 @@
 var selectedResultsIndices = {};
 var hiddenResultsIndex = 12;
+var zenodoLinkIndex = 10;
+
+var confirmResultsTable;
+
+// *CWL* This is the old function for faking a list of data URLs to download.
+//   Retaining only for reference.
+function processResults() {
+    var returnText = "";
+    var data = confirmResultsTable.rows().data();
+    for (var i=0; i<data.length; i++) {
+	var linkText = data[i][zenodoLinkIndex];
+	var urlText = $(linkText).attr('href');
+	returnText = returnText + urlText + "\n";
+    }
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,'+encodeURIComponent(returnText));
+    element.setAttribute('download', 'zenodo_urls.txt');
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+}
 
 $(document).ready(function() {
 	var resultsTable = $('#results').DataTable( {
@@ -13,7 +35,7 @@ $(document).ready(function() {
 		},
 	    });
 
-	var confirmResultsTable = $('#confirmResults').DataTable( {
+	confirmResultsTable = $('#confirmResults').DataTable( {
 		"columnDefs": [
 	           {
 		       "targets":[hiddenResultsIndex],
