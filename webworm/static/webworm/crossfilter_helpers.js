@@ -194,7 +194,8 @@ function initializeParamObject() {
     // *CWL* This hardcode of 2 display fields depends on the nature of the static fields
     //    and needs to be generalized. Am thinking the server will send
     //    an appropriate number corresponding to the static fields.
-    returnObject['num_display_fields'] = 2;
+    // returnObject['num_display_fields'] = 2;
+    returnObject['num_display_fields'] = 1;
     returnObject['data_fields'] = {};
     returnObject['data_fields']['timestamp'] = { "data_type": "string",
 						 "display_name": "Date / Time",
@@ -246,7 +247,8 @@ function initializeParamObject() {
     					   "display_name": "YouTube ID" };
     returnObject['data_fields']['youtube'] = { "data_type": "string",
     					   "display_name": "YouTube Sample" };
-    returnObject['charts'] = [ "iso_date", "hour" ];
+    //    returnObject['charts'] = [ "iso_date", "hour" ];
+    returnObject['charts'] = [ "iso_date" ];
     returnObject['results_display'] = [ 
 				       "youtube",
 				       "strain",  
