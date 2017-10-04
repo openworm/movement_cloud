@@ -36,6 +36,8 @@
 
 <script type="text/javascript"> 
   var hasCFData = false;
+  // Temporary hiding of WCON Viewer feature
+  $('#tabsUL a:last').hide();
   if ({{ results_count }} > 0) {
     $('#tabsUL a[href="#crossfilterPane"]').trigger('click');
     $('#downloadExpr').prop('disabled', false);
