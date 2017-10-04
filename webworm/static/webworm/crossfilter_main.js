@@ -12,6 +12,7 @@ if ((downloadData != 'None') && (downloadHeaders != 'None')) {
     generateDownloadData();
 }
 if (hasCFData) {
+    generateFileTypeCheckboxes();
     crossfilterData = augmentCrossfilterData(crossfilterData);
     XFILTER_PARAMS = createXfilterParams(XFILTER_PARAMS, crossfilterData);
     generateXfilterDerivedColumns(crossfilterData);

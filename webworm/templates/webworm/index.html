@@ -42,6 +42,8 @@
     $('#generateCsv').prop('disabled', false);
     hasCFData = true;
   }
+  var fileTypes = {{ file_types|safe }};
+  console.log(fileTypes);
   var prevAdvancedFilterState = {{ prev_advanced_filter_state|safe }};
   var dataFilePath = "{% static 'webworm/worm_mock_data.csv' %}";
   var wconFilePath = "{% static 'webworm/example.wcon' %}";

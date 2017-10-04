@@ -43,16 +43,6 @@ $(document).ready(function() {
             } );
     });
 
-
-// *CWL* - This is no longer required given the latest version of the database.
-//   This was used to strip out the ID from the older format in the form of
-//   xxxxx#yyyyyyyyy where yyyyyyyyy is some text string. This code is retained
-//   as reference.
-function stripZenodoId(inId) {
-    let outId = inId.substring(0,inId.indexOf("#"));
-    return outId;
-}
-
 // *CWL* - This is the basic form of getting results from Zenodo. A more
 //   advanced form may take the list and perform post-processing like 
 //   allowing the user to choose the element(s) (e.g. Video data only)
@@ -64,15 +54,6 @@ function stripZenodoId(inId) {
 //   the use of a linux script to aid with the download in a separate phase.
 function downloadResultsList() {
     var returnText = "";
-    // *CWL* - Point of Code Fragility. These values DEPEND on the type values
-    //         delivered from the server. If one changes without the other,
-    //         this code fails.
-    let zenodoFileTypes = { 'Video':'chk_fullvid',
-			    'WCON':'chk_wcon',
-			    'Features':'chk_features',
-			    'Skeleton':'chk_skeleton',
-			    'Sample':'chk_vidsample'
-                          };
     let zenodoUrlPrefix = 'https://sandbox.zenodo.org/records';
     // Get grouping by Zenodo Id
     let allCFValues = globalCF.dimension(d => d.zenodo_id).top(Infinity);
@@ -81,7 +62,7 @@ function downloadResultsList() {
 	let zenodoId = allCFValues[idx].zenodo_id;
 	let fileType = allCFValues[idx].filetype;
 	if (downloadUrl != 'None') {
-	    if ($('#' + zenodoFileTypes[fileType])[0].checked) {
+	    if ($('#chk_' + fileType).is(':checked')) {
 		returnText = returnText + zenodoId + " " + downloadUrl + "\n";
 	    }
 	}
@@ -225,60 +206,6 @@ function generateDownloadData() {
     document.body.removeChild(element); 
 }
 
-function getCsvFromResults_______2() {
-    let data = globalCF.dimension(d => d.zenodo_id).top(Infinity);
-    let filteredFeatures = [];
-    xFilterFeaturesTable.rows({selected: true}).every( function(rowIdx, tblLoop, rowLoop) {
-	    filteredFeatures.push(this.data());
-	});
-
-    let zenodoIDs = {};
-    let newdata = [];
-    // Start with fixed headers
-    let header = ['strain','gene','allele','base_name','zenodo_id'];
-    filteredFeatures.forEach( function(feature, index) {
-	    header.push(feature);
-	});
-
-    // Remove rows with the same zenodoId, choose columns that show up in header
-    data.forEach( function(inner, index) {
-	if (inner['zenodo_id'] != 'None') {
-	    if (zenodoIDs[inner['zenodo_id']] == null) {
-		zenodoIDs[inner['zenodo_id']] = 'Y';
-		let newRow = [];
-		header.forEach( function(key, index) {
-			newRow.push(inner[key]);
-		    });
-		newdata.push(newRow);
-	    }
-	} else {
-	    // If there is no zenodo ID, just add the row.
-	    let newRow = [];
-	    header.forEach( function(key, index) {
-		    newRow.push(inner[key]);
-		});
-	    newdata.push(newRow);
-	}
-	});
-
-    // produce CSV from newly constructed array
-    let csvContent = '';
-    let headerCsv = header.join(',');
-    csvContent += headerCsv + "\n";
-    newdata.forEach( function(row, index) {
-	    let csvRow = row.join(',');
-	    csvContent += csvRow + "\n";
-	});
-
-    let element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,'+encodeURIComponent(csvContent));
-    element.setAttribute('download', 'results.csv');
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element); 
-}
-
 function genDataTable(grouping_dimension) {
     // Re-run the results list, by erasing it and creating it again
 
@@ -293,10 +220,6 @@ function genDataTable(grouping_dimension) {
     let tableBody = table.append("tbody");
     let trs = tableBody.selectAll("tr").data(grouping_dimension.top(XFILTER_PARAMS.max_results))
         .enter().append("tr");
-    /*
-    let trs = tableBody.selectAll("tr").data(grouping_dimension.top(Infinity))
-        .enter().append("tr");
-    */
 
     // Loop over all columns we are supposed to display in the results
     for(let len = XFILTER_PARAMS.results_display.length, i=0; i<len; i++) {
