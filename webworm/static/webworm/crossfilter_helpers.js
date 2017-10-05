@@ -31,25 +31,22 @@ var getUrl = function (zenodo_id, zenodo_filename) {
     return zenodo_download_url;
 }
 
-var getFileType = function (zenodo_filename) {
-    // Check for .hdf5 last please.
-    let fileType = 'None';
-    if (zenodo_filename != 'None') {
-	if (zenodo_filename.endsWith('_features.hdf5')) {
-	    fileType = 'Features';
-	} else if (zenodo_filename.endsWith('_skeletons.hdf5')) {
-	    fileType = 'Skeleton';
-	} else if (zenodo_filename.endsWith('.wcon.zip')) {
-	    fileType = 'WCON';
-	} else if (zenodo_filename.endsWith('_subsample.avi')) {
-	    fileType = 'Sample';
-	} else if (zenodo_filename.endsWith('.hdf5')) {
-	    fileType = 'Video';
-	} else {
-	    fileType = 'Error';
+var generateFileTypeCheckboxes = function() {
+    let columnsPerRow = 6;
+    let rowIdx = 0;
+    for (var i=0; i<fileTypes.length; i++) {
+	if (i%columnsPerRow == 0) {
+	    rowIdx += 1;
+	    $('#filetypeCheckboxes').append('<div class="row" id="filetypeChkRow_' +
+					    rowIdx + '"></div>');
 	}
+	$('#filetypeChkRow_' + rowIdx).append('<div class="col-sm-2"> ' +
+					      '<div class="checkbox active"> ' +
+					      '<label><input type="checkbox" id="chk_' +
+					      fileTypes[i] + '" checked="checked" value="">' +
+					      fileTypes[i] + '</label>' +
+					      '</div></div>');
     }
-    return fileType;
 }
 
 var getYoutubeEmbed = function (youtube_id) {
@@ -70,7 +67,7 @@ var augmentCrossfilterData = function (crossfilterData) {
 	    // turn zenodo_id and zenodo_filename into a URL
 	    row['url'] = getUrl(row['zenodo_id'], row['filename']);
 	    // turn zenodo_filename into a file type string
-	    row['filetype'] = getFileType(row['filename']);
+	    //	    row['filetype'] = getFileType(row['filename']);
 	    // turn 'None' filesize values to 0
 	    if (row['filesize'] == 'None') {
 		row['filesize'] = 0;
@@ -194,7 +191,8 @@ function initializeParamObject() {
     // *CWL* This hardcode of 2 display fields depends on the nature of the static fields
     //    and needs to be generalized. Am thinking the server will send
     //    an appropriate number corresponding to the static fields.
-    returnObject['num_display_fields'] = 2;
+    // returnObject['num_display_fields'] = 2;
+    returnObject['num_display_fields'] = 1;
     returnObject['data_fields'] = {};
     returnObject['data_fields']['timestamp'] = { "data_type": "string",
 						 "display_name": "Date / Time",
@@ -246,7 +244,8 @@ function initializeParamObject() {
     					   "display_name": "YouTube ID" };
     returnObject['data_fields']['youtube'] = { "data_type": "string",
     					   "display_name": "YouTube Sample" };
-    returnObject['charts'] = [ "iso_date", "hour" ];
+    //    returnObject['charts'] = [ "iso_date", "hour" ];
+    returnObject['charts'] = [ "iso_date" ];
     returnObject['results_display'] = [ 
 				       "youtube",
 				       "strain",  
