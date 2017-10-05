@@ -35,6 +35,7 @@ defaultCoreFeatures = [
 # A way to organize the header fields for all data.
 fieldHeaders = [
     { 'label': 'youtube_id', 'field': 'youtube_id' },
+    { 'label': 'filetype', 'field': 'zenodofiles__file_type' },
     { 'label': 'filename', 'field': 'zenodofiles__filename' },
     { 'label': 'filesize', 'field': 'zenodofiles__filesize' },
     { 'label': 'timestamp', 'field': 'date' },
@@ -45,6 +46,7 @@ fieldHeaders = [
     { 'label': 'base_name', 'field': 'base_name' },
     ];
 timestampIdx = 5; # counted in reverse order
+filetypeIdx = 8;
 
 # A way to organize the header fields for all data.
 downloadHeaders = [
@@ -60,25 +62,10 @@ downloadTimestampIdx = 5; # counted in reverse order
 # The URL Prefix to Zenodo. In production this would be 'https://zenodo.org/record/'
 zenodo_url_prefix = 'https://sandbox.zenodo.org/record/';
 
-# Support functions
+# File Types information - generated from Database.
+fileTypes = [];
 
-# *CWL* Not used anymore. Retaining for reference only.
-def getFileTypeFromName(dataFileName):
-    # Check for .hdf5 last please.
-    fileType = '';
-    if dataFileName.endswith('_features.hdf5'):
-        fileType = 'Features';
-    elif dataFileName.endswith('_skeletons.hdf5'):
-        fileType = 'Skeleton';
-    elif dataFileName.endswith('.wcon.zip'):
-        fileType = 'WCON';
-    elif dataFileName.endswith('_subsample.avi'):
-        fileType = 'Sample';
-    elif dataFileName.endswith('.hdf5'):
-        fileType = 'Video';
-    else:
-        fileType = 'Error';
-    return fileType;
+# Support functions
 
 # *CWL* Not used anymore. Retaining for reference only.
 def getZenodoUrl(zenodoId, dataFileName):
@@ -95,6 +82,11 @@ def prettyTimestamps(inTable, index):
     for row in inTable:
         if row[index] != None:
             row[index] = row[index].strftime("%Y-%m-%d %H:%M");
+
+def fileTypeIdToName(inTable, index):
+    for row in inTable:
+        if row[index] != None:
+            row[index] = fileTypes[row[index]];
 
 def getDiscreteFieldCounts(experimentsDb, fieldName, fieldList, nullNameString):
     counts = {};
@@ -270,6 +262,7 @@ def constructSearchContext(inData, selectedFeatures, context):
     # We're gonna offload the construction of URL and File Type information to
     #   the client in this version.
     transformTimestamps(resultData, timestampIdx);
+    fileTypeIdToName(resultData, filetypeIdx);
     returnTable = [dict(zip(header,row)) for row in noneToText(resultData)];
     returnTable = eliminateEmptySelectedFeatureRows(selectedFeatures, returnTable);
     results_count = len(returnTable);
@@ -298,6 +291,7 @@ def constructDownloadContext(inData, selectedFeatures, context):
 
 def index(request):
     global defaultCoreFeatures;
+    global fileTypes;
     # Context variables to be passed to client for rendering and client-side processing
     context = {};
 
@@ -322,6 +316,11 @@ def index(request):
     for coreFeature in isCore:
         coreFeaturesList.append({'name':coreFeature.name,'desc':coreFeature.description});
     context['core_features'] = coreFeaturesList;
+
+    # Produce information about file types
+    filetypesDb = FileTypes.objects.all();
+    fileTypes = dict((id,name) for id,name in filetypesDb.values_list('id','name'));
+    context['file_types'] = [fileTypes[id] for id in fileTypes];
 
     returnList = [];
     # If anything else loads, loadDefault is set to False
