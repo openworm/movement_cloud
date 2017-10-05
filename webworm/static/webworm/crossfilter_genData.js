@@ -170,6 +170,7 @@ function getCsvFromResults() {
 	    createDiscreteHiddenInput('#metadataInput');
 	}
     }
+    loading(true);
     $('#metadataForm').submit();
 }
 

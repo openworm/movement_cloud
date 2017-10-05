@@ -8,18 +8,39 @@
 //   access to the data elements.
 var globalCF;
 
-if ((downloadData != 'None') && (downloadHeaders != 'None')) {
-    generateDownloadData();
+function loading(isLoading) {
+    if (!isLoading) {
+	document.getElementById("loader").style.display = "none";
+	document.getElementById("master").style.visibility = "visible";
+    } else {
+	window.scrollTo(0,0);
+	document.getElementById("loader").style.display = "block";
+	document.getElementById("master").style.visibility = "hidden";
+    }
 }
+
 if (hasCFData) {
     generateFileTypeCheckboxes();
     crossfilterData = augmentCrossfilterData(crossfilterData);
+    // At this point, we're ready to let go of the load screen, and allow
+    //   user interaction with the charts.
+    // The reason we do this before the crossfilter charts are processed
+    //   is because of the style settings. The crossfilter charts rely
+    //   on the style settings of the master DOM to work properly.
+    loading(false);
+
     XFILTER_PARAMS = createXfilterParams(XFILTER_PARAMS, crossfilterData);
     generateXfilterDerivedColumns(crossfilterData);
     processCrossfilterData(crossfilterData);
 } else {
     // If no data is available, use the default example from a file
     d3.csv(XFILTER_PARAMS.data_file, crossfilter_callback);
+}
+if ((downloadData != 'None') && (downloadHeaders != 'None')) {
+    generateDownloadData();
+    // At this point, we're ready to let go of the load screen, and allow
+    //   user interaction with the charts.
+    loading(false);
 }
 
 function crossfilter_callback(error, data_rows) {
@@ -219,15 +240,6 @@ function create_crossfilter(data_rows) {
     // We also listen to the chart's brush events to update the display.
     chart_DOM_elements = d3.selectAll('.chart')
         .data(charts)
-//            .each(function(chart) { console.log(chart); });
-
-/*
-                chart
-                    .on("start brush end", function() {
-                        renderAll();
-                    })
-            });
-*/
 
     // Render the total.
     d3.selectAll('#total')
@@ -254,7 +266,6 @@ function create_crossfilter(data_rows) {
 	// *CWL* - I don't think we need this
         // Passing true to updateDaySelection ensures the checkboxes are reset
 	//        updateDaySelection(true);
-
         renderAll();
     };
 
@@ -267,4 +278,5 @@ function create_crossfilter(data_rows) {
         // here...
         renderAll();
     };
+
 }
