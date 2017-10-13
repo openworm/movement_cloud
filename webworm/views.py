@@ -288,6 +288,10 @@ def constructDownloadContext(inData, selectedFeatures, context):
     context['download_data'] = returnTable;
 
 # Create your views here.
+def wconviewer(request):
+    context = {};
+    return render(request, 'webworm/wcon-viewer.html', context);
+    
 
 def index(request):
     global defaultCoreFeatures;

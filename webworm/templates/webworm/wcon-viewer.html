@@ -1,0 +1,36 @@
+{% extends "webworm/header.html" %}
+
+{% block content %}
+<div class="container" id="wconviewer_master">
+  <ul class="nav nav-tabs" id="wconviewer_tabsUL">
+    <li class="active"><a title="View Worm data and animation using WCON movement data format."
+	   data-toggle="tab" href="#wconViewPane">WCON Viewer</a></li>
+  </ul>
+
+  <div class="tab-content">
+    <!-- WCON Viewer Panel -->
+    <div class="tab-pane in active" id="wconViewPane">
+      {% include "webworm/wconViewer-template.html" %}
+    </div>
+
+  </div>
+
+</div>
+
+{% load static %}
+
+<script type="text/javascript"> 
+  var wconFilePath = "{% static 'webworm/example.wcon' %}";
+</script>
+
+<!-- Dependencies -->
+<script src="{% static 'webworm/d3.v4.min.js' %}"></script>
+<script src="{% static 'webworm/babel.min.js' %}"></script>
+<script src="{% static 'webworm/dropzone.js' %}"></script>
+<script src="{% static 'webworm/ajv.min.js' %}"></script>
+
+<!-- Local -->
+<script src="{% static 'webworm/wormviz_parameters.js' %}"></script>
+<script src="{% static 'webworm/WCON_viewer_helpers.js' %}"></script>
+<script src="{% static 'webworm/WCON_viewer.js' %}"></script>
+{% endblock %}
