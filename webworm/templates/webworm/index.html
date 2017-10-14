@@ -2,6 +2,7 @@
 
 {% block content %}
 <div id="loader"></div>
+<div id="loaderText"><h2 id="loaderLabel">Loading Crossfilter Data. Please wait.</h2></div>
 
 <div style="visibility:hidden;" class="container animatebottom" id="master">
 
@@ -10,46 +11,35 @@
 			  data-toggle="tab" href="#searchPane">Advanced Filters</a></li>
     <li><a title="Find desired experiments by restricting Features value ranges. Download Features metadata or full experiment data." 
 	   data-toggle="tab" href="#crossfilterPane">Crossfilter Features/Get Data</a></li>
-    <li><a title="View Worm data and animation using WCON movement data format."
-	   data-toggle="tab" href="#wconViewPane">WCON Viewer</a></li>
   </ul>
 
   <div class="tab-content">
     <!-- Search Tool Panel -->
     <div class="tab-pane fade in active" id="searchPane">
-      {% include "webworm/search-template.html" %}
+      {% include "webworm/advanced-filter-template.html" %}
     </div>
 
     <!-- Cross Filter Panel -->
     <div class="tab-pane fade" id="crossfilterPane">
       {% include "webworm/crossfilter-pane.html" %}
     </div>
-
-    <!-- WCON Viewer Panel -->
-    <div class="tab-pane fade" id="wconViewPane">
-      {% include "webworm/wconViewer-template.html" %}
-    </div>
-
   </div>
-
 </div>
 
 {% load static %}
 
 <script type="text/javascript"> 
   var hasCFData = false;
-  // Temporary hiding of WCON Viewer feature
-  $('#tabsUL a:last').hide();
   if ({{ results_count }} > 0) {
     $('#tabsUL a[href="#crossfilterPane"]').trigger('click');
     $('#downloadExpr').prop('disabled', false);
     $('#generateCsv').prop('disabled', false);
+    $('#getUrlList').prop('disabled', false);
     hasCFData = true;
   }
   var fileTypes = {{ file_types|safe }};
   var prevAdvancedFilterState = {{ prev_advanced_filter_state|safe }};
   var dataFilePath = "{% static 'webworm/worm_mock_data.csv' %}";
-  var wconFilePath = "{% static 'webworm/example.wcon' %}";
   var crossfilterData = {{ results_list|safe }};
   var selectedFeaturesNames = {{ selected_features_names|safe }};
   var allFeaturesNames = {{ all_features_names|safe }};
@@ -60,24 +50,19 @@
   var downloadHeaders = {% if download_header %}{{ download_header|safe }}{% else %}'None'{% endif %};
 </script>
 
-<script src="{% static 'webworm/paginate-discrete.js' %}"></script>
-<script src="{% static 'webworm/paginate-cf-parameters.js' %}"></script>
+<!-- dependencies -->
+<script src="{% static 'extern/dist/crossfilter.min.js' %}"></script>
+<script src="{% static 'extern/dist/d3.v4.min.js' %}"></script>
+<script src="{% static 'extern/dist/babel.min.js' %}"></script>
 
+<!-- DataTables local -->
+<script src="{% static 'webworm/filter-discrete.js' %}"></script>
+<script src="{% static 'webworm/filter-features.js' %}"></script>
+
+<!-- Crossfilter Local -->
 <script src="{% static 'webworm/crossfilter_parameters.js' %}"></script>
-<script src="{% static 'webworm/wormviz_parameters.js' %}"></script>
-
-<script src="{% static 'webworm/crossfilter.min.js' %}"></script>
-<script src="{% static 'webworm/d3.v4.min.js' %}"></script>
-<script src="{% static 'webworm/babel.min.js' %}"></script>
-
 <script src="{% static 'webworm/crossfilter_bar_chart.js' %}"></script>
 <script src="{% static 'webworm/crossfilter_helpers.js' %}"></script>
 <script src="{% static 'webworm/crossfilter_genData.js' %}"></script>
 <script src="{% static 'webworm/crossfilter_main.js' %}"></script>
-
-<script src="{% static 'webworm/dropzone.js' %}"></script>
-<script src="{% static 'webworm/WCON_viewer_helpers.js' %}"></script>
-<script src="{% static 'webworm/WCON_viewer.js' %}"></script>
-<script src="{% static 'webworm/ajv.min.js' %}"></script>
-
 {% endblock %}
