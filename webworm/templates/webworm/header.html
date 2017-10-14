@@ -25,6 +25,8 @@
     <link rel="stylesheet" href="{% static 'webworm/worm_filter.css' %}" />
     <!-- WCON Viewer support -->
     <link rel="stylesheet" href="{% static 'webworm/WCON_viewer.css' %}" />
+    <!-- Loading Screen support -->
+    <link rel="stylesheet" href="{% static 'webworm/worm_load.css' %}" />
 
     <!-- Scripts -->
     <!-- jQuery and Bootstrap and Babel-->
@@ -56,6 +58,10 @@
             <p class="lead">
             <p><b>Total number of experiments in database = {{ db_experiment_count }}</b></p>
 	    <p>Tooltip information available by hovering mouse over tabs</p>
+	    <p>
+	      <a target="_blank" href="https://github.com/openworm/movement_cloud">[Our Github Repo]</a>
+	      <a target="_blank" href="https://github.com/openworm/movement_cloud/blob/master/README.md">[Documentation]</a>
+	    </p>
             </p>
           </th>
         </tr>

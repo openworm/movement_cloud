@@ -43,16 +43,6 @@ $(document).ready(function() {
             } );
     });
 
-
-// *CWL* - This is no longer required given the latest version of the database.
-//   This was used to strip out the ID from the older format in the form of
-//   xxxxx#yyyyyyyyy where yyyyyyyyy is some text string. This code is retained
-//   as reference.
-function stripZenodoId(inId) {
-    let outId = inId.substring(0,inId.indexOf("#"));
-    return outId;
-}
-
 // *CWL* - This is the basic form of getting results from Zenodo. A more
 //   advanced form may take the list and perform post-processing like 
 //   allowing the user to choose the element(s) (e.g. Video data only)
@@ -64,15 +54,6 @@ function stripZenodoId(inId) {
 //   the use of a linux script to aid with the download in a separate phase.
 function downloadResultsList() {
     var returnText = "";
-    // *CWL* - Point of Code Fragility. These values DEPEND on the type values
-    //         delivered from the server. If one changes without the other,
-    //         this code fails.
-    let zenodoFileTypes = { 'Video':'chk_fullvid',
-			    'WCON':'chk_wcon',
-			    'Features':'chk_features',
-			    'Skeleton':'chk_skeleton',
-			    'Sample':'chk_vidsample'
-                          };
     let zenodoUrlPrefix = 'https://sandbox.zenodo.org/records';
     // Get grouping by Zenodo Id
     let allCFValues = globalCF.dimension(d => d.zenodo_id).top(Infinity);
@@ -81,7 +62,7 @@ function downloadResultsList() {
 	let zenodoId = allCFValues[idx].zenodo_id;
 	let fileType = allCFValues[idx].filetype;
 	if (downloadUrl != 'None') {
-	    if ($('#' + zenodoFileTypes[fileType])[0].checked) {
+	    if ($('#chk_' + fileType).is(':checked')) {
 		returnText = returnText + zenodoId + " " + downloadUrl + "\n";
 	    }
 	}
@@ -131,6 +112,82 @@ function downloadResultsList() {
 	  document.body.removeChild(element);
 	*/
     }
+}
+
+function generateFileTypeCheckboxes() {
+    let columnsPerRow = 6;
+    let rowIdx = 0;
+    for (var i=0; i<fileTypes.length; i++) {
+	if (i%columnsPerRow == 0) {
+	    rowIdx += 1;
+	    $('#filetypeCheckboxes').append('<div class="row" id="filetypeChkRow_' +
+					    rowIdx + '"></div>');
+	}
+	$('#filetypeChkRow_' + rowIdx).append('<div class="col-sm-2"> ' +
+					      '<div class="checkbox active"> ' +
+					      '<label><input type="checkbox" id="chk_' +
+					      fileTypes[i] + '" checked="checked" value="">' +
+					      fileTypes[i] + '</label>' +
+					      '</div></div>');
+	$('#chk_' + fileTypes[i]).change(function() {
+		// Update the expected download size information
+		reportExpectedDownloadSize();
+
+		// Update active URL List text area if it exists
+		if ($('#urlList').length !== 0) {
+		    getUrlList();
+		}
+	    });
+    }
+}
+
+function reportExpectedDownloadSize() {
+    let allCFValues = globalCF.dimension(d => d.zenodo_id).top(Infinity);
+    let total = 0;
+    for (var idx=0; idx<allCFValues.length; idx++) {
+	let downloadUrl = allCFValues[idx].url;
+	let filesize = allCFValues[idx].filesize;
+	let fileType = allCFValues[idx].filetype;
+	if (downloadUrl !== 'None') {
+	    if ($('#chk_' + fileType).is(':checked')) {
+		total += filesize;
+	    }
+	}
+    }
+    $('#expectedDatasize').text(prettySize(total));
+}
+
+function clearUrlList() {
+    // Remove previous list
+    if ($('#urlListLabel').length !== 0){
+	$('#urlListLabel').remove();
+    }
+    if ($('#urlList').length !== 0){
+	$('#urlList').remove();
+    }
+}
+
+function getUrlList() {
+    clearUrlList();
+    $('#downloadUrlList').append('<div class="row"><div><label id="urlListLabel">List of Downloadable Data URLs:</label></div></div>');
+    $('#downloadUrlList').append('<div class="row"><div class="col-sm-12"><textarea style="overflow-y:scroll;min-width:100%;" rows="20" id="urlList" readonly></textarea></div></div>');
+    let urlListText = "";
+    let zenodoUrlPrefix = 'https://sandbox.zenodo.org/records';
+    // Get grouping by Zenodo Id
+    let allCFValues = globalCF.dimension(d => d.zenodo_id).top(Infinity);
+    for (var idx=0; idx<allCFValues.length; idx++) {
+	let downloadUrl = allCFValues[idx].url;
+	let fileType = allCFValues[idx].filetype;
+	if (downloadUrl != 'None') {
+	    if ($('#chk_' + fileType).is(':checked')) {
+		urlListText += downloadUrl + "\n";
+	    }
+	}
+    }
+    if (urlListText == "") {
+	urlListText = "Download Warning: No records found!\n";
+    }
+    $('textarea#urlList').val(urlListText);
 }
 
 function getCsvFromResults() {
@@ -189,6 +246,7 @@ function getCsvFromResults() {
 	    createDiscreteHiddenInput('#metadataInput');
 	}
     }
+    loading(true, 'Loading Features Metadata. Please Wait.');
     $('#metadataForm').submit();
 }
 
@@ -225,84 +283,51 @@ function generateDownloadData() {
     document.body.removeChild(element); 
 }
 
-function getCsvFromResults_______2() {
-    let data = globalCF.dimension(d => d.zenodo_id).top(Infinity);
-    let filteredFeatures = [];
-    xFilterFeaturesTable.rows({selected: true}).every( function(rowIdx, tblLoop, rowLoop) {
-	    filteredFeatures.push(this.data());
-	});
-
-    let zenodoIDs = {};
-    let newdata = [];
-    // Start with fixed headers
-    let header = ['strain','gene','allele','base_name','zenodo_id'];
-    filteredFeatures.forEach( function(feature, index) {
-	    header.push(feature);
-	});
-
-    // Remove rows with the same zenodoId, choose columns that show up in header
-    data.forEach( function(inner, index) {
-	if (inner['zenodo_id'] != 'None') {
-	    if (zenodoIDs[inner['zenodo_id']] == null) {
-		zenodoIDs[inner['zenodo_id']] = 'Y';
-		let newRow = [];
-		header.forEach( function(key, index) {
-			newRow.push(inner[key]);
-		    });
-		newdata.push(newRow);
-	    }
-	} else {
-	    // If there is no zenodo ID, just add the row.
-	    let newRow = [];
-	    header.forEach( function(key, index) {
-		    newRow.push(inner[key]);
-		});
-	    newdata.push(newRow);
-	}
-	});
-
-    // produce CSV from newly constructed array
-    let csvContent = '';
-    let headerCsv = header.join(',');
-    csvContent += headerCsv + "\n";
-    newdata.forEach( function(row, index) {
-	    let csvRow = row.join(',');
-	    csvContent += csvRow + "\n";
-	});
-
-    let element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,'+encodeURIComponent(csvContent));
-    element.setAttribute('download', 'results.csv');
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element); 
+function clearCrossfilterPreview() {
+    if ($('#xfilterPreviewPane').length !== 0) {
+	$('#xfilterPreviewPane').remove();
+    }
 }
 
-function genDataTable(grouping_dimension) {
-    // Re-run the results list, by erasing it and creating it again
-
-    let div = d3.select("#xfilter-genData-list");
-    // Clear the existing results
-    div.selectAll("table").remove();
+function genPreviewTable() {
+    var crossfilterTable;
+    // Reconstruct table's context
+    clearCrossfilterPreview();
+    $('#xfilterPreview').append('<div id="xfilterPreviewPane"></div>');
 
     // Create a table with one row for each record in the crossfilter construct
-    let table = div.append("table").attr("class", "display").attr("class","nowrap")
-	.attr("border",1);
-    let tableHead = table.append("thead").append("tr");
-    let tableBody = table.append("tbody");
-    let trs = tableBody.selectAll("tr").data(grouping_dimension.top(XFILTER_PARAMS.max_results))
-        .enter().append("tr");
-    /*
-    let trs = tableBody.selectAll("tr").data(grouping_dimension.top(Infinity))
-        .enter().append("tr");
-    */
-
-    // Loop over all columns we are supposed to display in the results
+    $('#xfilterPreviewPane').append('<table class="display" id="xfilterPreviewTable" border=1></table>');
+    $('#xfilterPreviewTable').append('<thead id="xfilterPreviewTableHeader"></thead>');
+    $('#xfilterPreviewTable').append('<tbody id="xfilterPreviewTableBody"></tbody>');
+    let headerText = '';
+    let youtube
     for(let len = XFILTER_PARAMS.results_display.length, i=0; i<len; i++) {
         let cur_field = XFILTER_PARAMS.results_display[i];
-
-        tableHead.append("td").html(XFILTER_PARAMS.data_fields[cur_field].display_name);
-        trs.append("td").html(d => valueFormatted(d, cur_field));
+        headerText += '<td>' + XFILTER_PARAMS.data_fields[cur_field].display_name + '</td>';
     }
+    $('#xfilterPreviewTableHeader').append('<tr>' + headerText + '</tr>');
+
+    // *CWL* - IMPORTANT! Create the DataTable FIRST before populating with data.
+    //   If the table is populated before DataTable is allowed to kick in, it attempts to
+    //   load and render ALL Youtube embeds - for 15000 of them, that takes forever.
+    crossfilterTable = $('#xfilterPreviewTable').DataTable( {
+	});
+
+    let data = globalCF.dimension(d => d.strain).top(Infinity);
+    let tableData = [];
+    for (let rows = data.length, row=0; row<rows; row++) {
+	let rowData = [];
+	for(let len = XFILTER_PARAMS.results_display.length, i=0; i<len; i++) {
+	    let cur_field = XFILTER_PARAMS.results_display[i];
+	    // Special treatment for the youtube field to get the embed instead of the URL link
+	    if (cur_field !== 'youtube') {
+		rowData.push('<td>' + valueFormatted(data[row], cur_field) + '</td>');
+	    } else {
+		let youtubeId = data[row]['youtube_id'];
+		rowData.push('<td>' + getYoutubeEmbed(youtubeId) + '</td>');
+	    }
+	}
+	tableData.push(rowData);
+    }
+    crossfilterTable.rows.add(tableData).draw();
 }

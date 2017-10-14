@@ -3,7 +3,6 @@ var discreteElementsPerRow = 2;
 var discreteConfirmElementsPerRow = 4;
 var hiddenDiscreteIndex = 1;
 
-
 function createDiscreteHiddenInput(domTag) {
     for (var disIdx=0; disIdx<discreteFieldMetadata.length; disIdx++) {
 	var fieldString = '';
@@ -24,8 +23,9 @@ function createDiscreteHiddenInput(domTag) {
 }
 
 // On Form Submission, populate the discrete search parameters
-var submitFunction = function() {
+var submitAdvancedFilter = function() {
     createDiscreteHiddenInput('#hiddenDiscreteInput');
+    loading(true, 'Loading Crossfilter Data. Please Wait.');
 }
 
 var populateDiscreteTables = function() {

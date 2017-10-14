@@ -1,4 +1,4 @@
-<form id="metadataForm" name="download">
+<form id="metadataForm" name="download" method="get">
   <div id="metadataInput">
   </div>
 </form>
@@ -9,19 +9,17 @@
   <hr>
   <!-- Replication of the crossfilter table from the main crossfilter page -->
   <div id='genDataTotals'>
-    <h4>1. Summary</h4>
-    <p><span id='genDataActive'>-</span> of <span id='genDataTotal'>-</span> experiments selected.</p>
-    <p>Total selected experiment data size - <span id='genDataDatasize'>0 Mb</span></p>
-    <p><span id='genDataFeaturesSelected'>-</span> of <span id='genDataFeaturesTotal'>-</span> features selected for metadata download.</p>
+    <h4>1. Crossfilter Summary</h4>
+    <p><span id='genDataActive'>-</span> of <span id='genDataTotal'>-</span> experiment files selected.</p>
+    <p>Total selected experiments data size - <span id='genDataDatasize'>0 Mb</span></p>
   </div>
-  <a href="#xFilterLists" class="btn btn-info" data-toggle="collapse">Toggle Crossfiltered Table</a>
-  <div id='xFilterLists' class="collapse">
-    <div id='xfilter-genData-list' class='result_row_list'></div>
+  <a class="btn btn-info" onclick="genPreviewTable()">Generate Full Crossfilter Preview</a>
+  <div id='xfilterPreview'>
   </div>
   <hr>
   <!-- Features Selection -->
   <div>
-    <h4>2. Select Features For Download</h4>
+    <h4>2. Select Features For Download - click row to select feature</h4>
     <a href="#allXFilterFeaturesPanel" class="btn btn-info" data-toggle="collapse">Toggle All Features</a>
     <div id="allXFilterFeaturesPanel" class="collapse in">
       <table id="xFilterFeaturesTable" class="table table-striped table-bordered table-responsive">
@@ -48,36 +46,19 @@
 	<button id="generateCsv" onclick="getCsvFromResults()" type="button" class="btn btn-success" disabled="true">Get Features Means Data</button>
       </div>
       <div class="col-sm-3">
-	<button id="downloadExpr" onclick="downloadResultsList()" type="button" class="btn btn-danger" disabled="true">Get Experiments Data + Download Script (Linux)</button>
+	<button id="getUrlList" onclick="getUrlList()" type="button" class="btn btn-danger" disabled="true">Generate File Data URLs</button>
       </div>
-    </div>
-    <div class="row">
-      <div class="col-sm-2">
-	<div class="checkbox active">
-	  <label><input type="checkbox" id="chk_fullvid" checked="checked" value="">Full Video Data</label>
-	</div>
-      </div>
-      <div class="col-sm-2">
-	<div class="checkbox active">
-	  <label><input type="checkbox" id="chk_features" checked="checked" value="">Features Data</label>
-	</div>
-      </div>
-      <div class="col-sm-2">
-	<div class="checkbox active">
-	  <label><input type="checkbox" id="chk_skeleton" checked="checked" value="">Skeleton Data</label>
-	</div>
-      </div>
-      <div class="col-sm-2">
-	<div class="checkbox active">
-	  <label><input type="checkbox" id="chk_vidsample" checked="checked" value="">Video Sample</label>
-	</div>
-      </div>
-      <div class="col-sm-2">
-	<div class="checkbox active">
-	  <label><input type="checkbox" id="chk_wcon" checked="checked" value="">WCON Movement Data</label>
-	</div>
+      <div class="col-sm-6">
+	<button id="downloadExpr" onclick="downloadResultsList()" type="button" class="btn btn-danger" disabled="true">Get Experiments Files + Download Script (Linux)</button>
       </div>
     </div>
   </div>
+  <div id="filetypeCheckboxes">
+    <div><h4>Filter by file types (For file downloads only)</h4></div>
+    <p>Expected file download data size - <span id='expectedDatasize'>0 Mb</span></p>
+    <p><span id='genDataFeaturesSelected'>-</span> of <span id='genDataFeaturesTotal'>-</span> features selected for metadata download.</p>
+  </div>
   <hr>
+  <div id="downloadUrlList">
+  </div>
 </div>

@@ -8,17 +8,29 @@
 //   access to the data elements.
 var globalCF;
 
-if ((downloadData != 'None') && (downloadHeaders != 'None')) {
-    generateDownloadData();
-}
 if (hasCFData) {
+    window.scrollTo(0,0);
+    generateFileTypeCheckboxes();
     crossfilterData = augmentCrossfilterData(crossfilterData);
+    // At this point, we're ready to let go of the load screen, and allow
+    //   user interaction with the charts.
+    // The reason we do this before the crossfilter charts are processed
+    //   is because of the style settings. The crossfilter charts rely
+    //   on the style settings of the master DOM to work properly.
+    loading(false, 'None');
+
     XFILTER_PARAMS = createXfilterParams(XFILTER_PARAMS, crossfilterData);
     generateXfilterDerivedColumns(crossfilterData);
     processCrossfilterData(crossfilterData);
 } else {
     // If no data is available, use the default example from a file
     d3.csv(XFILTER_PARAMS.data_file, crossfilter_callback);
+}
+if ((downloadData != 'None') && (downloadHeaders != 'None')) {
+    generateDownloadData();
+    // At this point, we're ready to let go of the load screen, and allow
+    //   user interaction with the charts.
+    loading(false, 'None');
 }
 
 function crossfilter_callback(error, data_rows) {
@@ -135,35 +147,22 @@ function create_crossfilter(data_rows) {
         d3.select(this).call(method);
     }
 
-    function prettySize(valueInBytes) {
-	// within reason
-	let scaleText = [ 'Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB' ];
-	let scaleIndex = 0;
-	let val = valueInBytes;
-	while (val >= 1000) {
-	    scaleIndex += 1;
-	    val /= 1000.0;
-	}
-	if (scaleIndex >= scaleText.length) {
-	    // Punt on prettying the text, something has to be horribly wrong to exceed Exabytes
-	    return valueInBytes + " Bytes";
-	} else {
-	    return val.toPrecision(4) + " " + scaleText[scaleIndex];
-	}
-    }
-
     // Re-rendering function, which we will later set to be trigged
     // whenever the brush moves and other events like that
     function renderAll() {
         chart_DOM_elements.each(render);
-	//        resultsList(x_filter_dimension[XFILTER_PARAMS.datasetview_chart_index]);
         resultsTable(x_filter_dimension[XFILTER_PARAMS.datasetview_chart_index]);
-        genDataTable(x_filter_dimension[XFILTER_PARAMS.datasetview_chart_index]);
         d3.select('#active').text(formatWholeNumber(xfilter_all.value()));
 	d3.select('#datasize').text(prettySize(xfilter_filesizeSum.value().filesize));
         d3.select('#genDataActive').text(formatWholeNumber(xfilter_all.value()));
 	d3.select('#genDataDatasize').text(prettySize(xfilter_filesizeSum.value().filesize));
+	reportExpectedDownloadSize();
         redraw_datasetview();
+	// May be an overkill, we want to catch all scenarios where the URL list is
+	//   invalidated by changes in crossfilter. Hence if the text area is open,
+	//   it should be closed again.
+	clearCrossfilterPreview();
+	clearUrlList();
     }
 
     // *CWL* - I don't think we need this, and it adds unnecessary complexity to
@@ -218,15 +217,6 @@ function create_crossfilter(data_rows) {
     // We also listen to the chart's brush events to update the display.
     chart_DOM_elements = d3.selectAll('.chart')
         .data(charts)
-//            .each(function(chart) { console.log(chart); });
-
-/*
-                chart
-                    .on("start brush end", function() {
-                        renderAll();
-                    })
-            });
-*/
 
     // Render the total.
     d3.selectAll('#total')
@@ -253,7 +243,6 @@ function create_crossfilter(data_rows) {
 	// *CWL* - I don't think we need this
         // Passing true to updateDaySelection ensures the checkboxes are reset
 	//        updateDaySelection(true);
-
         renderAll();
     };
 
@@ -266,4 +255,5 @@ function create_crossfilter(data_rows) {
         // here...
         renderAll();
     };
+
 }

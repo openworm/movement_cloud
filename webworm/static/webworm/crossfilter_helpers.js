@@ -1,11 +1,26 @@
 "use strict";
 
+function loading(isLoading, message) {
+    if (!isLoading) {
+	document.getElementById("loader").style.display = "none";
+	document.getElementById("loaderText").style.display = "none";
+	$('#loaderLabel').remove();
+	document.getElementById("master").style.visibility = "visible";
+    } else {
+	window.scrollTo(0,0);
+	document.getElementById("loader").style.display = "block";
+	document.getElementById("loaderText").style.display = "block";
+	$('#loaderText').append('<h2 id="loaderLabel">' + message + '</h2>');
+	document.getElementById("master").style.visibility = "hidden";
+    }
+}
+
 // Equivalent to python dict(zip(['AB', 'CD', 'EF', 'GH'],[1, 2, 3, 4])) in javascript
 // Modified from: https://gist.github.com/ThomasG77/2186830
 //
 // *CWL* Not used, but retained in case it gets too expensive to ship dictionaries from
 //   server to client.
-var dict_zip = function (keys, dataTable) {
+function dict_zip(keys, dataTable) {
     let returnTable = [];
     let numRows = dataTable.length;
     if (numRows > 0) {
@@ -25,34 +40,24 @@ var dict_zip = function (keys, dataTable) {
     return returnTable;
 }
 
-var getUrl = function (zenodo_id, zenodo_filename) {
+function getUrl(zenodo_id, zenodo_filename) {
     let zenodo_url_prefix = 'https://sandbox.zenodo.org/record/';
     let zenodo_download_url = zenodo_url_prefix + zenodo_id + '/files/' + zenodo_filename;
     return zenodo_download_url;
 }
 
-var getFileType = function (zenodo_filename) {
-    // Check for .hdf5 last please.
-    let fileType = 'None';
-    if (zenodo_filename != 'None') {
-	if (zenodo_filename.endsWith('_features.hdf5')) {
-	    fileType = 'Features';
-	} else if (zenodo_filename.endsWith('_skeletons.hdf5')) {
-	    fileType = 'Skeleton';
-	} else if (zenodo_filename.endsWith('.wcon.zip')) {
-	    fileType = 'WCON';
-	} else if (zenodo_filename.endsWith('_subsample.avi')) {
-	    fileType = 'Sample';
-	} else if (zenodo_filename.endsWith('.hdf5')) {
-	    fileType = 'Video';
-	} else {
-	    fileType = 'Error';
-	}
+function getYoutubeUrlLink(youtube_id) {
+    let url_link = '';
+    if (youtube_id == 'None') {
+	url_link = 'No YouTube Sample';
+    } else {
+	url_link = '<a target="_blank" href="https://youtu.be/' + youtube_id + 
+	'">Youtube Sample</a>';
     }
-    return fileType;
+    return url_link;
 }
 
-var getYoutubeEmbed = function (youtube_id) {
+function getYoutubeEmbed(youtube_id) {
     let embedContent = '';
     if (youtube_id == 'None') {
 	embedContent = 'No YouTube Sample found';
@@ -60,26 +65,44 @@ var getYoutubeEmbed = function (youtube_id) {
 	embedContent = 
 	'<iframe type="text/html" width="160" height="90"' +
 	' src="https://www.youtube.com/embed/' + youtube_id +
-	' frameborder="0"></iframe>';
+	'" frameborder="0"></iframe>';
     }
     return embedContent;
 }
 
-var augmentCrossfilterData = function (crossfilterData) {
+function augmentCrossfilterData(crossfilterData) {
     crossfilterData.forEach( function(row, rowIdx) {
 	    // turn zenodo_id and zenodo_filename into a URL
 	    row['url'] = getUrl(row['zenodo_id'], row['filename']);
 	    // turn zenodo_filename into a file type string
-	    row['filetype'] = getFileType(row['filename']);
+	    //	    row['filetype'] = getFileType(row['filename']);
 	    // turn 'None' filesize values to 0
 	    if (row['filesize'] == 'None') {
 		row['filesize'] = 0;
 	    }
 	    // turn youtube_id into a full embedding element.
-	    row['youtube'] = getYoutubeEmbed['youtube_id'];
+	    //	    row['youtube'] = getYoutubeEmbed(row['youtube_id']);
+	    row['youtube'] = getYoutubeUrlLink(row['youtube_id']);
 	});
 
     return crossfilterData;
+}
+
+function prettySize(valueInBytes) {
+    // within reason
+    let scaleText = [ 'Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB' ];
+    let scaleIndex = 0;
+    let val = valueInBytes;
+    while (val >= 1000) {
+	scaleIndex += 1;
+	val /= 1000.0;
+    }
+    if (scaleIndex >= scaleText.length) {
+	// Punt on prettying the text, something has to be horribly wrong to exceed Exabytes
+	return valueInBytes + " Bytes";
+    } else {
+	return val.toPrecision(4) + " " + scaleText[scaleIndex];
+    }
 }
 
 var pretty_month_names = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -194,7 +217,8 @@ function initializeParamObject() {
     // *CWL* This hardcode of 2 display fields depends on the nature of the static fields
     //    and needs to be generalized. Am thinking the server will send
     //    an appropriate number corresponding to the static fields.
-    returnObject['num_display_fields'] = 2;
+    // returnObject['num_display_fields'] = 2;
+    returnObject['num_display_fields'] = 1;
     returnObject['data_fields'] = {};
     returnObject['data_fields']['timestamp'] = { "data_type": "string",
 						 "display_name": "Date / Time",
@@ -244,9 +268,10 @@ function initializeParamObject() {
     					   "display_name": "File Download URL" };
     returnObject['data_fields']['youtube_id'] = { "data_type": "string",
     					   "display_name": "YouTube ID" };
-    returnObject['data_fields']['youtube'] = { "data_type": "string",
+    returnObject['data_fields']['youtube'] = { "data_type": "html_embed",
     					   "display_name": "YouTube Sample" };
-    returnObject['charts'] = [ "iso_date", "hour" ];
+    //    returnObject['charts'] = [ "iso_date", "hour" ];
+    returnObject['charts'] = [ "iso_date" ];
     returnObject['results_display'] = [ 
 				       "youtube",
 				       "strain",  
@@ -694,42 +719,6 @@ function createRadioButtons(data_xfilter, renderAll) {
     }    
 
     return updateDaySelection;
-}
-
-////////////////////////////////////////////////
-// *CWL* - This is an older implementation.
-//     Deprecated and retained for reference.
-function resultsList(grouping_dimension) {
-    // Re-run the results list, by erasing it and creating it again
-
-    let div = d3.select("#results-list");
-
-    // Clear the existing results
-    div.selectAll("div").remove();
-
-    // Create a header div
-    let header_row = div.append("div")
-        .attr("class", "header_row");
-
-    // Due to a quirk in d3.js we have to select .results_list_row to get the
-    // first data entry to show ()
-    let cur_results_all = div.selectAll(".header_row.results_list_row")
-        .data(grouping_dimension.top(XFILTER_PARAMS.max_results))
-        // Create a row div for every result we want to display.
-        .enter().append("div").attr("class", "results_list_row");
-
-    // Loop over all columns we are supposed to display in the results
-    for(let len = XFILTER_PARAMS.results_display.length, i=0; i<len; i++) {
-        let cur_field = XFILTER_PARAMS.results_display[i];
-
-        header_row.append("div")
-            .attr("class", "display_field" + String(i))
-            .text(d => XFILTER_PARAMS.data_fields[cur_field].display_name);
-
-        cur_results_all.append("div")
-            .attr("class", "display_field" + String(i))
-            .text(d => valueFormatted(d, cur_field));
-    }
 }
 
 function resultsTable(grouping_dimension) {

@@ -1,5 +1,5 @@
 <div id="searchControlPane" class="tabbable">
-  <form id="searchForm" onsubmit="submitFunction()" action="{% url "index" %}" method="get">
+  <form action="{% url "index" %}" method="get">
     <div class="form-group" >
       <div id="searchMethodPanes">
 	<ul class="nav nav-pills">
@@ -14,17 +14,17 @@
 	<div class="tab-content">
 	  <!-- Search by Parameters -->
 	  <div class="tab-pane fade in active" id="parametersPane">
-	    {% include "webworm/parameters-cf-template.html" %}
+	    {% include "webworm/filter-features-template.html" %}
 	  </div>
 	  
 	  <!-- Search by discrete database fields -->
 	  <div class="tab-pane fade" id="discretePane">
-	    {% include "webworm/discrete-template.html" %}
+	    {% include "webworm/filter-discrete-template.html" %}
 	  </div>
 	  
 	  <!-- Confirmation tab to review and submit search request to server -->
 	  <div class="tab-pane fade" id="confirmSearchPane">
-	    {% include "webworm/confirmSearch-cf-template.html" %}
+	    {% include "webworm/filter-confirm-template.html" %}
 	  </div>
 	</div> <!-- tab content -->
 

@@ -1,67 +1,134 @@
-# Worm Database Interface Documentation
+# Worm Database Features Documentation
 
-This document covers each tab in the interface.
+This document describes how one may use key features and components
+implemented in the interface.
 
-## Main Landing Page
+## Advanced Features
 
-![Landing Page](screenshots/LandingPage.png)
+This feature is contained in the "Advanced Features" top-level tab. It
+is divided into three activities, and is intended to allow users to:
 
-The landing page hosts the two main tabs of interface-use features. "Results" hosts tabs for interactions with filtered lists of experiment records in the database. "Search Tools" hosts tabs for users to select features to filter experiments on, and to specify parameter limits.
+1. enable crossfiltering using a different set of features than the
+ones provided as default when the interface is first loaded.
 
-The page also shows how many experiments are in the database.
+2. constrain the database records that are presented for
+crossfiltering in the [main workflow](Tutorial.md). Constraints can involve specific
+discrete fields values (e.g. strain = "CB"), and date range.
 
-## Search Tools -> Select features
+3. review the different set of features chosen for crossfilter, and
+the set of discrete field constraints prior to submitting the
+constraints for crossfiltering in the main workflow.
 
-![Search Core Features](screenshots/SearchCoreFeatures.png)
+### Select Features for Crossfilter
 
-The screenshot above shows the list of core features (determined by the maintainers of the database) along with a description of what they mean. These represent commonly-used metadata profiles of the worm's movement in any experiment, and ones the maintainers consider important as a search filter. Below this table is a full list of metadata features that can also be selected. This table is initially hidden, but can be toggled. This is shown in the screenshot below.
+This activity happens under the first tag labelled "1. Filter By
+Feature". At the top of the page is a list of commonly used "core"
+features. Users may click on any row to toggle selection.
 
-![Search Full Features](screenshots/FullFeaturesList.png)
+![List of Core Features](screenshots/CoreFeaturesList.png)
 
-The full features table has an autocomplete search feature that allows the user to locate feature names by sub-strings (e.g. "amplitude" to locate all relevant features associated with amplitude.) Both the full features table and the core features table allow users to select or deselect all rows in the table via buttons above the table.
+At the bottom of the page is an option to select from the full list of
+features. Start by toggling the appearance of the list using the
+button "Toggle All Features". The list supports all DataTables
+features as described in the section [Standard
+DataTable](#standard-datatables).
 
-Both tables are also linked. Selecting a row in one table will also cause the corresponding feature to be selected in the other table, as long as the feature is common to both tables.
+![List of All Features](screenshots/AllFeaturesList.png)
 
-Selecting and deselecting rows in either of these two tables also automatically updates a final table in the "Filter, Review, and Confirm" tab. This will be described in more detail later, but will look something like the screenshot below.
+:warning: Both features selection tables are synchronized for
+selection purposes. Users may safely select or de-select on either
+table, and the appropriate row in the other table will become selected
+or unselected.
 
-![Confirmed Features List](screenshots/ConfirmedFeaturesList.png)
+### Select Discrete Values for Crossfilter
 
-As can be seen in the screenshot, that is where the user can then select the range of values for filtering on the experiments.
+This activity happens under the second tag labelled "2. Filter
+Discrete Values". The page features an array of lists for each
+available discrete value type users can constrain. The lists are
+hidden by default and toggled as needed.
 
-## Search Tools -> Select Discrete Values
+![Lists of Discrete Types](screenshots/DiscreteLists.png)
 
-![Discrete Tab](screenshots/FilterAndSelectStrains.png)
+Each toggled list supports all DataTables features as described in
+section [Standard DataTable](#standard-datatables). A good way to
+select sets of discrete values is to use the "Search:" box, and then
+the "Select Searched" button to include them into the selection. The
+example below shows how "all strains CB" can get selected. It is safe
+to use the "Search:" box to find another set of strains to select on,
+without losing the earlier selection.
 
-In addition to filtering experiments by features parameters, the tool allows users to filter by specific discrete values over multiple categories like worm strains, sex, and worm development stage.
+![Selecting CB Strains](screenshots/StrainsSelection.png)
 
-Each category has its own table, with auto-complete search (the screenshot above shows a restriction on anything that has a "C" in its name.) Each table also has buttons for selecting or deselecting all rows. All tables are initially hidden, and can have their visibility toggled.
+### Review and Confirm Crossfilter
 
-Like the features tables in the preceding section, selecting or deselecting rows in tables on this tab will automatically update mirrored tables in the "Filter, Review, and Confirm" tab like in the following screenshot.
+This activity happens under the third tag labelled "3. Review and
+Confirm". On this page users may browse all the elements selected from
+the prior two tabs. In addition users may also choose to further
+constrain the database records that will be crossfiltered by
+specifying a minimum or maximum date value or both. 
 
-![Confirmed Discrete Entries](screenshots/ConfirmedDiscreteTables.png)
+:warning: Date formats must be in the form yyyy-mm-dd.
 
-## Search Tools -> Filter, Review, and Confirm
+![Constrain crossfilter by date](screenshots/ReviewAndConfirmDateSelection.png)
 
-![Confirm Search Tab](screenshots/ConfirmSearchTab.png)
+Review lists for crossfilter features set, and discrete value
+constraints appear in lists that support search and browsing, but the
+ability to select or de-select is disabled. 
 
-The final tab allows the user to filter the experiments by the dates in addition to providing slider bars to each selected feature. There are no additional changes that can be made to discrete values, so these are listed in the bottom as a way for users to review them.
+:warning: Should users change their minds, they should return to the
+previous tabs to modify their selections. Switching between tabs will
+not impact the state of the interface tool.
 
-Note that there is currently no error checking on the date input. Also because of the way sliders are implemented, they are deliberately designed to allow filter values slightly below the minimum, and slightly above the maximum. Users should not be alarmed to see that.
+Users may toggle the visibility of either section for cleaner browsing
+or review experience.
 
-Once the user is satisfied with the filter settings, clicking on the "Submit Search" button will trigger the necessary database operations, and present the results in the "Results" tab described later!
+When users are satisfied with their selections, clicking on the
+"Submit for Crossfilter" button will return them to the standard
+workflow, but with the crossfilter features modified and records
+constrained. The following image shows the crossfilter page
+constrained to only records with strains prefix CB, and crossfiltered
+on area and path_range values.
 
-## Results -> Select Results
+![Constrained crossfiltering](screenshots/ConstrainedCrossfilter.png)
 
-![Select Results](screenshots/PreDownloadSelection.png)
+## Standard DataTables
 
-After a valid filter has been applied to the database, this tab will display a table of experiment records, including the link to its movement data residing on a Zenodo resource, and an embedded short youtube video highlighting a sample movement sequence.
+The database interface tool makes extensive use of [standard
+DataTables](https://datatables.net/). The most common features can be
+described with respect to the following table:
 
-Clicking on a row selects or deselects experiment records. This is automatically reflected in the final list in the "Review and Confirm" tab. Buttons to select or deselect all rows are available here.
+![The standard datatable](StandardDataTable.png)
 
-## Results -> Review and Confirm
+1. Clicking on the header of any column allows users to change the
+order rows are displayed based on how DataTables treats the natural
+sorting order for values in the column. The sorting can be toggled
+between ascending and descending.
 
-![Confirmed Experiments Tab](screenshots/FinalExperimentsList.png)
+:warning: We currently do not support sorting over multiple columns.
 
-The table shown in this tab is essentially a mirror of selected rows in the "Select Results" tab. The user may review the list of experiments desired before clicking on the "Download Experiments" button. Currently this is a misnomer, clicking on the button will simply collect all the links to Zenodo data in the final list, and produce a text file (named zenodo_urls.txt) with each URL in its own line. This file can be piped to another download service like wget or sftp.
+2. Clicking on a row may allow a row to be selected. A selected row
+shows up highlighted in blue. This feature is not always enabled.
 
-![Zenodo File](screenshots/ZenodoFileDownload.png)
+3. Buttons may appear at the top of the table to allow for more
+flexible selection options. These are "Select All", "Deselect All",
+"Select Searched", and "Deselect Searched". Not all buttons are
+enabled for all tables.
+
+4. Below the selection buttons (if any) is an option for users to show
+more or fewer rows. Enabled options are 10, 25, 50, and 100.
+
+5. On the top right corner of the table is the "Search:" box. Enter
+text to make the table display only rows that contain text (in any
+column) which matches the text in the box. DataTables will dynamically
+modify the table as the text is entered.
+
+:warning: We currently do not handle exact matches, nor allow the user
+to choose specific columns for which the text is to be matched.
+
+6. On the bottom left corner of the table is a summary informing the
+user how many rows are being currently displayed, the total number of
+rows in the table, and the number of rows currently selected across
+the full table (need not be currently visible).
+
+7. On the bottom right corner of the table is an interface that allows
+users to browse pages of the table.
