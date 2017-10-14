@@ -4,13 +4,33 @@
 //
 "use strict";
 
+// Exposing the crossfilter element so buttons like Download can gain
+//   access to the data elements.
+var globalCF;
+
 if (hasCFData) {
+    window.scrollTo(0,0);
+    generateFileTypeCheckboxes();
+    crossfilterData = augmentCrossfilterData(crossfilterData);
+    // At this point, we're ready to let go of the load screen, and allow
+    //   user interaction with the charts.
+    // The reason we do this before the crossfilter charts are processed
+    //   is because of the style settings. The crossfilter charts rely
+    //   on the style settings of the master DOM to work properly.
+    loading(false, 'None');
+
     XFILTER_PARAMS = createXfilterParams(XFILTER_PARAMS, crossfilterData);
     generateXfilterDerivedColumns(crossfilterData);
     processCrossfilterData(crossfilterData);
 } else {
     // If no data is available, use the default example from a file
     d3.csv(XFILTER_PARAMS.data_file, crossfilter_callback);
+}
+if ((downloadData != 'None') && (downloadHeaders != 'None')) {
+    generateDownloadData();
+    // At this point, we're ready to let go of the load screen, and allow
+    //   user interaction with the charts.
+    loading(false, 'None');
 }
 
 function crossfilter_callback(error, data_rows) {
@@ -58,10 +78,34 @@ function create_crossfilter(data_rows) {
     // Array that holds the currently selected "in-filter" selected records
     var rows_selected = [];
 
+    // Defining accumulators for filesize
+    var reduceAdd = function(p, v) {
+	p.filesize += v.filesize;
+	return p;
+    }
+
+    var reduceRemove = function(p, v) {
+	p.filesize -= v.filesize;
+	return p;
+    }
+
+    var reduceInitial = function() {
+	return {
+	    filesize : 0
+	}
+    }
+
     // Create the crossfilter for the relevant dimensions and groups.
     const data_xfilter = crossfilter(data_rows);
+    globalCF = data_xfilter;
     // So we can display the total count of rows selected:
     const xfilter_all = data_xfilter.groupAll();  
+    // Get the sum of data sizes
+    //  *CWL* Note - apparently I cannot re-use xfilter_all here ... reduce()
+    //     appears to apply some side-effect to the variable's contents and
+    //     causes it to return NaNs if I tried.
+    const xfilter_filesizeSum = 
+	data_xfilter.groupAll().reduce(reduceAdd, reduceRemove, reduceInitial);
 
     let x_filter_dimension = [];
     let x_filter_dimension_grouped = [];
@@ -107,10 +151,18 @@ function create_crossfilter(data_rows) {
     // whenever the brush moves and other events like that
     function renderAll() {
         chart_DOM_elements.each(render);
-        resultsList(x_filter_dimension[XFILTER_PARAMS.datasetview_chart_index]);
+        resultsTable(x_filter_dimension[XFILTER_PARAMS.datasetview_chart_index]);
         d3.select('#active').text(formatWholeNumber(xfilter_all.value()));
-
+	d3.select('#datasize').text(prettySize(xfilter_filesizeSum.value().filesize));
+        d3.select('#genDataActive').text(formatWholeNumber(xfilter_all.value()));
+	d3.select('#genDataDatasize').text(prettySize(xfilter_filesizeSum.value().filesize));
+	reportExpectedDownloadSize();
         redraw_datasetview();
+	// May be an overkill, we want to catch all scenarios where the URL list is
+	//   invalidated by changes in crossfilter. Hence if the text area is open,
+	//   it should be closed again.
+	clearCrossfilterPreview();
+	clearUrlList();
     }
 
     // *CWL* - I don't think we need this, and it adds unnecessary complexity to
@@ -165,18 +217,11 @@ function create_crossfilter(data_rows) {
     // We also listen to the chart's brush events to update the display.
     chart_DOM_elements = d3.selectAll('.chart')
         .data(charts)
-//            .each(function(chart) { console.log(chart); });
-
-/*
-                chart
-                    .on("start brush end", function() {
-                        renderAll();
-                    })
-            });
-*/
 
     // Render the total.
     d3.selectAll('#total')
+        .text(formatWholeNumber(data_xfilter.size()));
+    d3.selectAll('#genDataTotal')
         .text(formatWholeNumber(data_xfilter.size()));
 
     renderAll();
@@ -198,7 +243,6 @@ function create_crossfilter(data_rows) {
 	// *CWL* - I don't think we need this
         // Passing true to updateDaySelection ensures the checkboxes are reset
 	//        updateDaySelection(true);
-
         renderAll();
     };
 
@@ -211,4 +255,5 @@ function create_crossfilter(data_rows) {
         // here...
         renderAll();
     };
+
 }

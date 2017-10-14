@@ -28,7 +28,7 @@ function barChart(brushMovedEventHandler) {
         const width = x.range()[1];
         const height = y.range()[0];
 
-        brush.extent([[0, 0], [width, height]])
+        brush.extent([[0, 0], [width + margin.left + margin.right, height]])
             // attach an event handler so if the brush moves,
             // the passed function is called, refreshing global elements
             .on("start brush end", brushMovedEventHandler);

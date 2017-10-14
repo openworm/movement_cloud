@@ -35,6 +35,7 @@ h2 {
 }
 .chart {
     display: inline-block;
+    width: 33%;
     height: 151px;
     margin-bottom: 20px;
 }
@@ -70,17 +71,8 @@ h2 {
     fill: #eee;
     stroke: #666;
 }
-#chart1 {
-    width: 260px;
-}
-#chart2 {
-    width: 230px;
-}
-#chart3 {
-    width: 420px;
-}
-#chart4 {
-    width: 920px;
+#chart0 {
+    width: 100%;
 }
 #datasetview {
     padding: 2px;
@@ -96,50 +88,12 @@ h2 {
     display: block;
     cursor: crosshair;
 }
-#results-list {
-    min-height: 1024px;
-}
-#results-list .date,
-#results-list .day {
-    margin-bottom: .4em;
-}
-#results-list .results_list_row {
-    line-height: 1.5em;
-    background: #eee;
-    width: 925px;
-    margin-bottom: 1px;
-}
-#results-list .time {
-    color: #999;
-}
-#results-list .header_row {
-    line-height: 1.5em;
-    background: rgba(70, 130, 180, 0.325);  /*steelblue, opacity: .325 */
-    width: 925px;
-    margin-bottom: 1px;
-}
-#results-list .header_row div {
-    display: inline-block;    
-}
-#results-list .results_list_row div {
-    display: inline-block;
-}
-#results-list .positive {
-    color: green;
-}
 
-#results-list div[class^=display_field] {
-    width: 125px;
-    text-align: left;
-}
-
-#results-list .early {
-    color: green;
-}
 aside {
     font-size: smaller;
     width: 220px;
 }
+
 fieldset {
     margin-bottom: 20px;
     border: 1px solid lightgray;

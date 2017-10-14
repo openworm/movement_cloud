@@ -1,23 +1,112 @@
 "use strict";
 
+function loading(isLoading, message) {
+    if (!isLoading) {
+	document.getElementById("loader").style.display = "none";
+	document.getElementById("loaderText").style.display = "none";
+	$('#loaderLabel').remove();
+	document.getElementById("master").style.visibility = "visible";
+    } else {
+	window.scrollTo(0,0);
+	document.getElementById("loader").style.display = "block";
+	document.getElementById("loaderText").style.display = "block";
+	$('#loaderText').append('<h2 id="loaderLabel">' + message + '</h2>');
+	document.getElementById("master").style.visibility = "hidden";
+    }
+}
+
+// Equivalent to python dict(zip(['AB', 'CD', 'EF', 'GH'],[1, 2, 3, 4])) in javascript
+// Modified from: https://gist.github.com/ThomasG77/2186830
+//
+// *CWL* Not used, but retained in case it gets too expensive to ship dictionaries from
+//   server to client.
+function dict_zip(keys, dataTable) {
+    let returnTable = [];
+    let numRows = dataTable.length;
+    if (numRows > 0) {
+	for (var rowIdx=0; rowIdx<numRows; rowIdx++) {
+	    let rowLen = dataTable[rowIdx].length;
+	    if (keys.length === rowLen) {
+		var dictionary = {};
+		for (var i=0; i<rowLen; i++) {
+		    dictionary[keys[i]] = dataTable[rowIdx][i];
+		}
+		returnTable.push(dictionary);
+	    } else {
+		console.log('Incompatible key and table column lengths at row ' + rowIdx);
+	    }
+	}
+    }
+    return returnTable;
+}
+
+function getUrl(zenodo_id, zenodo_filename) {
+    let zenodo_url_prefix = 'https://sandbox.zenodo.org/record/';
+    let zenodo_download_url = zenodo_url_prefix + zenodo_id + '/files/' + zenodo_filename;
+    return zenodo_download_url;
+}
+
+function getYoutubeUrlLink(youtube_id) {
+    let url_link = '';
+    if (youtube_id == 'None') {
+	url_link = 'No YouTube Sample';
+    } else {
+	url_link = '<a target="_blank" href="https://youtu.be/' + youtube_id + 
+	'">Youtube Sample</a>';
+    }
+    return url_link;
+}
+
+function getYoutubeEmbed(youtube_id) {
+    let embedContent = '';
+    if (youtube_id == 'None') {
+	embedContent = 'No YouTube Sample found';
+    } else {
+	embedContent = 
+	'<iframe type="text/html" width="160" height="90"' +
+	' src="https://www.youtube.com/embed/' + youtube_id +
+	'" frameborder="0"></iframe>';
+    }
+    return embedContent;
+}
+
+function augmentCrossfilterData(crossfilterData) {
+    crossfilterData.forEach( function(row, rowIdx) {
+	    // turn zenodo_id and zenodo_filename into a URL
+	    row['url'] = getUrl(row['zenodo_id'], row['filename']);
+	    // turn zenodo_filename into a file type string
+	    //	    row['filetype'] = getFileType(row['filename']);
+	    // turn 'None' filesize values to 0
+	    if (row['filesize'] == 'None') {
+		row['filesize'] = 0;
+	    }
+	    // turn youtube_id into a full embedding element.
+	    //	    row['youtube'] = getYoutubeEmbed(row['youtube_id']);
+	    row['youtube'] = getYoutubeUrlLink(row['youtube_id']);
+	});
+
+    return crossfilterData;
+}
+
+function prettySize(valueInBytes) {
+    // within reason
+    let scaleText = [ 'Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB' ];
+    let scaleIndex = 0;
+    let val = valueInBytes;
+    while (val >= 1000) {
+	scaleIndex += 1;
+	val /= 1000.0;
+    }
+    if (scaleIndex >= scaleText.length) {
+	// Punt on prettying the text, something has to be horribly wrong to exceed Exabytes
+	return valueInBytes + " Bytes";
+    } else {
+	return val.toPrecision(4) + " " + scaleText[scaleIndex];
+    }
+}
+
 var pretty_month_names = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
 			   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
-
-function downloadResults() {
-    // *CWL* - Michael, how do we go about getting ALL the selected elements and not just
-    //    the ones on display?
-    var returnText = "";
-    $('.results_list_row').each(function (index,element) {
-	    returnText = returnText + index.toString() + "\n";
-	});
-    var element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,'+encodeURIComponent(returnText));
-    element.setAttribute('download', 'results.txt');
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-}
 
 function parseDate(d) {
     // Parse the date.
@@ -53,11 +142,17 @@ function ts_prettyDate(timestamp) {
     let day = parseInt(ts_getDate(timestamp));
     let digit = day%10;
     if (digit == 1) {
-	suffix = "st";
+	if (Math.floor(day/10) != 1) { 
+	    suffix = "st";
+	}
     } else if (digit == 2) {
-	suffix = "nd";
+	if (Math.floor(day/10) != 1) { 
+	    suffix = "nd";
+	}
     } else if (digit == 3) {
-	suffix = "rd";
+	if (Math.floor(day/10) != 1) { 
+	    suffix = "rd";
+	}
     }
     return pretty_month_names[month-1] + " " + day.toString() + suffix +
 	" " + ts_getYear(timestamp);
@@ -122,7 +217,8 @@ function initializeParamObject() {
     // *CWL* This hardcode of 2 display fields depends on the nature of the static fields
     //    and needs to be generalized. Am thinking the server will send
     //    an appropriate number corresponding to the static fields.
-    returnObject['num_display_fields'] = 2;
+    // returnObject['num_display_fields'] = 2;
+    returnObject['num_display_fields'] = 1;
     returnObject['data_fields'] = {};
     returnObject['data_fields']['timestamp'] = { "data_type": "string",
 						 "display_name": "Date / Time",
@@ -152,38 +248,64 @@ function initializeParamObject() {
 						   "suffix": "",
 						   "scale": "linear",
 						   "bucket_width": 1 };
+    returnObject['data_fields']['base_name'] = { "data_type": "string",
+					      "display_name": "Experiment Name" };
     returnObject['data_fields']['strain'] = { "data_type": "string",
 					      "display_name": "Strain" };
+    returnObject['data_fields']['gene'] = { "data_type": "string",
+					      "display_name": "Gene" };
     returnObject['data_fields']['allele'] = { "data_type": "string",
 					      "display_name": "Allele" };
-    returnObject['charts'] = [ "iso_date", "hour" ];
+    returnObject['data_fields']['zenodo_id'] = { "data_type": "string",
+					   "display_name": "Zenodo Id" };
+    returnObject['data_fields']['filename'] = { "data_type": "string",
+					   "display_name": "File Type" };
+    returnObject['data_fields']['filesize'] = { "data_type": "numeric",
+					   "display_name": "File Size" };
+    returnObject['data_fields']['filetype'] = { "data_type": "string",
+					   "display_name": "File Type" };
+    returnObject['data_fields']['url'] = { "data_type": "string",
+    					   "display_name": "File Download URL" };
+    returnObject['data_fields']['youtube_id'] = { "data_type": "string",
+    					   "display_name": "YouTube ID" };
+    returnObject['data_fields']['youtube'] = { "data_type": "html_embed",
+    					   "display_name": "YouTube Sample" };
+    //    returnObject['charts'] = [ "iso_date", "hour" ];
+    returnObject['charts'] = [ "iso_date" ];
     returnObject['results_display'] = [ 
+				       "youtube",
+				       "strain",  
+				       "gene",
+				       "allele",
 				       "pretty_date",
 				       "pretty_time", 
-				       "strain",  
-				       "allele"
+				       "zenodo_id",
+				       "filetype",
+				       "filesize",
 					];
     returnObject['max_results'] = 20;
     return returnObject;
 }
 
 function createXfilterParams(paramObject, rawInputData) {
-    // Reset the object.
-    let numFeatures = crossfilterHeader.length;
+    // Reinitialize the existing default object.
+    let numSelectedFeatures = selectedFeaturesNames.length;
     paramObject = initializeParamObject();
     paramObject['num_display_fields'] = paramObject['num_display_fields'] + 
-	numFeatures;
+	numSelectedFeatures;
     paramObject['datasetview_chart_index'] = paramObject['num_display_fields'] - 1;
-    for (var i=0; i< numFeatures; i++) {
-	let fieldName = crossfilterHeader[i];
+    for (var i=0; i<numSelectedFeatures; i++) {
+	let fieldName = selectedFeaturesNames[i];
+	// *CWL* Keeping this around in case I still need to use it.
+	//	let fieldRange = getExtremes(rawInputData, fieldName);
 	paramObject['data_fields'][fieldName] = { 
 	    "data_type": "numeric",
 	    "display_name": fieldName,
 	    "suffix": "",
 	    "scale": "linear",
 	    "bucket_width": 1,
-	    "rangeRound":[0,220],
-	    "stratify": 5
+	    "rangeRound":[0,$('#crossfilterPane').width()/3.5],
+	    "stratify": 1
 	};
 	paramObject['charts'].push(fieldName);
 	paramObject['results_display'].push(fieldName);
@@ -315,6 +437,8 @@ function createDataSetView(data_xfilter_size, data_rows, dataset_group_dimension
 
 
 ///////////////////////////////////////////////////////
+// *CWL* - This is a test feature. Retained for reference
+//  only.
 function createRadioButtons(data_xfilter, renderAll) {
 
     const radio_button_grouping_field = XFILTER_PARAMS.radio_button_grouping_field;
@@ -597,36 +721,30 @@ function createRadioButtons(data_xfilter, renderAll) {
     return updateDaySelection;
 }
 
-////////////////////////////////////////////////
-function resultsList(grouping_dimension) {
+function resultsTable(grouping_dimension) {
     // Re-run the results list, by erasing it and creating it again
 
     let div = d3.select("#results-list");
-
     // Clear the existing results
-    div.selectAll("div").remove();
+    div.selectAll("table").remove();
 
-    // Create a header div
-    let header_row = div.append("div")
-        .attr("class", "header_row");
-
-    // Due to a quirk in d3.js we have to select .results_list_row to get the
-    // first data entry to show ()
-    let cur_results_all = div.selectAll(".header_row.results_list_row")
-        .data(grouping_dimension.top(XFILTER_PARAMS.max_results))
-        // Create a row div for every result we want to display.
-        .enter().append("div").attr("class", "results_list_row");
+    // Create a table with one row for each record in the crossfilter construct
+    let table = div.append("table").attr("class", "display").attr("class","nowrap")
+	.attr("border",1);
+    let tableHead = table.append("thead").append("tr");
+    let tableBody = table.append("tbody");
+    let trs = tableBody.selectAll("tr").data(grouping_dimension.top(XFILTER_PARAMS.max_results))
+        .enter().append("tr");
+    /*
+    let trs = tableBody.selectAll("tr").data(grouping_dimension.top(Infinity))
+        .enter().append("tr");
+    */
 
     // Loop over all columns we are supposed to display in the results
     for(let len = XFILTER_PARAMS.results_display.length, i=0; i<len; i++) {
         let cur_field = XFILTER_PARAMS.results_display[i];
 
-        header_row.append("div")
-            .attr("class", "display_field" + String(i))
-            .text(d => XFILTER_PARAMS.data_fields[cur_field].display_name);
-
-        cur_results_all.append("div")
-            .attr("class", "display_field" + String(i))
-            .text(d => valueFormatted(d, cur_field));
+        tableHead.append("td").html(XFILTER_PARAMS.data_fields[cur_field].display_name);
+        trs.append("td").html(d => valueFormatted(d, cur_field));
     }
 }

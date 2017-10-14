@@ -23,9 +23,13 @@
     <link rel="stylesheet" href="{% static 'webworm/worm_style.css' %}" />
     <!-- Crossfilter support -->
     <link rel="stylesheet" href="{% static 'webworm/worm_filter.css' %}" />
+    <!-- WCON Viewer support -->
+    <link rel="stylesheet" href="{% static 'webworm/WCON_viewer.css' %}" />
+    <!-- Loading Screen support -->
+    <link rel="stylesheet" href="{% static 'webworm/worm_load.css' %}" />
 
     <!-- Scripts -->
-    <!-- jQuery and Bootstrap -->
+    <!-- jQuery and Bootstrap and Babel-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <!-- jQuery UI (currently not used) -->
@@ -36,6 +40,11 @@
     <!-- Keeping the last old one used: Buttons + Select + Bootstrap
     <script type="text/javascript" src="https://cdn.datatables.net/v/bs/dt-1.10.13/b-1.2.4/se-1.2.0/datatables.min.js"></script>
     -->
+    <!-- JsZip - https://stuk.github.io/jszip/ -->
+    <script src="{% static 'extern/dist/jszip.min.js' %}"></script>
+    <!-- FileSaver (JsZip output dependency) - https://github.com/eligrey/FileSaver.js -->
+    <script src="{% static 'extern/dist/FileSaver.min.js' %}"></script>
+    
   </head>
 
   <header class="jumbotron subhead" id="overview">
@@ -47,7 +56,12 @@
           <th>
             <h1>Open Worm Movement Database</h1>
             <p class="lead">
-              <p>Total number of experiments in database = {{ db_experiment_count }} </p>
+            <p><b>Total number of experiments in database = {{ db_experiment_count }}</b></p>
+	    <p>Tooltip information available by hovering mouse over tabs</p>
+	    <p>
+	      <a target="_blank" href="https://github.com/openworm/movement_cloud">[Our Github Repo]</a>
+	      <a target="_blank" href="https://github.com/openworm/movement_cloud/blob/master/README.md">[Documentation]</a>
+	    </p>
             </p>
           </th>
         </tr>

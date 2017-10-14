@@ -1,0 +1,64 @@
+<form id="metadataForm" name="download" method="get">
+  <div id="metadataInput">
+  </div>
+</form>
+<div id="crossfilter_genData_pane">
+  <div id="genDataHeader">
+    <h1>Get Experiments Data</h1>
+  </div>
+  <hr>
+  <!-- Replication of the crossfilter table from the main crossfilter page -->
+  <div id='genDataTotals'>
+    <h4>1. Crossfilter Summary</h4>
+    <p><span id='genDataActive'>-</span> of <span id='genDataTotal'>-</span> experiment files selected.</p>
+    <p>Total selected experiments data size - <span id='genDataDatasize'>0 Mb</span></p>
+  </div>
+  <a class="btn btn-info" onclick="genPreviewTable()">Generate Full Crossfilter Preview</a>
+  <div id='xfilterPreview'>
+  </div>
+  <hr>
+  <!-- Features Selection -->
+  <div>
+    <h4>2. Select Features For Download - click row to select feature</h4>
+    <a href="#allXFilterFeaturesPanel" class="btn btn-info" data-toggle="collapse">Toggle All Features</a>
+    <div id="allXFilterFeaturesPanel" class="collapse in">
+      <table id="xFilterFeaturesTable" class="table table-striped table-bordered table-responsive">
+	<thead>
+	  <tr>
+	    <th>Name</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  {% for name in all_features_names %}
+	  <tr>
+	    <td>{{ name }}</td>
+	  </tr>
+	  {% endfor %}
+	</tbody>
+      </table>
+    </div>
+  </div>
+  <hr>
+  <div>
+    <h4>3. Get Data</h4>
+    <div class="row">
+      <div class="col-sm-3">
+	<button id="generateCsv" onclick="getCsvFromResults()" type="button" class="btn btn-success" disabled="true">Get Features Means Data</button>
+      </div>
+      <div class="col-sm-3">
+	<button id="getUrlList" onclick="getUrlList()" type="button" class="btn btn-danger" disabled="true">Generate File Data URLs</button>
+      </div>
+      <div class="col-sm-6">
+	<button id="downloadExpr" onclick="downloadResultsList()" type="button" class="btn btn-danger" disabled="true">Get Experiments Files + Download Script (Linux)</button>
+      </div>
+    </div>
+  </div>
+  <div id="filetypeCheckboxes">
+    <div><h4>Filter by file types (For file downloads only)</h4></div>
+    <p>Expected file download data size - <span id='expectedDatasize'>0 Mb</span></p>
+    <p><span id='genDataFeaturesSelected'>-</span> of <span id='genDataFeaturesTotal'>-</span> features selected for metadata download.</p>
+  </div>
+  <hr>
+  <div id="downloadUrlList">
+  </div>
+</div>
