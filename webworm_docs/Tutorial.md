@@ -200,4 +200,4 @@ crossfilter. This can be useful for people who wish to crossfilter on
 features other than the default ones, or constrain the search to
 specific parameters such as the set of strains, or
 experimenters. Details on how to use the Advanced Filter, as well as
-key interface components may be found [here](webworm_docs/Features.md).
+key interface components may be found [here](Features.md).
