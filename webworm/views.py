@@ -67,6 +67,11 @@ fileTypes = [];
 
 # Support functions
 
+def getVersion():
+    with open('webworm/version.txt', 'r') as versionFile:
+        version=versionFile.read().replace('\n', '');
+        return version;
+
 # *CWL* Not used anymore. Retaining for reference only.
 def getZenodoUrl(zenodoId, dataFileName):
     global zenodo_url_prefix;
@@ -298,6 +303,9 @@ def index(request):
     global fileTypes;
     # Context variables to be passed to client for rendering and client-side processing
     context = {};
+
+    # Get tool version
+    context['version'] = getVersion();
 
     # Compute static global database metadata
     experimentsDb = Experiments.objects.all();
