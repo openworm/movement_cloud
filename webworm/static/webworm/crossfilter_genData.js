@@ -63,7 +63,7 @@ function downloadResultsList() {
 	let fileType = allCFValues[idx].filetype;
 	if (downloadUrl != 'None') {
 	    if ($('#chk_' + fileType).is(':checked')) {
-		returnText = returnText + zenodoId + " " + downloadUrl + "\n";
+		returnText = returnText + zenodoId + "\t" + downloadUrl + "\n";
 	    }
 	}
     }
@@ -86,13 +86,14 @@ function downloadResultsList() {
 		 'input="$1"\n' +
 		 'output="$2"\n' +
 		 'mkdir -p "$output"\n' +
-		 'while read id url\n' +
+		 'while IFS=$\'\\t\' read -r id url\n' +
 		 'do\n' +
 		 '  echo $id $url\n' +
 		 '  newdir="$output/$id"\n' +
 		 '  mkdir -p $newdir\n' +
 		 '  pushd $newdir\n' +
-		 '  wget -t0 -c $url\n' +
+		 '  WGETCMD="wget -t0 -c \'"$url"\'"\n' +
+		 '  eval "$WGETCMD"\n' +
 		 '  popd\n' +
 		 'done < "$input"\n' +
 		 'echo "----- Script Complete -----"\n');
