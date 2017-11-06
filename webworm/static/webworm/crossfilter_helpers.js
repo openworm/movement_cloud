@@ -41,7 +41,7 @@ function dict_zip(keys, dataTable) {
 }
 
 function getUrl(zenodo_id, zenodo_filename) {
-    let zenodo_url_prefix = 'https://sandbox.zenodo.org/record/';
+    let zenodo_url_prefix = 'https://zenodo.org/record/';
     let zenodo_download_url = zenodo_url_prefix + zenodo_id + '/files/' + zenodo_filename;
     return zenodo_download_url;
 }

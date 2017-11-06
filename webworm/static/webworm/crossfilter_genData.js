@@ -54,7 +54,7 @@ $(document).ready(function() {
 //   the use of a linux script to aid with the download in a separate phase.
 function downloadResultsList() {
     var returnText = "";
-    let zenodoUrlPrefix = 'https://sandbox.zenodo.org/records';
+    let zenodoUrlPrefix = 'https://zenodo.org/records';
     // Get grouping by Zenodo Id
     let allCFValues = globalCF.dimension(d => d.zenodo_id).top(Infinity);
     for (var idx=0; idx<allCFValues.length; idx++) {
@@ -173,7 +173,7 @@ function getUrlList() {
     $('#downloadUrlList').append('<div class="row"><div><label id="urlListLabel">List of Downloadable Data URLs:</label></div></div>');
     $('#downloadUrlList').append('<div class="row"><div class="col-sm-12"><textarea style="overflow-y:scroll;min-width:100%;" rows="20" id="urlList" readonly></textarea></div></div>');
     let urlListText = "";
-    let zenodoUrlPrefix = 'https://sandbox.zenodo.org/records';
+    let zenodoUrlPrefix = 'https://zenodo.org/records';
     // Get grouping by Zenodo Id
     let allCFValues = globalCF.dimension(d => d.zenodo_id).top(Infinity);
     for (var idx=0; idx<allCFValues.length; idx++) {

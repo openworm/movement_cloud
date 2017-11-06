@@ -60,7 +60,7 @@ downloadHeaders = [
 downloadTimestampIdx = 5; # counted in reverse order
 
 # The URL Prefix to Zenodo. In production this would be 'https://zenodo.org/record/'
-zenodo_url_prefix = 'https://sandbox.zenodo.org/record/';
+zenodo_url_prefix = 'https://zenodo.org/record/';
 
 # File Types information - generated from Database.
 fileTypes = [];
