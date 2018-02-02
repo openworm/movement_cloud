@@ -106,6 +106,55 @@ function view_WCON_data_file(WCON_data_file) {
     });
 }
 
+function view_WCON_json(filename, wcon_obj) {
+    clear_WCON_view();
+    console.log("Loading file: " + filename);
+    d3.select("#file_info").append("div")
+        .attr("class", "file_info")
+        .text("LOADING FILE, PLEASE WAIT...");
+
+    // Load the WCON schema
+    d3.json(WORMVIZ_PARAMS.schema_url, function(error1, schema_obj) {
+            // FILE INFORMATION    
+            let file_info = d3.select("#file_info");
+	    
+            // Display the file name
+            file_info.append("div")
+                .attr("class", "file_info")
+                .text("File name: " + String(filename));
+	    
+            let validation_state = file_info.append("div")
+		.attr("class", "validation_state")
+		
+	    // VALIDATE WCON FILE AGAINST SCHEMA    
+	    let isValidWCON = false;
+            let ajv = new Ajv();
+            if (!ajv.validate(schema_obj, wcon_obj)) {
+                isValidWCON = false;
+    
+                // If it did not validate, show the errors
+                validation_state
+                    .append("h3").attr("class", "bad").text("SCHEMA VALIDATION ERRORS:")
+                    .append("pre")
+                        .node().innerHTML = syntaxHighlight(ajv.errors);
+            } else {
+                isValidWCON = true;
+    
+                validation_state
+                        .append("span").text("Validation state: ")
+                        .append("span").attr("class", "good").text("VALIDATED");
+            }
+    
+            // Only show the WCON information if the previous schema test
+            // passed, or if we've given permission to try to display
+            // despite the schema not validating.
+            if(isValidWCON || WORMVIZ_PARAMS.display_despite_schema_errors) {
+                // WCON FILE INFORMATION
+                display_wcon(wcon_obj);
+            }
+    })
+;}
+
 function display_wcon(wcon_obj) {
     /* 
         This method renders on the page the WCON object's 
