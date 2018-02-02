@@ -4,6 +4,10 @@ Movement Analysis on the cloud.
 This is an open cloud-based database framework for users to search and download
 C. Elegans movement experiment data, as well as features metadata.
 
+If you have found a bug, please raise an issue with the github
+repo. For general feedback and suggestions, please use our [feedback
+form](https://goo.gl/forms/hIYt4Z7ETmklUrIf1).
+
 ## Overview and General Workflow
 
 ![Landing Page](webworm_docs/screenshots/LandingPage.png)

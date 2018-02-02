@@ -54,7 +54,7 @@ $(document).ready(function() {
 //   the use of a linux script to aid with the download in a separate phase.
 function downloadResultsList() {
     var returnText = "";
-    let zenodoUrlPrefix = 'https://sandbox.zenodo.org/records';
+    let zenodoUrlPrefix = 'https://zenodo.org/records';
     // Get grouping by Zenodo Id
     let allCFValues = globalCF.dimension(d => d.zenodo_id).top(Infinity);
     for (var idx=0; idx<allCFValues.length; idx++) {
@@ -63,7 +63,7 @@ function downloadResultsList() {
 	let fileType = allCFValues[idx].filetype;
 	if (downloadUrl != 'None') {
 	    if ($('#chk_' + fileType).is(':checked')) {
-		returnText = returnText + zenodoId + " " + downloadUrl + "\n";
+		returnText = returnText + zenodoId + "\t" + downloadUrl + "\n";
 	    }
 	}
     }
@@ -86,13 +86,14 @@ function downloadResultsList() {
 		 'input="$1"\n' +
 		 'output="$2"\n' +
 		 'mkdir -p "$output"\n' +
-		 'while read id url\n' +
+		 'while IFS=$\'\\t\' read -r id url\n' +
 		 'do\n' +
 		 '  echo $id $url\n' +
 		 '  newdir="$output/$id"\n' +
 		 '  mkdir -p $newdir\n' +
 		 '  pushd $newdir\n' +
-		 '  wget -t0 -c $url\n' +
+		 '  WGETCMD="wget -t0 -c \'"$url"\'"\n' +
+		 '  eval "$WGETCMD"\n' +
 		 '  popd\n' +
 		 'done < "$input"\n' +
 		 'echo "----- Script Complete -----"\n');
@@ -172,7 +173,7 @@ function getUrlList() {
     $('#downloadUrlList').append('<div class="row"><div><label id="urlListLabel">List of Downloadable Data URLs:</label></div></div>');
     $('#downloadUrlList').append('<div class="row"><div class="col-sm-12"><textarea style="overflow-y:scroll;min-width:100%;" rows="20" id="urlList" readonly></textarea></div></div>');
     let urlListText = "";
-    let zenodoUrlPrefix = 'https://sandbox.zenodo.org/records';
+    let zenodoUrlPrefix = 'https://zenodo.org/records';
     // Get grouping by Zenodo Id
     let allCFValues = globalCF.dimension(d => d.zenodo_id).top(Infinity);
     for (var idx=0; idx<allCFValues.length; idx++) {

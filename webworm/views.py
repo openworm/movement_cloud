@@ -60,12 +60,17 @@ downloadHeaders = [
 downloadTimestampIdx = 5; # counted in reverse order
 
 # The URL Prefix to Zenodo. In production this would be 'https://zenodo.org/record/'
-zenodo_url_prefix = 'https://sandbox.zenodo.org/record/';
+zenodo_url_prefix = 'https://zenodo.org/record/';
 
 # File Types information - generated from Database.
 fileTypes = [];
 
 # Support functions
+
+def getVersion():
+    with open('webworm/version.txt', 'r') as versionFile:
+        version=versionFile.read().replace('\n', '');
+        return version;
 
 # *CWL* Not used anymore. Retaining for reference only.
 def getZenodoUrl(zenodoId, dataFileName):
@@ -298,6 +303,9 @@ def index(request):
     global fileTypes;
     # Context variables to be passed to client for rendering and client-side processing
     context = {};
+
+    # Get tool version
+    context['version'] = getVersion();
 
     # Compute static global database metadata
     experimentsDb = Experiments.objects.all();
