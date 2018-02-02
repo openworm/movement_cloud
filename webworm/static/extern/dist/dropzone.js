@@ -45,33 +45,25 @@ function createDropzoneMethods() {
 }
 
 function upload_files(files) {
-    let formData = new FormData(),
-        xhr = new XMLHttpRequest();
+    if (files.length == 1) {
+	var reader = new FileReader();
+	reader.onload = function(event) {
+	    var contents = event.target.result;
+	    let responseJSON = JSON.parse(contents);
 
-    console.log("Dropped " + String(files.length) + " files.");
-    for(let i=0; i<files.length; i++) {
-        formData.append("file", files[i]);
-    }
-
-    xhr.onreadystatechange = function() {
-        // Handle the times this function was invoked with blank response text
-        let responseText = xhr.responseText === '' ? '{}' : xhr.responseText;
-        let responseJSON = JSON.parse(responseText);
-        if(xhr.readyState === XMLHttpRequest.DONE) {
-            alert("The files " + responseJSON.files_uploaded +
-                  " have been uploaded.");
-
-            // Now that the WCON file has been loaded, hide the upload field
             document.getElementById("upload_file_button").style.display = 'block';
             document.getElementById("upload_area").style.display = 'none';
             document.getElementById("WCON_display").style.display = 'block';
 
-            view_WCON_data_file(responseJSON.files_uploaded)
-        }
-        console.log(responseJSON);
-    }
+	    view_WCON_json(files[0].name, responseJSON); 
+	};
 
-    console.log("Let's upload files: ", formData);
-    xhr.open('POST', 'upload_handler.py', true); // async = true
-    xhr.send(formData); 
+	reader.onerror = function(event) {
+	    console.error("File could not be read! Code " + event.target.error.code);
+	};
+
+	reader.readAsText(files[0]);
+    } else {
+	alert('This tool will only handle a single file at a time. Please try again.');
+    }
 }
