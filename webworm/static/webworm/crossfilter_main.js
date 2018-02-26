@@ -171,7 +171,9 @@ function create_crossfilter(data_rows) {
 
     // Create the datasetview widget, and obtain a callback function that
     // when called, refreshes the widget.
-    var redraw_datasetview = createDataSetView(data_xfilter.size(), data_rows, x_filter_dimension[XFILTER_PARAMS.datasetview_chart_index]);
+    //
+    // *CWL* - Removing the dataset view too.
+    // var redraw_datasetview = createDataSetView(data_xfilter.size(), data_rows, x_filter_dimension[XFILTER_PARAMS.datasetview_chart_index]);
 
     // Create each chart with the proper scale and dimensions, and connect
     // them to the crossfilter data.
