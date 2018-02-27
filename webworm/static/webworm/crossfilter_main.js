@@ -226,8 +226,6 @@ function create_crossfilter(data_rows) {
     d3.selectAll('#genDataTotal')
         .text(formatWholeNumber(data_xfilter.size()));
 
-    renderAll();
-
     window.filter = filters => {
         filters.forEach((d, i) => {
             charts[i].filter(d);
@@ -258,4 +256,7 @@ function create_crossfilter(data_rows) {
         renderAll();
     };
 
+    // This has to be the last thing that happens, or the reset methods would remain
+    //   undefined.
+    renderAll();
 }
