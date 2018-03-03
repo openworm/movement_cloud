@@ -3,22 +3,15 @@
     <div class="form-group" >
       <div id="searchMethodPanes">
 	<ul class="nav nav-pills">
-	  <li class="active"><a title="Choose subset of Features to apply crossfilter against."
-				data-toggle="pill" href="#parametersPane">1. Filter By Feature</a></li>
-	  <li><a title="Restrict what gets crossfiltered based on Database field values (e.g. Strain of the worms.)"
+	  <li class="active"><a title="Restrict what gets crossfiltered based on Database field values (e.g. Strain of the worms.)"
 		 data-toggle="pill" href="#discretePane">2. Filter Discrete Values</a></li>
 	  <li><a title="Restrict the date-range of records. Review choices made in previous two tabs. Submit choices for crossfiltering. You will be taken to the 'Crossfilter Features/Get Data' tab, and the chosen restrictions will apply there."
 		 data-toggle="pill" href="#confirmSearchPane">3. Review and Confirm</a></li>
 	</ul>
 	
 	<div class="tab-content">
-	  <!-- Search by Parameters -->
-	  <div class="tab-pane fade in active" id="parametersPane">
-	    {% include "webworm/filter-features-template.html" %}
-	  </div>
-	  
 	  <!-- Search by discrete database fields -->
-	  <div class="tab-pane fade" id="discretePane">
+	  <div class="tab-pane fade in active" id="discretePane">
 	    {% include "webworm/filter-discrete-template.html" %}
 	  </div>
 	  

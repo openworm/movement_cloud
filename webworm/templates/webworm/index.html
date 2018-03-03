@@ -7,22 +7,31 @@
 <div style="visibility:hidden;" class="container animatebottom" id="master">
 
   <ul class="nav nav-tabs" id="tabsUL">
-    <li class="active"><a title="Select Features to Crossfilter on. Add restrictions to Database field values. Optional." 
-			  data-toggle="tab" href="#searchPane">Advanced Filters</a></li>
-    <li><a title="Find desired experiments by restricting Features value ranges. Download Features metadata or full experiment data." 
-	   data-toggle="tab" href="#crossfilterPane">Crossfilter Features/Get Data</a></li>
+    <li class="active"><a title="Find desired experiments by restricting Features value ranges."
+			  data-toggle="tab" href="#crossfilterPane">Crossfilter by Features</a>
+    </li>
+    <li><a title="Download Features metadata or full experiment data." 
+	   data-toggle="tab" href="#genDataPane">Get Data</a></li>
+    <li><a title="Search Database by field values. Optional." 
+	   data-toggle="tab" href="#searchPane">Advanced Search</a></li>
   </ul>
 
   <div class="tab-content">
-    <!-- Search Tool Panel -->
-    <div class="tab-pane fade in active" id="searchPane">
-      {% include "webworm/advanced-filter-template.html" %}
-    </div>
-
     <!-- Cross Filter Panel -->
-    <div class="tab-pane fade" id="crossfilterPane">
+    <div class="tab-pane fade in active" id="crossfilterPane">
       {% include "webworm/crossfilter-pane.html" %}
     </div>
+
+    <!-- Generate Data Panel -->
+    <div class="tab-pane fade" id="genDataPane">
+      {% include "webworm/genData-pane.html" %}
+    </div>
+
+    <!-- Search Tool Panel -->
+    <div class="tab-pane fade" id="searchPane">
+      {% include "webworm/advancedSearch-pane.html" %}
+    </div>
+
   </div>
 </div>
 
@@ -43,6 +52,9 @@
   var crossfilterData = {{ results_list|safe }};
   var selectedFeaturesNames = {{ selected_features_names|safe }};
   var allFeaturesNames = {{ all_features_names|safe }};
+  var zenodoFieldNames = {{ zenodo_header|safe }};
+  var zenodoFileData = {{ zenodo_data|safe }};
+  var zenodoDataDict = {};
   var discreteFieldData = {{ discrete_field_counts|safe }};
   var discreteFieldMetadata = {{ discrete_field_meta|safe }};
   var discreteFieldNames = {{ discrete_field_names|safe }};

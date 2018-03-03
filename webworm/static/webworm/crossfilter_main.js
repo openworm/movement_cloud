@@ -22,6 +22,19 @@ if (hasCFData) {
     XFILTER_PARAMS = createXfilterParams(XFILTER_PARAMS, crossfilterData);
     generateXfilterDerivedColumns(crossfilterData);
     processCrossfilterData(crossfilterData);
+
+    // Construct Zenodo File information.
+    for (var fileIdx=0; fileIdx<zenodoFileData.length; fileIdx++) {
+	let fileRec = zenodoFileData[fileIdx];
+	// add a URL to each array
+	fileRec.push(getUrl(fileRec[0],fileRec[2])); 
+	if (zenodoDataDict[fileRec[0]] == undefined) {
+	    zenodoDataDict[fileRec[0]] = [];
+	    zenodoDataDict[fileRec[0]].push(fileRec.slice(1).slice(-4));
+	} else {
+	    zenodoDataDict[fileRec[0]].push(fileRec.slice(1).slice(-4));
+	}
+    }
 } else {
     // If no data is available, use the default example from a file
     d3.csv(XFILTER_PARAMS.data_file, crossfilter_callback);
@@ -157,7 +170,8 @@ function create_crossfilter(data_rows) {
         d3.select('#genDataActive').text(formatWholeNumber(xfilter_all.value()));
 	d3.select('#genDataDatasize').text(prettySize(xfilter_filesizeSum.value().filesize));
 	reportExpectedDownloadSize();
-        redraw_datasetview();
+	// *CWL* Not doing datasetview anymore.
+        //redraw_datasetview();
 	// May be an overkill, we want to catch all scenarios where the URL list is
 	//   invalidated by changes in crossfilter. Hence if the text area is open,
 	//   it should be closed again.

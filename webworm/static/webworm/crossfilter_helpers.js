@@ -213,7 +213,7 @@ function getExtremes(data_rows, field_name) {
 //   built-in.
 function initializeParamObject() {
     var returnObject = {};
-    returnObject['report_title'] = "Crossfilter Available Experiments";
+    returnObject['report_title'] = "Crossfilter Selected Experiments";
     // *CWL* This hardcode of 2 display fields depends on the nature of the static fields
     //    and needs to be generalized. Am thinking the server will send
     //    an appropriate number corresponding to the static fields.
@@ -260,6 +260,8 @@ function initializeParamObject() {
 					   "display_name": "Zenodo Id" };
     returnObject['data_fields']['filename'] = { "data_type": "string",
 					   "display_name": "File Type" };
+    returnObject['data_fields']['numfiles'] = { "data_type": "numeric",
+					   "display_name": "Num Files" };
     returnObject['data_fields']['filesize'] = { "data_type": "numeric",
 					   "display_name": "File Size" };
     returnObject['data_fields']['filetype'] = { "data_type": "string",
@@ -280,7 +282,7 @@ function initializeParamObject() {
 				       "pretty_date",
 				       "pretty_time", 
 				       "zenodo_id",
-				       "filetype",
+				       "numfiles",
 				       "filesize",
 					];
     returnObject['max_results'] = 20;

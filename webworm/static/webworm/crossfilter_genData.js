@@ -177,11 +177,15 @@ function getUrlList() {
     // Get grouping by Zenodo Id
     let allCFValues = globalCF.dimension(d => d.zenodo_id).top(Infinity);
     for (var idx=0; idx<allCFValues.length; idx++) {
-	let downloadUrl = allCFValues[idx].url;
-	let fileType = allCFValues[idx].filetype;
-	if (downloadUrl != 'None') {
-	    if ($('#chk_' + fileType).is(':checked')) {
-		urlListText += downloadUrl + "\n";
+	let zenodoId = allCFValues[idx].zenodo_id;
+	let zenodoFiles = zenodoDataDict[zenodoId];
+	if (zenodoFiles != undefined) {
+	    for (var fileIdx=0; fileIdx<zenodoFiles.length; fileIdx++) {
+		let downloadUrl = zenodoFiles[fileIdx][3];
+		let fileType = zenodoFiles[fileIdx][2];
+		if ($('#chk_' + fileType).is(':checked')) {
+		    urlListText += downloadUrl + "\n";
+		}
 	    }
 	}
     }

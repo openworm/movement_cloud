@@ -35,9 +35,6 @@ defaultCoreFeatures = [
 # A way to organize the header fields for all data.
 fieldHeaders = [
     { 'label': 'youtube_id', 'field': 'youtube_id' },
-    { 'label': 'filetype', 'field': 'zenodofiles__file_type' },
-    { 'label': 'filename', 'field': 'zenodofiles__filename' },
-    { 'label': 'filesize', 'field': 'zenodofiles__filesize' },
     { 'label': 'timestamp', 'field': 'date' },
     { 'label': 'zenodo_id', 'field': 'zenodofiles__zenodo_id' },
     { 'label': 'allele', 'field': 'strain__allele__name' },
@@ -46,7 +43,16 @@ fieldHeaders = [
     { 'label': 'base_name', 'field': 'base_name' },
     ];
 timestampIdx = 5; # counted in reverse order
-filetypeIdx = 8;
+zenodoIdx = 4; # counted in reverse order
+
+# A way to organize the header fields for all data.
+zenodoFieldHeaders = [
+    { 'label': 'filetype', 'field': 'zenodofiles__file_type' },
+    { 'label': 'filename', 'field': 'zenodofiles__filename' },
+    { 'label': 'filesize', 'field': 'zenodofiles__filesize' },
+    { 'label': 'zenodo_id', 'field': 'zenodofiles__zenodo_id' },
+    ];
+filetypeIdx = 3; # counted in reverse order
 
 # A way to organize the header fields for all data.
 downloadHeaders = [
@@ -103,6 +109,9 @@ def getDiscreteFieldCounts(experimentsDb, fieldName, fieldList, nullNameString):
             counts[nullNameString] = experimentsDb.filter(**{param:element}).count();
     return sorted([list(tuple) for tuple in counts.items()]);
 
+# *CWL*
+# Not sure we need this anymore. Basically it is to tell users how many records
+#   can be found for each search term.
 def getDiscreteFieldMetadata(experimentsDb, context):
     global discreteFields;
     experiments_count = experimentsDb.count();
@@ -146,10 +155,14 @@ def processSearchField(key, db_filter, getRequest, dbRecords, filterState):
 
 # Produces a list of data rows (one row per record in database)
 #    given a list of features names. 
-def getDataWithFeatures(selectedFeatures, dbRecords, fieldHeaders, isDistinct):
+def getDataWithFeatures(selectedFeatures, dbRecords, fieldHeaders):
     headerNames = [];
     resultData = [];
     execList = [];
+
+    zenodoHeaderNames = [];
+    zenodoData = [];
+    zenodoExecList = [];
     # Insert features in-order
     for feature in selectedFeatures:
         headerNames.append(feature);
@@ -158,13 +171,30 @@ def getDataWithFeatures(selectedFeatures, dbRecords, fieldHeaders, isDistinct):
     for header in fieldHeaders:
         headerNames.insert(0,header['label']);
         execList.insert(0,header['field']);
-    # Really only used to eliminate multiple Zenodo entries in the QuerySet.
-    if isDistinct:
-        dbRecords = dbRecords.distinct();
+
+    # We only want a single zenodo value per record.
+    dbRecords = dbRecords.distinct();
+
     # Note the difference between values_list() kwargs processing and filter()
     dbQuery = dbRecords.values_list(*execList);
     resultData = [list(item) for item in dbQuery];
-    return (headerNames,resultData);
+#    for experiment in resultData:
+#        print(experiment);
+#        print(experiment[0]);
+
+    # Extract zenodo file information separately
+    for header in zenodoFieldHeaders:
+        zenodoHeaderNames.insert(0,header['label']);
+        zenodoExecList.insert(0,header['field']);
+    zenodoQuery = dbRecords.values_list(*zenodoExecList);
+    zenodoData = [list(item) for item in zenodoQuery if item[0] != None];
+#    for fileRecord in zenodoData:
+#        print(fileRecord);
+#        print(fileRecord[0]);
+
+    return { 'header': headerNames, 'data': resultData,
+             'zenodo_header': zenodoHeaderNames, 'zenodo_data': zenodoData,
+             };
 
 # Produces a list of features names given a GET request construct
 def getFeaturesNamesFromGet(getRequest, tag):
@@ -259,15 +289,40 @@ def processDownloadConfiguration(getRequest, dbRecords):
     return dbRecords;
 
 def constructSearchContext(inData, selectedFeatures, context):
+    # Input is a dictionary with keys 'header', 'data', 'zenodo_header', and
+    #   'zenodo_data'
     global timestampIdx;
+    global zenodoIdx;
     # Clone the list of names for header processing
-    header = inData[0][:];
-    resultData = inData[1];
+    header = inData['header'][:];
+    resultData = inData['data'];
+    zenodoHeader = inData['zenodo_header'];
+    zenodoData = inData['zenodo_data'];
 
     # We're gonna offload the construction of URL and File Type information to
     #   the client in this version.
     transformTimestamps(resultData, timestampIdx);
-    fileTypeIdToName(resultData, filetypeIdx);
+    fileTypeIdToName(zenodoData, filetypeIdx);
+
+    # Cross-reference zenodo ids to get max file size
+    zenodoDict = {};
+    for fileRecord in zenodoData:
+        if fileRecord[0] not in zenodoDict and fileRecord[0] != None:
+            zenodoDict[fileRecord[0]] = [];
+        if fileRecord[0] != None:
+            zenodoDict[fileRecord[0]].append(fileRecord[-3:]);
+    header.append('filesize');
+    header.append('numfiles');
+    for experiment in resultData:
+        numFiles = 0;
+        totalFileSize = 0;
+        if experiment[zenodoIdx] != None:
+            numFiles = len(zenodoDict[experiment[zenodoIdx]]);
+            for file in zenodoDict[experiment[zenodoIdx]]:
+                totalFileSize += file[0];
+        experiment.append(totalFileSize);
+        experiment.append(numFiles);
+
     returnTable = [dict(zip(header,row)) for row in noneToText(resultData)];
     returnTable = eliminateEmptySelectedFeatureRows(selectedFeatures, returnTable);
     results_count = len(returnTable);
@@ -275,13 +330,19 @@ def constructSearchContext(inData, selectedFeatures, context):
     context['selected_features_names'] = selectedFeatures;
     context['data_header'] = header;
     context['results_list'] = returnTable;
+    context['zenodo_header'] = zenodoHeader;
+    context['zenodo_data'] = zenodoData;
     context['results_count'] = results_count;
 
 def constructDownloadContext(inData, selectedFeatures, context):
+    # Input is a dictionary with keys 'header', 'data', 'zenodo_header', and
+    #   'zenodo_data'
     global downloadTimestampIdx;
     # Clone the list of names for header processing
-    header = inData[0][:];
-    resultData = inData[1];
+    header = inData['header'][:];
+    resultData = inData['data'];
+    zenodoHeader = inData['zenodo_header'];
+    zenodoData = inData['zenodo_data'];
 
     # Since this operation is expected to be data-intensive, we should attempt
     #   to send processed data to the client in a form that requires no
@@ -350,7 +411,7 @@ def index(request):
             selectedFeatures = getFeaturesNamesFromGet(request.GET, '_isFeature');
             for feature in selectedFeatures:
                 filterState['filteredFeatures'][feature] = '1';
-            filteredData = getDataWithFeatures(selectedFeatures, filteredDb, fieldHeaders, False);
+            filteredData = getDataWithFeatures(selectedFeatures, filteredDb, fieldHeaders);
             constructSearchContext(filteredData, selectedFeatures, context);
             # This is going to have to be a re-package of the desired advanced filter parameters
             context['prev_advanced_filter_state'] = filterState;
@@ -364,20 +425,20 @@ def index(request):
             selectedFeatures = getFeaturesNamesFromGet(request.GET, '_isFeature'); 
             for feature in selectedFeatures:
                 filterState['filteredFeatures'][feature] = '1';
-            filteredData = getDataWithFeatures(selectedFeatures, filteredDb, fieldHeaders, False);
+            filteredData = getDataWithFeatures(selectedFeatures, filteredDb, fieldHeaders);
             constructSearchContext(filteredData, selectedFeatures, context);
             context['prev_advanced_filter_state'] = filterState;
             # Processing of download options
             filteredDb = processDownloadConfiguration(request.GET, filteredDb);
             downloadFeatures = getFeaturesNamesFromGet(request.GET, '_isDownload');
-            downloadData = getDataWithFeatures(downloadFeatures, filteredDb, downloadHeaders, True);
+            downloadData = getDataWithFeatures(downloadFeatures, filteredDb, downloadHeaders);
             constructDownloadContext(downloadData, downloadFeatures, context);
 
     # If the previous phase did not result in any loads from the database, load default
     if loadDefault:
         # All experiments are chosen by default
         filteredDb = Experiments.objects.order_by('base_name');
-        experimentsData = getDataWithFeatures(defaultCoreFeatures, filteredDb, fieldHeaders, False);
+        experimentsData = getDataWithFeatures(defaultCoreFeatures, filteredDb, fieldHeaders);
         constructSearchContext(experimentsData, defaultCoreFeatures, context);
         for feature in defaultCoreFeatures:
             filterState['filteredFeatures'][feature] = '1';
