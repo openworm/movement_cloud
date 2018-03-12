@@ -4,6 +4,26 @@
 <div id="loader"></div>
 <div id="loaderText"><h2 id="loaderLabel">Loading Crossfilter Data. Please wait.</h2></div>
 
+
+<form id="searchForm" action="{% url "index" %}" method="get">
+  <div class="form-group" >
+    <div id="searchWidget" class="ui-widget">
+      <p id="searchLine">
+	<button onclick="submitSearchBar()" id="searchBarButton" class="btn btn-danger" value="">Search</button>
+	<label for="searchBar">:</label>
+	<textarea id="searchBar" rows="1" placeholder="e.g. N2 or Young Adult "></textarea>
+      </p>
+    </div>
+    <input type="hidden" type="submit" name="search">
+    <div id="crossfilterFeatureInput">
+    </div>
+    <div id="downloadMetadataInput">
+    </div>
+    <div id="hiddenDiscreteInput">
+    </div>
+  </div> <!-- form group -->
+</form>
+
 <div style="visibility:hidden;" class="container animatebottom" id="master">
 
   <ul class="nav nav-tabs" id="tabsUL">
@@ -31,8 +51,8 @@
     <div class="tab-pane fade" id="searchPane">
       {% include "webworm/advancedSearch-pane.html" %}
     </div>
-
   </div>
+
 </div>
 
 {% load static %}

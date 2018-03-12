@@ -1,5 +1,13 @@
 "use strict";
 
+function createCrossfilterFeatureInput() {
+    paramTable.rows({ selected: true }).every( function(index) {
+	    var data = this.data();
+	    $('#crossfilterFeatureInput').append('<input type="hidden" name="' +
+						 data[0] + '_isFeature" value=""/>');
+	});
+}
+
 function loading(isLoading, message) {
     if (!isLoading) {
 	document.getElementById("loader").style.display = "none";

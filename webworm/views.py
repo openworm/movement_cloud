@@ -16,7 +16,10 @@ import time
 # Global discrete field management information
 discreteFields = {
     'strains': ('strain','Strains','Strains','None'),
-    'trackers': ('tracker','Trackers','Trackers','Unknown'),
+#    'trackers': ('tracker','Trackers','Trackers','Unknown'),
+# *CWL* Current generalization doesn't work on things outside the Experiments table
+#     I think. Will need to find a way to extend this to other tables.
+#    'genes': ('strain__gene__name', 'Gene', 'Gene', 'Unknown'),
     'dev': ('developmental_stage','Developmental Stage','DevelopmentalStages','None'),
     'ventral': ('ventral_side','Ventral Side','VentralSides','Unknown'),
     'food': ('food','Food','Foods','Unknown'), 
@@ -402,8 +405,7 @@ def index(request):
     filterState = {};
     filterState['filteredFeatures'] = {};
     if request.method == "GET":
-        # Look for crossfilter requests first.
-        if (request.GET.__contains__("crossfilter")):
+        if (request.GET.__contains__("search")):
             loadDefault = False;
             filteredDb = processSearchConfiguration(request.GET, 
                                                     Experiments.objects.order_by('base_name'),
@@ -415,24 +417,23 @@ def index(request):
             constructSearchContext(filteredData, selectedFeatures, context);
             # This is going to have to be a re-package of the desired advanced filter parameters
             context['prev_advanced_filter_state'] = filterState;
-        # Process download requests
-        if (request.GET.__contains__("download")):
-            loadDefault = False;
-            # Processing advanced filter options first
-            filteredDb = processSearchConfiguration(request.GET, 
-                                                    Experiments.objects.order_by('strain__name'),
-                                                    filterState);
-            selectedFeatures = getFeaturesNamesFromGet(request.GET, '_isFeature'); 
-            for feature in selectedFeatures:
-                filterState['filteredFeatures'][feature] = '1';
-            filteredData = getDataWithFeatures(selectedFeatures, filteredDb, fieldHeaders);
-            constructSearchContext(filteredData, selectedFeatures, context);
-            context['prev_advanced_filter_state'] = filterState;
-            # Processing of download options
-            filteredDb = processDownloadConfiguration(request.GET, filteredDb);
-            downloadFeatures = getFeaturesNamesFromGet(request.GET, '_isDownload');
-            downloadData = getDataWithFeatures(downloadFeatures, filteredDb, downloadHeaders);
-            constructDownloadContext(downloadData, downloadFeatures, context);
+            # Process download requests
+            if (request.GET.__contains__("download")):
+                # Processing advanced filter options first
+                filteredDb = processSearchConfiguration(request.GET, 
+                                                        Experiments.objects.order_by('strain__name'),
+                                                        filterState);
+                selectedFeatures = getFeaturesNamesFromGet(request.GET, '_isFeature'); 
+                for feature in selectedFeatures:
+                    filterState['filteredFeatures'][feature] = '1';
+                filteredData = getDataWithFeatures(selectedFeatures, filteredDb, fieldHeaders);
+                constructSearchContext(filteredData, selectedFeatures, context);
+                context['prev_advanced_filter_state'] = filterState;
+                # Processing of download options
+                filteredDb = processDownloadConfiguration(request.GET, filteredDb);
+                downloadFeatures = getFeaturesNamesFromGet(request.GET, '_isDownload');
+                downloadData = getDataWithFeatures(downloadFeatures, filteredDb, downloadHeaders);
+                constructDownloadContext(downloadData, downloadFeatures, context);
 
     # If the previous phase did not result in any loads from the database, load default
     if loadDefault:

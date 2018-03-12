@@ -1,27 +1,13 @@
 <div id="searchControlPane" class="tabbable">
-  <form action="{% url "index" %}" method="get">
-    <div class="form-group" >
-      <div id="searchMethodPanes">
-	<ul class="nav nav-pills">
-	  <li class="active"><a title="Restrict what gets crossfiltered based on Database field values (e.g. Strain of the worms.)"
-		 data-toggle="pill" href="#discretePane">2. Filter Discrete Values</a></li>
-	  <li><a title="Restrict the date-range of records. Review choices made in previous two tabs. Submit choices for crossfiltering. You will be taken to the 'Crossfilter Features/Get Data' tab, and the chosen restrictions will apply there."
-		 data-toggle="pill" href="#confirmSearchPane">3. Review and Confirm</a></li>
-	</ul>
-	
-	<div class="tab-content">
-	  <!-- Search by discrete database fields -->
-	  <div class="tab-pane fade in active" id="discretePane">
-	    {% include "webworm/filter-discrete-template.html" %}
-	  </div>
-	  
-	  <!-- Confirmation tab to review and submit search request to server -->
-	  <div class="tab-pane fade" id="confirmSearchPane">
-	    {% include "webworm/filter-confirm-template.html" %}
-	  </div>
-	</div> <!-- tab content -->
-
-      </div> <!-- container -->
-    </div> <!-- form group -->
-  </form>
+  <!-- Pane template.
+       <ul class="nav nav-pills" id="xFilterPills">
+       </ul>
+       <div class="tab-content">
+	 <div class="tab-pane fade in active" id="crossfilterPane">
+	 </div>
+       </div>
+       -->
+  <div id="searchMethodPanes">
+    {% include "webworm/advancedSearch-template.html" %}
+  </div> <!-- container -->
 </div>
