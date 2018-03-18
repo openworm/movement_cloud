@@ -4,27 +4,26 @@
 <div id="loader"></div>
 <div id="loaderText"><h2 id="loaderLabel">Loading Crossfilter Data. Please wait.</h2></div>
 
-
-<form id="searchForm" action="{% url "index" %}" method="get">
-  <div class="form-group" >
-    <div id="searchWidget" class="ui-widget">
-      <p id="searchLine">
-	<button onclick="submitSearchBar()" id="searchBarButton" class="btn btn-danger" value="">Search</button>
-	<label for="searchBar">:</label>
-	<textarea id="searchBar" rows="1" placeholder="e.g. N2 or Young Adult "></textarea>
-      </p>
-    </div>
-    <input type="hidden" type="submit" name="search">
-    <div id="crossfilterFeatureInput">
-    </div>
-    <div id="downloadMetadataInput">
-    </div>
-    <div id="hiddenDiscreteInput">
-    </div>
-  </div> <!-- form group -->
-</form>
-
 <div style="visibility:hidden;" class="container animatebottom" id="master">
+
+  <form id="searchForm" action="{% url "index" %}" method="get">
+    <div class="form-group" >
+      <div id="searchWidget" class="ui-widget">
+	<p id="searchLine">
+	  <button onclick="submitSearchBar()" id="searchBarButton" class="btn btn-danger" value="">Search</button>
+	  <label for="searchBar">:</label>
+	  <textarea id="searchBar" rows="1" placeholder="e.g. N2 or Young Adult "></textarea>
+	</p>
+      </div>
+      <input type="hidden" type="submit" name="search">
+      <div id="crossfilterFeatureInput">
+      </div>
+      <div id="downloadMetadataInput">
+      </div>
+      <div id="hiddenDiscreteInput">
+      </div>
+    </div> <!-- form group -->
+  </form>
 
   <ul class="nav nav-tabs" id="tabsUL">
     <li class="active"><a title="Find desired experiments by restricting Features value ranges."
@@ -90,6 +89,9 @@
 <!-- DataTables local -->
 <script src="{% static 'webworm/filter-discrete.js' %}"></script>
 <script src="{% static 'webworm/filter-features.js' %}"></script>
+
+<!-- Search Bar -->
+<script src="{% static 'webworm/main-search-bar.js' %}"></script>
 
 <!-- Crossfilter Local -->
 <script src="{% static 'webworm/crossfilter_parameters.js' %}"></script>

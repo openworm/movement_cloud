@@ -3,61 +3,6 @@ var discreteElementsPerRow = 2;
 var discreteConfirmElementsPerRow = 4;
 var hiddenDiscreteIndex = 1;
 
-$.widget( "custom.catcomplete", $.ui.autocomplete, {
-	_create: function() {
-	    this._super();
-	    this.widget().menu( "option", "items", "> :not(.ui-autocomplete-category)" );
-	},
-	_renderMenu: function( ul, items ) {
-	    var that = this,
-		currentCategory = "";
-	    $.each( items, function( index, item ) {
-		    var li;
-		    if ( item.category != currentCategory ) {
-			ul.append( "<li class='ui-autocomplete-category'>" + item.category + "</li>" );
-			currentCategory = item.category;
-		    }
-		    li = that._renderItemData( ul, item );
-		    if ( item.category ) {
-			li.attr( "aria-label", item.category + " : " + item.label );
-		    }
-		});
-	},
-    });
-
-// Format - { label: "annhhx10", category: "Products" },
-var databaseFieldData = [];
-
-// Construct database field information for autocomplete search bar
-for (var currIdx=0; currIdx<discreteFieldData.length; currIdx++) {
-    for (var recordIdx=0; recordIdx<discreteFieldData[currIdx].length; recordIdx++) {
-	databaseFieldData.push({ 
-		"category" : discreteFieldNames[currIdx],
-         	"label" : discreteFieldData[currIdx][recordIdx][0],
-		"value" : discreteFieldMetadata[currIdx] + "=" + 
-		          discreteFieldData[currIdx][recordIdx][0],
-		    });
-    }
-}
-
-$("#searchBar").bind('keypress', function(e){
-	if ( e.keyCode == 13 ) {
-	    submitSearchBar();
-	}
-    });
-
-$("#searchBar").catcomplete({
-   delay: 0,
-   source: databaseFieldData,
-   select: function(event, ui) {
-	    var data = ui.item.value.split("=");
-	    console.log(data);
-	    $('#hiddenDiscreteInput').append('<input type="hidden" id="' + data[0] +
-					     'InputList" name="' + data[0] +
-					     '" value="' + data[1] + '"/>');
-   },
-});
-
 function createDiscreteHiddenInput(domTag) {
     for (var disIdx=0; disIdx<discreteFieldMetadata.length; disIdx++) {
 	var fieldString = '';
@@ -81,14 +26,6 @@ function createDiscreteHiddenInput(domTag) {
 // On Form Submission, populate the discrete search parameters
 var submitAdvancedFilter = function() {
     createDiscreteHiddenInput('#hiddenDiscreteInput');
-    createCrossfilterFeatureInput();
-    loading(true, 'Loading Crossfilter Data. Please Wait.');
-    $('#searchForm').submit();
-}
-
-// Search Bar will have special behavior where the existing Advanced Search configurations
-//   are ignored.
-var submitSearchBar = function() {
     createCrossfilterFeatureInput();
     loading(true, 'Loading Crossfilter Data. Please Wait.');
     $('#searchForm').submit();
