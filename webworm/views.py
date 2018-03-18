@@ -360,7 +360,10 @@ def constructDownloadContext(inData, selectedFeatures, context):
 def wconviewer(request):
     context = {};
     return render(request, 'webworm/wcon-viewer.html', context);
-    
+
+def upload(request):
+    context = {};
+    return render(request, 'webworm/upload.html', context);
 
 def index(request):
     global defaultCoreFeatures;
