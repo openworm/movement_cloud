@@ -26,26 +26,18 @@
   </form>
 
   <ul class="nav nav-tabs" id="tabsUL">
-    <li class="active"><a title="Find desired experiments by restricting Features value ranges."
-			  data-toggle="tab" href="#crossfilterPane">Crossfilter by Features</a>
-    </li>
-    <li><a title="Download Features metadata or full experiment data." 
-	   data-toggle="tab" href="#genDataPane">Get Data</a></li>
-    <li><a title="Search Database by field values. Optional." 
-	   data-toggle="tab" href="#searchPane">Advanced Search</a></li>
+    <li class="active"><a title="Find experiments using Database interface."
+			  data-toggle="tab" href="#databasePane">Use Database</a></li>
+    <li><a title="Filter Database records by field values. Optional." 
+	   data-toggle="tab" href="#searchPane">Advanced Database Search Filters</a></li>
   </ul>
 
   <div class="tab-content">
-    <!-- Cross Filter Panel -->
-    <div class="tab-pane fade in active" id="crossfilterPane">
-      {% include "webworm/crossfilter-pane.html" %}
+    <!-- Database Selection Tool -->
+    <div class="tab-pane fade in active" id="databasePane">
+      {% include "webworm/database-pane.html" %}
     </div>
-
-    <!-- Generate Data Panel -->
-    <div class="tab-pane fade" id="genDataPane">
-      {% include "webworm/genData-pane.html" %}
-    </div>
-
+    
     <!-- Search Tool Panel -->
     <div class="tab-pane fade" id="searchPane">
       {% include "webworm/advancedSearch-pane.html" %}

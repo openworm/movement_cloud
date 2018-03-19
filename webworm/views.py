@@ -411,7 +411,7 @@ def index(request):
         if (request.GET.__contains__("search")):
             loadDefault = False;
             filteredDb = processSearchConfiguration(request.GET, 
-                                                    Experiments.objects.order_by('base_name'),
+                                                    Experiments.objects.order_by('strain__name'),
                                                     filterState);
             selectedFeatures = getFeaturesNamesFromGet(request.GET, '_isFeature');
             for feature in selectedFeatures:
@@ -422,17 +422,6 @@ def index(request):
             context['prev_advanced_filter_state'] = filterState;
             # Process download requests
             if (request.GET.__contains__("download")):
-                # Processing advanced filter options first
-                filteredDb = processSearchConfiguration(request.GET, 
-                                                        Experiments.objects.order_by('strain__name'),
-                                                        filterState);
-                selectedFeatures = getFeaturesNamesFromGet(request.GET, '_isFeature'); 
-                for feature in selectedFeatures:
-                    filterState['filteredFeatures'][feature] = '1';
-                filteredData = getDataWithFeatures(selectedFeatures, filteredDb, fieldHeaders);
-                constructSearchContext(filteredData, selectedFeatures, context);
-                context['prev_advanced_filter_state'] = filterState;
-                # Processing of download options
                 filteredDb = processDownloadConfiguration(request.GET, filteredDb);
                 downloadFeatures = getFeaturesNamesFromGet(request.GET, '_isDownload');
                 downloadData = getDataWithFeatures(downloadFeatures, filteredDb, downloadHeaders);

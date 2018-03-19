@@ -195,8 +195,13 @@ function getUrlList() {
     $('textarea#urlList').val(urlListText);
 }
 
-function getCsvFromResults() {
-    $('#metadataInput').append('<input type="hidden" id="downloadTag" name="download" value="">');
+function submitFeaturesDownload() {
+    populateFeaturesRequest();
+    submitAdvancedFilter();
+}
+
+function populateFeaturesRequest() {
+    $('#downloadMetadataInput').append('<input type="hidden" id="downloadTag" name="download" value="">');
     // Stub for getting chart ranges - to be delivered back via GET request
     XFILTER_PARAMS['charts'].forEach( function(dimension) {
 	    // insert hidden input
@@ -207,10 +212,10 @@ function getCsvFromResults() {
 		minSuffix = '_dl_min';
 		maxSuffix = '_dl_max';
 	    }
-	    $('#metadataInput').append('<input type="hidden" id="' + 
+	    $('#downloadMetadataInput').append('<input type="hidden" id="' + 
 				       dimension + minSuffix + '_InputList" name="' +
 				       dimension + minSuffix + '" value=""/>');
-	    $('#metadataInput').append('<input type="hidden" id="' + 
+	    $('#downloadMetadataInput').append('<input type="hidden" id="' + 
 				       dimension + maxSuffix + '_InputList" name="' +
 				       dimension + maxSuffix + '" value=""/>');
 	    let minValue = globalCF.dimension(d => d[dimension]).bottom(1)[0][dimension];
@@ -225,7 +230,7 @@ function getCsvFromResults() {
     // Deliver filtered features via GET request
     xFilterFeaturesTable.rows({selected: true}).every( function(rowIdx, tblLoop, rowLoop) {
 	    let feature = this.data()[0];
-	    $('#metadataInput').append('<input type="hidden" id="meta_dl_' +
+	    $('#downloadMetadataInput').append('<input type="hidden" id="meta_dl_' +
 				       feature + '" name="' +
 				       feature + '_isDownload" value=""/>');
 	});
@@ -234,25 +239,21 @@ function getCsvFromResults() {
     for (var key in prevAdvancedFilterState) {
 	if (key == 'filteredFeatures') {
 	    for (var feature in prevAdvancedFilterState['filteredFeatures']) {
-		$('#metadataInput').append('<input type="hidden" id="meta_' +
+		$('#downloadMetadataInput').append('<input type="hidden" id="meta_' +
 					   feature + '" name="' +
 					   feature + '_isFeature" value=""/>');
 	    }
 	} else if (key == 'start_date') {
-	    $('#metadataInput').append('<input type="hidden" id="meta_start_date" ' +
+	    $('#downloadMetadataInput').append('<input type="hidden" id="meta_start_date" ' +
 				       'name="start_date" value="' +
 				       prevAdvancedFilterState['start_date'] + '"/>');
 	} else if (key == 'end_date') {
-	    $('#metadataInput').append('<input type="hidden" id="meta_end_date" ' +
+	    $('#downloadMetadataInput').append('<input type="hidden" id="meta_end_date" ' +
 				       'name="end_date" value="' +
 				       prevAdvancedFilterState['end_date'] + '"/>');
-	} else {
-	    // discrete lists
-	    createDiscreteHiddenInput('#metadataInput');
 	}
     }
     loading(true, 'Loading Features Metadata. Please Wait.');
-    $('#metadataForm').submit();
 }
 
 function isoToYMD(inDate) {
