@@ -15,11 +15,12 @@ import time
 
 # Global discrete field management information
 discreteFields = {
-    'strains': ('strain','Strains','Strains','None'),
 #    'trackers': ('tracker','Trackers','Trackers','Unknown'),
 # *CWL* Current generalization doesn't work on things outside the Experiments table
 #     I think. Will need to find a way to extend this to other tables.
-#    'genes': ('strain__gene__name', 'Gene', 'Gene', 'Unknown'),
+    'genes': ('strain__gene', 'Genes', 'Genes', 'Unknown'),
+    'alleles': ('strain__allele', 'Alleles', 'Alleles', 'Unknown'),
+    'strains': ('strain','Strains','Strains','None'),
     'dev': ('developmental_stage','Developmental Stage','DevelopmentalStages','None'),
     'ventral': ('ventral_side','Ventral Side','VentralSides','Unknown'),
     'food': ('food','Food','Foods','Unknown'), 
