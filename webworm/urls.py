@@ -6,4 +6,5 @@ urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^wconviewer', views.wconviewer, name='wconviewer'),
     url(r'^upload', views.upload, name='upload'),
+    url(r'^contributors', views.contrib, name='contributors'),
 ]

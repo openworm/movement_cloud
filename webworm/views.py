@@ -368,6 +368,10 @@ def upload(request):
         print('Post received');
     return render(request, 'webworm/upload.html', context);
 
+def contrib(request):
+    context = {};
+    return render(request, 'webworm/contributors.html', context);
+
 def index(request):
     global defaultCoreFeatures;
     global fileTypes;

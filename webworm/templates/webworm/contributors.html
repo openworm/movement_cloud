@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Worm Movement Database Contributors List</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Worm Movement Database Upload Page">
+    <meta name="author" content="cheelee@openworm.org, mcurrie@openworm.org">
+    {% load staticfiles %}
+    <link rel="shortcut icon" href="{%  static 'favicon.ico' %}">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- jQuery UI Styles -->
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+    <link rel="stylesheet" href="{% static 'webworm/worm_style.css' %}" />
+    <link rel="stylesheet" href="{% static 'webworm/worm_filter.css' %}" />
+    <!-- Loading Screen support -->
+    <link rel="stylesheet" href="{% static 'webworm/worm_load.css' %}" />
+    <!-- Search Bar support -->
+    <link rel="stylesheet" href="{% static 'webworm/worm_search.css' %}" />
+
+    <!-- Scripts -->
+    <!-- jQuery and Bootstrap and Babel-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  </head>
+
+  <header class="jumbotron subhead" id="overview">
+    <div class="container">
+     <div class="title_with_logo">
+       <center>
+	 <table>
+           <tr>
+             <th><img src="{%  static 'logo_small.png' %}" width="128" height="128"></th>
+             <th>
+               <h1>Movement Database Contributors</h1>	    
+	       <p align="right"><small>{{ version }}</small></p>
+               <p class="lead"></p>
+	     </th>
+	   </tr>
+	 </table>
+       </center>
+  </header>
+
+  <div>
+    Thanks to all the following contributors to this scientific payload on database!
+  </div>
+
+  <div id="contributors">
+  </div>
+
+</html>
