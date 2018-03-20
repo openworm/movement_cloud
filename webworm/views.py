@@ -363,6 +363,8 @@ def wconviewer(request):
 
 def upload(request):
     context = {};
+    if request.method == "POST":
+        print('Post received');
     return render(request, 'webworm/upload.html', context);
 
 def index(request):
