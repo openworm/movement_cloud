@@ -1,10 +1,75 @@
 {% extends "webworm/header.html" %}
 
 {% block content %}
+{% load static %}
+
 <div id="loader"></div>
 <div id="loaderText"><h2 id="loaderLabel">Loading Crossfilter Data. Please wait.</h2></div>
 
 <div style="visibility:hidden;" class="container animatebottom" id="master">
+
+<nav class="navbar navbar-default navbar-inverse">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a target="_blank" href="http://openworm.org/" class="navbar-brand">OpenWorm</a>
+    </div>
+    
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="main-navbar-collapse-1">
+      <ul class="nav nav-tab navbar-nav">
+        <li class="active"><a data-toggle="tab" href="#crossfilterPane">Find Experiments</a></li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Get Data<span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a data-toggle="tab" href="#downloadDataPane">Zenodo Data</a></li>
+            <li><a data-toggle="tab" href="#featuresMetaPane">Features Metadata</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="{% url 'index' %}">Clear All Settings</a></li>
+          </ul>
+        </li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Configure Database<span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a data-toggle="tab" href="#xfFeaturesPane">Select Crossfilter Features</a></li>
+            <li><a data-toggle="tab" href="#searchPane">Advanced Filters</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="{% url 'index' %}">Clear All Settings</a></li>
+          </ul>
+        </li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Support Tools<span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="{% url 'wconviewer' %}">WCON Movement Viewer</a></li>
+          </ul>
+        </li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Contribute<span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="{% url 'upload' %}">Upload your Data</a></li>
+            <li><a target="_blank" href="https://goo.gl/forms/hIYt4Z7ETmklUrIf1">Give Feedback</a>
+	    </li>
+          </ul>
+        </li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Info<span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a target="_blank" href="https://github.com/openworm/movement_cloud/blob/master/README.md">Documentation</a></li>
+            <li><a target="_blank" href="https://github.com/openworm/movement_cloud">Source Code</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
 
   <form id="searchForm" action="{% url "index" %}" method="get">
     <div class="form-group" >
@@ -12,7 +77,7 @@
 	<p id="searchLine">
 	  <button onclick="submitSearchBar()" id="searchBarButton" class="btn btn-danger" value="">Search</button>
 	  <label for="searchBar">:</label>
-	  <textarea id="searchBar" rows="1" placeholder="e.g. N2 or Young Adult "></textarea>
+	  <textarea id="searchBar" rows="1" placeholder="e.g. N2 or unc "></textarea>
 	</p>
       </div>
       <input type="hidden" type="submit" name="search">
@@ -25,28 +90,45 @@
     </div> <!-- form group -->
   </form>
 
+  <hr>
+
+<!--
   <ul class="nav nav-tabs" id="tabsUL">
     <li class="active"><a title="Find experiments using Database interface."
 			  data-toggle="tab" href="#databasePane">Use Database</a></li>
     <li><a title="Filter Database records by field values. Optional." 
 	   data-toggle="tab" href="#searchPane">Advanced Database Search Filters</a></li>
   </ul>
-
+-->
   <div class="tab-content">
     <!-- Database Selection Tool -->
-    <div class="tab-pane fade in active" id="databasePane">
-      {% include "webworm/database-pane.html" %}
+    <div class="tab-pane fade in active" id="crossfilterPane">
+      {% include "webworm/crossfilter-template.html" %}
     </div>
-    
-    <!-- Search Tool Panel -->
+
+    <!-- Select Crossfilter Features -->
+    <div class="tab-pane fade" id="xfFeaturesPane">
+      {% include "webworm/crossfilterFeatures-template.html" %}
+    </div>    
+
+    <!-- Filter Tool Panel -->
     <div class="tab-pane fade" id="searchPane">
-      {% include "webworm/advancedSearch-pane.html" %}
+      {% include "webworm/advancedSearch-template.html" %}
     </div>
+
+    <!-- Download Data Panel -->
+    <div class="tab-pane fade" id="downloadDataPane">
+      {% include "webworm/crossfilter-genData-template.html" %}
+    </div>
+
+    <!-- Download MetaData Panel -->
+    <div class="tab-pane fade" id="featuresMetaPane">
+      {% include "webworm/getMetadata-template.html" %}
+    </div>
+
   </div>
 
 </div>
-
-{% load static %}
 
 <script type="text/javascript"> 
   var hasCFData = false;

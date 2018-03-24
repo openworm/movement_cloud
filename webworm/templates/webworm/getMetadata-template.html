@@ -1,0 +1,23 @@
+<div id="getMetaData_pane">
+  <div>
+    <button id="generateCsv" onclick="submitFeaturesDownload()" type="button" class="btn btn-danger" disabled="true">Download Features Means Metadata</button>
+  </div>
+  <p><span id='genDataFeaturesSelected'>-</span> of <span id='genDataFeaturesTotal'>-</span> features selected for metadata download.</p>
+  <div>
+    <h4>Select Features - click row to select feature</h4>
+    <table id="xFilterFeaturesTable" class="table table-striped table-bordered table-responsive">
+      <thead>
+	<tr>
+	  <th>Name</th>
+	</tr>
+      </thead>
+      <tbody>
+	{% for name in all_features_names %}
+	<tr>
+	  <td>{{ name }}</td>
+	</tr>
+	{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

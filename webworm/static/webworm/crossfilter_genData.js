@@ -58,13 +58,26 @@ function downloadResultsList() {
     // Get grouping by Zenodo Id
     let allCFValues = globalCF.dimension(d => d.zenodo_id).top(Infinity);
     for (var idx=0; idx<allCFValues.length; idx++) {
+	/* Old
 	let downloadUrl = allCFValues[idx].url;
 	let zenodoId = allCFValues[idx].zenodo_id;
 	let fileType = allCFValues[idx].filetype;
-	if (downloadUrl != 'None') {
+	*/
+	let zenodoId = allCFValues[idx].zenodo_id;
+	let zenodoFiles = zenodoDataDict[zenodoId];
+	if (zenodoFiles != undefined) {
+	    for (var fileIdx=0; fileIdx<zenodoFiles.length; fileIdx++) {
+		let downloadUrl = zenodoFiles[fileIdx][3];
+		let fileType = zenodoFiles[fileIdx][2];
+		if ($('#chk_' + fileType).is(':checked')) {
+		    returnText = returnText + zenodoId + "\t" + downloadUrl + "\n";
+		}
+	    }
+	    /* Old
 	    if ($('#chk_' + fileType).is(':checked')) {
 		returnText = returnText + zenodoId + "\t" + downloadUrl + "\n";
 	    }
+	    */
 	}
     }
     if (returnText == "") {
@@ -146,6 +159,18 @@ function reportExpectedDownloadSize() {
     let allCFValues = globalCF.dimension(d => d.zenodo_id).top(Infinity);
     let total = 0;
     for (var idx=0; idx<allCFValues.length; idx++) {
+	let zenodoId = allCFValues[idx].zenodo_id;
+	let zenodoFiles = zenodoDataDict[zenodoId];
+	if (zenodoFiles != undefined) {
+	    for (var fileIdx=0; fileIdx<zenodoFiles.length; fileIdx++) {
+		let fileType = zenodoFiles[fileIdx][2];
+		let filesize = zenodoFiles[fileIdx][0];
+		if ($('#chk_' + fileType).is(':checked')) {
+		    total += filesize;
+		}
+	    }
+	}
+	/* Old
 	let downloadUrl = allCFValues[idx].url;
 	let filesize = allCFValues[idx].filesize;
 	let fileType = allCFValues[idx].filetype;
@@ -154,6 +179,7 @@ function reportExpectedDownloadSize() {
 		total += filesize;
 	    }
 	}
+	*/
     }
     $('#expectedDatasize').text(prettySize(total));
 }
