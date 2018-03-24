@@ -46,15 +46,17 @@
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Support Tools<span class="caret"></span></a>
           <ul class="dropdown-menu">
-            <li><a href="{% url 'wconviewer' %}">WCON Movement Viewer</a></li>
+            <li><a target="_blank" href="{% url 'wconviewer' %}">WCON Movement Viewer</a></li>
           </ul>
         </li>
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Contribute<span class="caret"></span></a>
           <ul class="dropdown-menu">
-            <li><a href="{% url 'upload' %}">Upload your Data</a></li>
+            <li><a target="_blank" href="{% url 'upload' %}">Upload your Data</a></li>
             <li><a target="_blank" href="https://goo.gl/forms/hIYt4Z7ETmklUrIf1">Give Feedback</a>
 	    </li>
+            <li role="separator" class="divider"></li>
+            <li><a target="_blank" href="{% url 'contributors' %}">Contributors List</a></li>
           </ul>
         </li>
         <li class="dropdown">
