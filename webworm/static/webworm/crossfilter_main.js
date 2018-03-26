@@ -8,6 +8,15 @@
 //   access to the data elements.
 var globalCF;
 
+function noResults(domTag) {
+    $('#' + domTag).empty();
+    $('#' + domTag).append('<h1>No Results from Last Search</h1>');
+    $('#' + domTag).append('<hr>');
+    $('#' + domTag).append('<p>Please try with other search and filter terms.</p>');
+    $('#' + domTag).append('<p>Do this through the <b>search bar</b>, or <b><i>Configure Database -> Advanced Database Filters</i></b>.</p>');
+    $('#' + domTag).append('<p>You may also reset the tool by <b><i>Configure Database -> Clear All Settings</i></b>.</p>');
+}
+
 if (hasCFData) {
     window.scrollTo(0,0);
     generateFileTypeCheckboxes();
@@ -38,9 +47,9 @@ if (hasCFData) {
 } else {
     // If no data is available, use the default example from a file
     // d3.csv(XFILTER_PARAMS.data_file, crossfilter_callback);
-    $('#crossfilterPane').empty();
-    $('#crossfilterPane').append('<h1>No Results from Last Search</h1>');
-    $('#crossfilterPane').append('<p>Please try with other search and filter terms.</p>');
+    noResults('crossfilterPane');
+    noResults('downloadDataPane');
+    noResults('featuresMetaPane');
     loading(false, 'None');
 }
 if ((downloadData != 'None') && (downloadHeaders != 'None')) {
