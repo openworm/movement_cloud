@@ -37,7 +37,11 @@ if (hasCFData) {
     }
 } else {
     // If no data is available, use the default example from a file
-    d3.csv(XFILTER_PARAMS.data_file, crossfilter_callback);
+    // d3.csv(XFILTER_PARAMS.data_file, crossfilter_callback);
+    $('#crossfilterPane').empty();
+    $('#crossfilterPane').append('<h1>No Results from Last Search</h1>');
+    $('#crossfilterPane').append('<p>Please try with other search and filter terms.</p>');
+    loading(false, 'None');
 }
 if ((downloadData != 'None') && (downloadHeaders != 'None')) {
     generateDownloadData();
