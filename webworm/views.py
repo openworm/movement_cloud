@@ -10,6 +10,10 @@ from .models import *
 
 import json
 
+from datetime import datetime
+from datetime import timedelta
+import decimal
+
 # For performance debugging only
 import time
 
@@ -278,16 +282,30 @@ def processDownloadConfiguration(getRequest, dbRecords):
     if 'iso_date_dl_min' in getRequest:
         dbRecords = dbRecords.filter(date__gte=getRequest['iso_date_dl_min']);
     if 'iso_date_dl_max' in getRequest:
-        dbRecords = dbRecords.filter(date__lte=getRequest['iso_date_dl_max']);
+        # The following code is required because the date values coming back
+        #   from the interface has no hours information.
+        end_date_record = getRequest['iso_date_dl_max'];
+        end_date = datetime.strptime(end_date_record, "%Y-%m-%d");
+        modified_end_date = end_date + timedelta(days=1);
+        modified_end_date_record = datetime.strftime(modified_end_date, "%Y-%m-%d")
+        dbRecords = dbRecords.filter(date__lt=modified_end_date_record);
     # No easy way to support Time at this point, so stick to only Date.
     # Now filter based on each crossfilter chart feature min and max
     for key in getRequest:
         if key.endswith('_f_min'):
             feature = key[:0-len('_f_min')];
+            #min_value = getRequest[key];
+            #d = decimal.Decimal(min_value);
+            #num_decimals = 0-(d.as_tuple().exponent);
+            #print('min:' + str(num_decimals));
             execList = { 'featuresmeans__' + feature + '__gte':getRequest[key] };
             dbRecords = dbRecords.filter(**execList);
         if key.endswith('_f_max'):
             feature = key[:0-len('_f_max')];
+            #min_value = getRequest[key];
+            #d = decimal.Decimal(min_value);
+            #num_decimals = 0-(d.as_tuple().exponent);
+            #print('max:' + str(num_decimals));
             execList = { 'featuresmeans__' + feature + '__lte':getRequest[key] };
             dbRecords = dbRecords.filter(**execList);
     return dbRecords;
