@@ -6,6 +6,8 @@ from django.db.models import Avg
 from django.db.models import Min
 from django.db.models import Max
 
+from django.core.mail import EmailMessage
+
 from .models import *
 
 import json
@@ -388,7 +390,14 @@ def wconviewer(request):
 def upload(request):
     context = {};
     if request.method == "POST":
-        print('Post received');
+        emailBody = '';
+        emailBody += 'Requester Email Contact: ' + request.POST['upload_email'] + '\n';
+        emailBody += 'Requester Data URL: ' + request.POST['upload_url'] + '\n';
+        emailBody += 'Comments:\n' + request.POST['upload_notes'];
+        email = EmailMessage('Worm Database: Upload request received', emailBody, 
+                             to=['cheelee@openworm.org'])
+        email.send()
+        context['upload_received'] = 'Yes';
     return render(request, 'webworm/upload.html', context);
 
 def contrib(request):
