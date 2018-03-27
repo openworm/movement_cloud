@@ -302,6 +302,9 @@ function generateDownloadData() {
     let headerCsv = downloadHeaders.join(',');
     csvContent += headerCsv + "\n";
     downloadData.forEach( function(row, index) {
+	    row.forEach( function(element, index) {
+		    row[index] = '"' + element + '"';
+		});
 	    let csvRow = row.join(',');
 	    csvContent += csvRow + "\n";
 	});
