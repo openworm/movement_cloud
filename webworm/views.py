@@ -13,6 +13,7 @@ import json
 from datetime import datetime
 from datetime import timedelta
 import decimal
+import math
 
 # For performance debugging only
 import time
@@ -294,19 +295,23 @@ def processDownloadConfiguration(getRequest, dbRecords):
     for key in getRequest:
         if key.endswith('_f_min'):
             feature = key[:0-len('_f_min')];
-            #min_value = getRequest[key];
-            #d = decimal.Decimal(min_value);
-            #num_decimals = 0-(d.as_tuple().exponent);
-            #print('min:' + str(num_decimals));
-            execList = { 'featuresmeans__' + feature + '__gte':getRequest[key] };
+            # This adjustment dance is required because of inexact database
+            #   matches.
+            min_value = getRequest[key];
+            d = decimal.Decimal(min_value);
+            delta = 10**d.as_tuple().exponent;
+            modified_min_value = str(d - decimal.Decimal(delta));
+            execList = { 'featuresmeans__' + feature + '__gt':modified_min_value };
             dbRecords = dbRecords.filter(**execList);
         if key.endswith('_f_max'):
             feature = key[:0-len('_f_max')];
-            #min_value = getRequest[key];
-            #d = decimal.Decimal(min_value);
-            #num_decimals = 0-(d.as_tuple().exponent);
-            #print('max:' + str(num_decimals));
-            execList = { 'featuresmeans__' + feature + '__lte':getRequest[key] };
+            # This adjustment dance is required because of inexact database
+            #   matches.
+            max_value = getRequest[key];
+            d = decimal.Decimal(max_value);
+            delta = 10**d.as_tuple().exponent;
+            modified_max_value = str(d + decimal.Decimal(delta));
+            execList = { 'featuresmeans__' + feature + '__lt':modified_max_value };
             dbRecords = dbRecords.filter(**execList);
     return dbRecords;
 
