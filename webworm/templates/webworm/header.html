@@ -7,7 +7,7 @@
     <meta name="description" content="Worm Movement Database">
     <meta name="author" content="cheelee@openworm.org, mcurrie@openworm.org">
     {% load staticfiles %}
-    <link rel="shortcut icon" href="{%  static 'favicon.ico' %}">
+    <link rel="shortcut icon" href="{%  static 'webworm/favicon.ico' %}">
     
     <!-- Styles -->
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -49,7 +49,9 @@
     <script src="{% static 'extern/dist/jszip.min.js' %}"></script>
     <!-- FileSaver (JsZip output dependency) - https://github.com/eligrey/FileSaver.js -->
     <script src="{% static 'extern/dist/FileSaver.min.js' %}"></script>
-    
+
+    <!-- ShowDownJs for displaying MarkDown text -->
+    <script src="https://cdn.rawgit.com/showdownjs/showdown/1.8.6/dist/showdown.min.js"></script>
   </head>
 
   <header class="jumbotron subhead" id="overview">

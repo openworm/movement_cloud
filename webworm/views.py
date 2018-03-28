@@ -86,7 +86,7 @@ fileTypes = [];
 
 def getVersion():
     with open('webworm/version.txt', 'r') as versionFile:
-        version=versionFile.read().replace('\n', '');
+        version=versionFile.readline();
         return version;
 
 # *CWL* Not used anymore. Retaining for reference only.
@@ -385,10 +385,14 @@ def constructDownloadContext(inData, selectedFeatures, context):
 # Create your views here.
 def wconviewer(request):
     context = {};
+    # Get tool version
+    context['version'] = getVersion();
     return render(request, 'webworm/wcon-viewer.html', context);
 
 def upload(request):
     context = {};
+    # Get tool version
+    context['version'] = getVersion();
     if request.method == "POST":
         emailBody = '';
         emailBody += 'Requester Email Contact: ' + request.POST['upload_email'] + '\n';
@@ -396,13 +400,25 @@ def upload(request):
         emailBody += 'Comments:\n' + request.POST['upload_notes'];
         email = EmailMessage('Worm Database: Upload request received', emailBody, 
                              to=['cheelee@openworm.org'])
-        email.send()
-        context['upload_received'] = 'Yes';
+# Disable for now
+#        email.send()
+        context['upload_received'] = 'true';
     return render(request, 'webworm/upload.html', context);
 
 def contrib(request):
     context = {};
+    # Get tool version
+    context['version'] = getVersion();
     return render(request, 'webworm/contributors.html', context);
+
+def release(request):
+    context = {};
+    # Get tool version
+    context['version'] = getVersion();
+    # Get release notes text
+    with open('webworm/ReleaseNotes.md', 'r') as releaseNotes:
+        context['content'] = releaseNotes.read();
+    return render(request, 'webworm/release-notes.html', context);
 
 def index(request):
     global defaultCoreFeatures;

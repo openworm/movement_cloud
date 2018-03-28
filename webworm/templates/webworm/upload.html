@@ -41,6 +41,7 @@
           <ul class="dropdown-menu">
             <li><a target="_blank" href="https://github.com/openworm/movement_cloud/blob/master/README.md">Documentation</a></li>
             <li><a target="_blank" href="https://github.com/openworm/movement_cloud">Source Code</a></li>
+            <li><a target="_blank" href="{% url 'release' %}">Release Notes</a></li>
           </ul>
         </li>
       </ul>
@@ -78,8 +79,10 @@
 </form>
 
 <script type="text/javascript"> 
-if ({{ upload_received }} == 'Yes') {
-  $('#upload_ack').append('<p>Upload Request acknowledged! Thank you!</p>');
-}
+{% if upload_received %}
+  $('#upload_ack').append('<hr>');
+  $('#upload_ack').append('<h2>Upload Request acknowledged! Thank you!</h2>');
+  $('#upload_ack').append('<hr>');
+{% endif %}
 </script>
 {% endblock %}

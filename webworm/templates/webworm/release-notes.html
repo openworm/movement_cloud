@@ -2,12 +2,11 @@
 
 {% block content %}
 {% load static %}
-
 <nav class="navbar navbar-default navbar-inverse">
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#wcon-navbar-collapse-1" aria-expanded="false">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#release-navbar-collapse-1" aria-expanded="false">
         <span class="sr-only">Toggle navigation</span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -17,7 +16,7 @@
     </div>
     
     <!-- Collect the nav links, forms, and other content for toggling -->
-    <div class="collapse navbar-collapse" id="wcon-navbar-collapse-1">
+    <div class="collapse navbar-collapse" id="release-navbar-collapse-1">
       <ul class="nav navbar-nav navbar-right">
         <li><a href="{% url 'index' %}">Database Tool</a></li>
         </li>
@@ -31,8 +30,7 @@
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Contribute<span class="caret"></span></a>
           <ul class="dropdown-menu">
             <li><a href="{% url 'upload' %}">Upload your Data</a></li>
-            <li><a target="_blank" href="https://goo.gl/forms/hIYt4Z7ETmklUrIf1">Give Feedback</a>
-	    </li>
+            <li><a target="_blank" href="https://goo.gl/forms/hIYt4Z7ETmklUrIf1">Give Feedback</a></li>
             <li role="separator" class="divider"></li>
             <li><a href="{% url 'contributors' %}">Contributors List</a></li>
           </ul>
@@ -50,20 +48,13 @@
   </div><!-- /.container-fluid -->
 </nav>
 
-{% include "webworm/wconViewer-template.html" %}
+<div id="release_notes">
+</div>
 
 <script type="text/javascript"> 
-  var wconFilePath = "{% static 'webworm/example.wcon' %}";
+  var converter = new showdown.Converter();
+
+  text = '{{ content|escapejs }}',
+  $('#release_notes').append(converter.makeHtml(text));
 </script>
-
-<!-- Dependencies -->
-<script src="{% static 'extern/dist/d3.v4.min.js' %}"></script>
-<script src="{% static 'extern/dist/babel.min.js' %}"></script>
-<script src="{% static 'extern/dist/dropzone.js' %}"></script>
-<script src="{% static 'extern/dist/ajv.min.js' %}"></script>
-
-<!-- Local -->
-<script src="{% static 'webworm/wormviz_parameters.js' %}"></script>
-<script src="{% static 'webworm/WCON_viewer_helpers.js' %}"></script>
-<script src="{% static 'webworm/WCON_viewer.js' %}"></script>
 {% endblock %}
