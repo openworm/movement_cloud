@@ -393,17 +393,23 @@ def upload(request):
     context = {};
     # Get tool version
     context['version'] = getVersion();
-    if request.method == "POST":
-        emailBody = '';
-        emailBody += 'Requester Email Contact: ' + request.POST['upload_email'] + '\n';
-        emailBody += 'Requester Data URL: ' + request.POST['upload_url'] + '\n';
-        emailBody += 'Comments:\n' + request.POST['upload_notes'];
-        email = EmailMessage('Worm Database: Upload request received', emailBody, 
-                             to=['cheelee@openworm.org'])
+#    if request.method == "POST":
+#        emailBody = '';
+#        emailBody += 'Requester Email Contact: ' + request.POST['upload_email'] + '\n';
+#        emailBody += 'Requester Data URL: ' + request.POST['upload_url'] + '\n';
+#        emailBody += 'Comments:\n' + request.POST['upload_notes'];
+#        email = EmailMessage('Worm Database: Upload request received', emailBody, 
+#                             to=['cheelee@openworm.org'])
 # Disable for now
 #        email.send()
-        context['upload_received'] = 'true';
+#        context['upload_received'] = 'true';
     return render(request, 'webworm/upload.html', context);
+
+def feedback(request):
+    context = {};
+    # Get tool version
+    context['version'] = getVersion();
+    return render(request, 'webworm/feedback.html', context);
 
 def contrib(request):
     context = {};

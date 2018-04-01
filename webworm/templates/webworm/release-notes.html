@@ -2,51 +2,32 @@
 
 {% block content %}
 {% load static %}
+
+<!-- *CWL* to allow contextual modification of tool-click behavior.
+     When in main tool, we do not want miscellaneous tools and info screens
+     to replace the tab. The reverse may be true for when the user is looking
+     at miscellaneous tools and info. -->
+{% with info_target="" support_target="" %}
+
 <nav class="navbar navbar-default navbar-inverse">
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#release-navbar-collapse-1" aria-expanded="false">
         <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
       </button>
       <a target="_blank" href="http://openworm.org/" class="navbar-brand">OpenWorm</a>
     </div>
     
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="release-navbar-collapse-1">
-      <ul class="nav navbar-nav navbar-right">
-        <li><a href="{% url 'index' %}">Database Tool</a></li>
-        </li>
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Support Tools<span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li><a href="{% url 'wconviewer' %}">WCON Movement Viewer</a></li>
-          </ul>
-        </li>
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Contribute<span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li><a href="{% url 'upload' %}">Upload your Data</a></li>
-            <li><a target="_blank" href="https://goo.gl/forms/hIYt4Z7ETmklUrIf1">Give Feedback</a></li>
-            <li role="separator" class="divider"></li>
-            <li><a href="{% url 'contributors' %}">Contributors List</a></li>
-          </ul>
-        </li>
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Info<span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li><a target="_blank" href="https://github.com/openworm/movement_cloud/blob/master/README.md">Documentation</a></li>
-            <li><a target="_blank" href="https://github.com/openworm/movement_cloud">Source Code</a></li>
-            <li><a target="_blank" href="{% url 'release' %}">Release Notes</a></li>
-          </ul>
-        </li>
-      </ul>
+      {% include "webworm/nav-return-to-main-template.html" %}
+      {% include "webworm/nav-support-tool-template.html" %}
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
 </nav>
+
+{% endwith %}
 
 <div id="release_notes">
 </div>

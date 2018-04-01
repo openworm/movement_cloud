@@ -7,7 +7,7 @@
      When in main tool, we do not want miscellaneous tools and info screens
      to replace the tab. The reverse may be true for when the user is looking
      at miscellaneous tools and info. -->
-{% with info_target="" support_target="" %}
+{% with info_target="_blank" support_target="" %}
 
 <nav class="navbar navbar-default navbar-inverse">
   <div class="container-fluid">
@@ -29,11 +29,6 @@
 
 {% endwith %}
 
-<h1>Database Contributors</h1>
-<div>
-  Many thanks to the following contributors for the scientific payload on this database!
-</div>
+<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfbZm72hSjzRbozww3YbIQrjiOnMF4LFDUEjHuC9s_x6xNzgg/viewform?embedded=true" width="100%" height="720" frameborder="0" marginheight="0" marginwidth="0">Loading...</iframe>
 
-<div id="contributors">
-</div>
 {% endblock %}

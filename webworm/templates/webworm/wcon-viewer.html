@@ -3,54 +3,100 @@
 {% block content %}
 {% load static %}
 
+<!-- *CWL* to allow contextual modification of tool-click behavior.
+     When in main tool, we do not want miscellaneous tools and info screens
+     to replace the tab. The reverse may be true for when the user is looking
+     at miscellaneous tools and info. -->
+{% with info_target="_blank" support_target="" %}
+
 <nav class="navbar navbar-default navbar-inverse">
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#wcon-navbar-collapse-1" aria-expanded="false">
         <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
       </button>
       <a target="_blank" href="http://openworm.org/" class="navbar-brand">OpenWorm</a>
     </div>
     
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="wcon-navbar-collapse-1">
-      <ul class="nav navbar-nav navbar-right">
-        <li><a href="{% url 'index' %}">Database Tool</a></li>
-        </li>
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Support Tools<span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li><a href="{% url 'wconviewer' %}">WCON Movement Viewer</a></li>
-          </ul>
-        </li>
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Contribute<span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li><a href="{% url 'upload' %}">Upload your Data</a></li>
-            <li><a target="_blank" href="https://goo.gl/forms/hIYt4Z7ETmklUrIf1">Give Feedback</a>
-	    </li>
-            <li role="separator" class="divider"></li>
-            <li><a href="{% url 'contributors' %}">Contributors List</a></li>
-          </ul>
-        </li>
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Info<span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li><a target="_blank" href="https://github.com/openworm/movement_cloud/blob/master/README.md">Documentation</a></li>
-            <li><a target="_blank" href="https://github.com/openworm/movement_cloud">Source Code</a></li>
-            <li><a target="_blank" href="{% url 'release' %}">Release Notes</a></li>
-          </ul>
-        </li>
-      </ul>
+      {% include "webworm/nav-return-to-main-template.html" %}
+      {% include "webworm/nav-support-tool-template.html" %}
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
 </nav>
 
-{% include "webworm/wconViewer-template.html" %}
+{% endwith %}
+
+<div id="wconViewerPane">
+  <div id="header">
+    <h1>WCON Viewer</h1>
+  </div>
+  <p>Try with a real example from Zenodo! Please unzip before trying! (12.1 MB zipped)- <a href="https://zenodo.org/record/1034927/files/unc-80 (e1069) nRHO-1 QT309 on food L_2011_11_11__13_12___3___4.wcon.zip">unc-80 (e1069) nRHO-1 QT309 on food L_2011_11_11</a></p>
+  <button id="upload_file_button">UPLOAD ANOTHER FILE</button>
+  <div id="upload_area">
+    <div id="dropzone" class="dropzone">
+      Drop one WCON file here to upload
+    </div>
+    
+    <div id="upload_results_element">
+    </div>
+  </div>
+
+  <hr />
+
+  <div id="WCON_display">
+    <div id="file_info_container"><h3>FILE INFORMATION:</h3>
+      <div id="file_info">
+      </div>
+    </div>
+
+    <div id="worm_picker"><h4>PICK A WORM:</h4>
+      <select id="wormDropDownMenu">
+      </select>
+    </div>
+
+    <div id="wormVisualization">
+      <svg></svg>
+      <div class="slider">
+        <div class="slider_buttons">
+          <button id="toggle_animation_button">PLAY</button>
+        </div>
+        <input id="time_slider_element" class="time_slider" type="range" min="0" max="5000">
+        <div class="slider_info">
+          <span class="frame_info"></span>
+          <span class="time_info"></span>
+        </div>
+      </div>
+    </div>
+    
+    <div id="metadata_container"><h3>METADATA:</h3>
+      <div id="metadata">
+      </div>
+    </div>
+
+    <div id="units_container"><h3>UNITS:</h3>
+      <div id="units">
+      </div>
+    </div>
+
+    <div id="data_info_container"><h3>DATA:</h3>
+      <div id="data_info">
+      </div>
+    </div>
+
+    <hr>
+
+    <div id="footer"><h3>Worm tracker Commons Object Notation (WCON)</h3>
+      <div class="links">
+        <a href="https://github.com/openworm/tracker-commons/blob/master/WCON_format.md">WCON Specification</a>
+        <a href="https://github.com/openworm/tracker-commons/blob/master/wcon_schema.json">WCON Schema</a>
+        <a href="https://github.com/openworm/tracker-commons">WCON Parsers</a>
+      </div>
+    </div>
+  </div>
+</div>  
 
 <script type="text/javascript"> 
   var wconFilePath = "{% static 'webworm/example.wcon' %}";
