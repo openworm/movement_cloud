@@ -226,7 +226,7 @@ function initializeParamObject() {
     //    and needs to be generalized. Am thinking the server will send
     //    an appropriate number corresponding to the static fields.
     // returnObject['num_display_fields'] = 2;
-    returnObject['num_display_fields'] = 1;
+    returnObject['num_display_fields'] = 2;
     returnObject['data_fields'] = {};
     returnObject['data_fields']['timestamp'] = { "data_type": "string",
 						 "display_name": "Date / Time",
@@ -280,8 +280,17 @@ function initializeParamObject() {
     					   "display_name": "YouTube ID" };
     returnObject['data_fields']['youtube'] = { "data_type": "html_embed",
     					   "display_name": "YouTube Sample" };
+    returnObject['data_fields']['days_of_adulthood'] = { "data_type": "numeric",
+							 "display_name": "Days of Adulthood",
+							 "suffix": "",
+							 "scale": "linear",
+							 "bucket_width": 1,
+							 "rangeRound": [0, 300] };
     //    returnObject['charts'] = [ "iso_date", "hour" ];
-    returnObject['charts'] = [ "iso_date" ];
+    returnObject['charts'] = [ 
+			      "iso_date",
+			      "days_of_adulthood",
+			       ];
     returnObject['results_display'] = [ 
 				       "youtube",
 				       "strain",  
@@ -292,6 +301,7 @@ function initializeParamObject() {
 				       "zenodo_id",
 				       "numfiles",
 				       "filesize",
+				       "days_of_adulthood",
 					];
     returnObject['max_results'] = 20;
     return returnObject;

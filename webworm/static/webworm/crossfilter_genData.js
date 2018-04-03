@@ -234,7 +234,8 @@ function populateFeaturesRequest() {
 	    let minSuffix = '_f_min';
 	    let maxSuffix = '_f_max';
 	    // special treatment for non-feature charts
-	    if ((dimension == 'iso_date') || (dimension == 'hour')) {
+	    if ((dimension == 'iso_date') || (dimension == 'hour') ||
+		(dimension == 'days_of_adulthood')) {
 		minSuffix = '_dl_min';
 		maxSuffix = '_dl_max';
 	    }

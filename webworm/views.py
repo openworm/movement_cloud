@@ -45,6 +45,7 @@ defaultCoreFeatures = [
 
 # A way to organize the header fields for all data.
 fieldHeaders = [
+    { 'label': 'days_of_adulthood', 'field': 'days_of_adulthood' },
     { 'label': 'youtube_id', 'field': 'youtube_id' },
     { 'label': 'timestamp', 'field': 'date' },
     { 'label': 'zenodo_id', 'field': 'zenodofiles__zenodo_id' },
@@ -67,6 +68,7 @@ filetypeIdx = 3; # counted in reverse order
 
 # A way to organize the header fields for all data.
 downloadHeaders = [
+    { 'label': 'days_of_adulthood', 'field': 'days_of_adulthood' },
     { 'label': 'timestamp', 'field': 'date' },
     { 'label': 'zenodo_id', 'field': 'zenodofiles__zenodo_id' },
     { 'label': 'allele', 'field': 'strain__allele__name' },
@@ -166,46 +168,64 @@ def processSearchField(key, db_filter, getRequest, dbRecords, filterState):
 
 # Produces a list of data rows (one row per record in database)
 #    given a list of features names. 
-def getDataWithFeatures(selectedFeatures, dbRecords, fieldHeaders):
+def getDataWithFeatures(selectedFeatures, dbRecords, headersSet):
     headerNames = [];
     resultData = [];
     execList = [];
 
-    zenodoHeaderNames = [];
-    zenodoData = [];
-    zenodoExecList = [];
     # Insert features in-order
     for feature in selectedFeatures:
         headerNames.append(feature);
         execList.append('featuresmeans__' + feature);
     # Insert fields in-reverse-order
-    for header in fieldHeaders:
+    for header in headersSet:
         headerNames.insert(0,header['label']);
         execList.insert(0,header['field']);
-
     # We only want a single zenodo value per record.
     dbRecords = dbRecords.distinct();
-
     # Note the difference between values_list() kwargs processing and filter()
     dbQuery = dbRecords.values_list(*execList);
     resultData = [list(item) for item in dbQuery];
-#    for experiment in resultData:
-#        print(experiment);
-#        print(experiment[0]);
 
-    # Extract zenodo file information separately
+    return { 'header': headerNames, 'data': resultData, };
+
+def applyXfRangeToDownload(inData, xfFeatures, xfRanges):
+    returnData = [];
+    fullHeader = inData['header'];
+    data = inData['data'];
+    numXfFeatures = len(xfFeatures);
+    for row in data:
+        rowDict = dict(zip(fullHeader,row));
+        retain = True;
+        for xf_feature, range in xfRanges.items():
+            if 'min' in range:
+                if float(rowDict[xf_feature]) < float(range['min']):
+                    retain = False;
+            if 'max' in range:
+                if float(rowDict[xf_feature]) > float(range['max']):
+                    retain = False;
+        if retain:
+            # Cut out the columns with crossfilter values before attaching
+            newRow = row[:-numXfFeatures];
+            returnData.append(newRow);
+    newHeader = fullHeader[:-numXfFeatures];
+    return { 'header': newHeader, 'data': returnData };
+
+def getZenodoData(selectedFeatures, dbRecords):
+    zenodoHeaderNames = [];
+    zenodoData = [];
+    zenodoExecList = [];
+    # We only want a single zenodo value per record.
+    dbRecords = dbRecords.distinct();
+
     for header in zenodoFieldHeaders:
         zenodoHeaderNames.insert(0,header['label']);
         zenodoExecList.insert(0,header['field']);
+
     zenodoQuery = dbRecords.values_list(*zenodoExecList);
     zenodoData = [list(item) for item in zenodoQuery if item[0] != None];
-#    for fileRecord in zenodoData:
-#        print(fileRecord);
-#        print(fileRecord[0]);
+    return { 'zenodo_header': zenodoHeaderNames, 'zenodo_data': zenodoData, };
 
-    return { 'header': headerNames, 'data': resultData,
-             'zenodo_header': zenodoHeaderNames, 'zenodo_data': zenodoData,
-             };
 
 # Produces a list of features names given a GET request construct
 def getFeaturesNamesFromGet(getRequest, tag):
@@ -263,7 +283,7 @@ def noneToZero(inList):
                 row[idx] = 0;
     return inList;
 
-def processSearchConfiguration(getRequest, dbRecords, filterState):
+def processMainGetRequest(getRequest, dbRecords, filterState):
     global discreteFields;
     if 'start_date' in getRequest:
         start = getRequest['start_date'];
@@ -280,7 +300,8 @@ def processSearchConfiguration(getRequest, dbRecords, filterState):
                                        getRequest, dbRecords, filterState);
     return dbRecords;
 
-def processDownloadConfiguration(getRequest, dbRecords):
+def processDownloadGetRequest(getRequest, dbRecords):
+    featuresRange = {};
     # Filter based on crossfilter chart date & time min/max
     if 'iso_date_dl_min' in getRequest:
         dbRecords = dbRecords.filter(date__gte=getRequest['iso_date_dl_min']);
@@ -292,6 +313,12 @@ def processDownloadConfiguration(getRequest, dbRecords):
         modified_end_date = end_date + timedelta(days=1);
         modified_end_date_record = datetime.strftime(modified_end_date, "%Y-%m-%d")
         dbRecords = dbRecords.filter(date__lt=modified_end_date_record);
+    # Filter based on crossfilter chart the days of adulthood
+    if 'days_of_adulthood_dl_min' in getRequest:
+        dbRecords = dbRecords.filter(days_of_adulthood__gte=getRequest['days_of_adulthood_dl_min']);
+    if 'days_of_adulthood_dl_max' in getRequest:
+        dbRecords = dbRecords.filter(days_of_adulthood__lte=getRequest['days_of_adulthood_dl_max']);
+
     # No easy way to support Time at this point, so stick to only Date.
     # Now filter based on each crossfilter chart feature min and max
     for key in getRequest:
@@ -304,7 +331,10 @@ def processDownloadConfiguration(getRequest, dbRecords):
             delta = 10**d.as_tuple().exponent;
             modified_min_value = str(d - decimal.Decimal(delta));
             execList = { 'featuresmeans__' + feature + '__gt':modified_min_value };
-            dbRecords = dbRecords.filter(**execList);
+            # dbRecords = dbRecords.filter(**execList);
+            if feature not in featuresRange:
+                featuresRange[feature] = {};
+            featuresRange[feature]['min'] = min_value;
         if key.endswith('_f_max'):
             feature = key[:0-len('_f_max')];
             # This adjustment dance is required because of inexact database
@@ -314,19 +344,22 @@ def processDownloadConfiguration(getRequest, dbRecords):
             delta = 10**d.as_tuple().exponent;
             modified_max_value = str(d + decimal.Decimal(delta));
             execList = { 'featuresmeans__' + feature + '__lt':modified_max_value };
-            dbRecords = dbRecords.filter(**execList);
-    return dbRecords;
+            # dbRecords = dbRecords.filter(**execList);
+            if feature not in featuresRange:
+                featuresRange[feature] = {};
+            featuresRange[feature]['max'] = max_value;
+    return {'db': dbRecords, 'ranges': featuresRange };
 
-def constructSearchContext(inData, selectedFeatures, context):
+def constructSearchContext(filterIn, zenodoIn, selectedFeatures, context):
     # Input is a dictionary with keys 'header', 'data', 'zenodo_header', and
     #   'zenodo_data'
     global timestampIdx;
     global zenodoIdx;
     # Clone the list of names for header processing
-    header = inData['header'][:];
-    resultData = inData['data'];
-    zenodoHeader = inData['zenodo_header'];
-    zenodoData = inData['zenodo_data'];
+    header = filterIn['header'][:];
+    resultData = filterIn['data'];
+    zenodoHeader = zenodoIn['zenodo_header'];
+    zenodoData = zenodoIn['zenodo_data'];
 
     # We're gonna offload the construction of URL and File Type information to
     #   the client in this version.
@@ -363,21 +396,24 @@ def constructSearchContext(inData, selectedFeatures, context):
     context['zenodo_data'] = zenodoData;
     context['results_count'] = results_count;
 
-def constructDownloadContext(inData, selectedFeatures, context):
+def constructDownloadContext(inData, context):
     # Input is a dictionary with keys 'header', 'data', 'zenodo_header', and
     #   'zenodo_data'
     global downloadTimestampIdx;
     # Clone the list of names for header processing
     header = inData['header'][:];
     resultData = inData['data'];
-    zenodoHeader = inData['zenodo_header'];
-    zenodoData = inData['zenodo_data'];
 
     # Since this operation is expected to be data-intensive, we should attempt
     #   to send processed data to the client in a form that requires no
     #   post-processing of derived data to generate a CSV for download.
     prettyTimestamps(resultData, downloadTimestampIdx);
     returnTable = noneToText(resultData);
+
+    # *CWL* TODOS **************************
+    # The data should initially include the crossfilter features with ranges.
+    # Records should be eliminated if outside the crossfilter feature ranges.
+    # Columns with crossfilter features data should be eliminated.
 
     context['download_header'] = header;
     context['download_data'] = returnTable;
@@ -471,29 +507,44 @@ def index(request):
     if request.method == "GET":
         if (request.GET.__contains__("search")):
             loadDefault = False;
-            filteredDb = processSearchConfiguration(request.GET, 
-                                                    Experiments.objects.order_by('strain__name'),
-                                                    filterState);
+            filteredDb = processMainGetRequest(request.GET, 
+                                               Experiments.objects.order_by('strain__name'),
+                                               filterState);
             selectedFeatures = getFeaturesNamesFromGet(request.GET, '_isFeature');
             for feature in selectedFeatures:
                 filterState['filteredFeatures'][feature] = '1';
             filteredData = getDataWithFeatures(selectedFeatures, filteredDb, fieldHeaders);
-            constructSearchContext(filteredData, selectedFeatures, context);
+            zenodoData = getZenodoData(selectedFeatures, filteredDb);
+            constructSearchContext(filteredData, zenodoData, selectedFeatures, context);
             # This is going to have to be a re-package of the desired advanced filter parameters
             context['prev_advanced_filter_state'] = filterState;
             # Process download requests
             if (request.GET.__contains__("download")):
-                filteredDb = processDownloadConfiguration(request.GET, filteredDb);
+                downloadResults = processDownloadGetRequest(request.GET, filteredDb);
+                filteredDb = downloadResults['db'];
+                xfRanges = downloadResults['ranges'];
                 downloadFeatures = getFeaturesNamesFromGet(request.GET, '_isDownload');
+                xfList = [];
+                # The reason we have to get the appropriate crossfilter data extracted
+                #   is so we can perform exact-range matches outside of the database.
+                # We hack this by tacking on the features attributed to crossfilters
+                #   to the end of the list of download features.
+                # After the range elimination operations are done, we strip away
+                #   the columns containing crossfilter features.
+                for xf_feature, range in xfRanges.items():
+                    xfList.append(xf_feature);
+                    downloadFeatures.append(xf_feature);
                 downloadData = getDataWithFeatures(downloadFeatures, filteredDb, downloadHeaders);
-                constructDownloadContext(downloadData, downloadFeatures, context);
+                downloadData = applyXfRangeToDownload(downloadData, xfList, xfRanges);
+                constructDownloadContext(downloadData, context);
 
     # If the previous phase did not result in any loads from the database, load default
     if loadDefault:
         # All experiments are chosen by default
         filteredDb = Experiments.objects.order_by('base_name');
         experimentsData = getDataWithFeatures(defaultCoreFeatures, filteredDb, fieldHeaders);
-        constructSearchContext(experimentsData, defaultCoreFeatures, context);
+        zenodoData = getZenodoData(defaultCoreFeatures, filteredDb);
+        constructSearchContext(experimentsData, zenodoData, defaultCoreFeatures, context);
         for feature in defaultCoreFeatures:
             filterState['filteredFeatures'][feature] = '1';
         context['prev_advanced_filter_state'] = filterState;
