@@ -1,0 +1,49 @@
+#searchButton {
+  display: none;
+}
+
+#search:hover #searchButton {
+  display: inline-block;
+}
+
+#searchBarBak {
+  background: LightBlue;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  width: auto;
+  border: 2px solid DodgerBlue;
+  border-radius: 4px;
+}
+
+#searchLine * {
+  vertical-align: middle;
+}
+
+#searchBar {
+  width: 50%;
+  border: 2px solid DodgerBlue;
+  border-radius: 4px;
+  resize: none;
+  white-space: no-wrap;
+}
+
+.ui-autocomplete-category {
+  font-weight: bold;
+  padding: .2em .4em;
+  margin: .8em 0 .2em;
+  line-height: 1.5;
+}
+
+.ui-autocomplete {
+  /* Scrollable menus with fixed height */
+  max-height: 150px;
+  overflow-y: auto;
+  /* prevent horizontal scrollbar */
+  overflow-x: hidden;
+}
+
+#search {
+  display: inline-block;
+  padding: 10px;
+  width: 100%;
+}

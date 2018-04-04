@@ -8,6 +8,15 @@
 //   access to the data elements.
 var globalCF;
 
+function noResults(domTag) {
+    $('#' + domTag).empty();
+    $('#' + domTag).append('<h1>No Results from Last Search</h1>');
+    $('#' + domTag).append('<hr>');
+    $('#' + domTag).append('<p>Please try with other search and filter terms.</p>');
+    $('#' + domTag).append('<p>Do this through the <b>search bar</b>, or <b><i>Configure Database -> Advanced Database Filters</i></b>.</p>');
+    $('#' + domTag).append('<p>You may also reset the tool by <b><i>Configure Database -> Clear All Settings</i></b>.</p>');
+}
+
 if (hasCFData) {
     window.scrollTo(0,0);
     generateFileTypeCheckboxes();
@@ -22,9 +31,26 @@ if (hasCFData) {
     XFILTER_PARAMS = createXfilterParams(XFILTER_PARAMS, crossfilterData);
     generateXfilterDerivedColumns(crossfilterData);
     processCrossfilterData(crossfilterData);
+
+    // Construct Zenodo File information.
+    for (var fileIdx=0; fileIdx<zenodoFileData.length; fileIdx++) {
+	let fileRec = zenodoFileData[fileIdx];
+	// add a URL to each array
+	fileRec.push(getUrl(fileRec[0],fileRec[2])); 
+	if (zenodoDataDict[fileRec[0]] == undefined) {
+	    zenodoDataDict[fileRec[0]] = [];
+	    zenodoDataDict[fileRec[0]].push(fileRec.slice(1).slice(-4));
+	} else {
+	    zenodoDataDict[fileRec[0]].push(fileRec.slice(1).slice(-4));
+	}
+    }
 } else {
     // If no data is available, use the default example from a file
-    d3.csv(XFILTER_PARAMS.data_file, crossfilter_callback);
+    // d3.csv(XFILTER_PARAMS.data_file, crossfilter_callback);
+    noResults('crossfilterPane');
+    noResults('downloadDataPane');
+    noResults('featuresMetaPane');
+    loading(false, 'None');
 }
 if ((downloadData != 'None') && (downloadHeaders != 'None')) {
     generateDownloadData();
@@ -157,7 +183,8 @@ function create_crossfilter(data_rows) {
         d3.select('#genDataActive').text(formatWholeNumber(xfilter_all.value()));
 	d3.select('#genDataDatasize').text(prettySize(xfilter_filesizeSum.value().filesize));
 	reportExpectedDownloadSize();
-        redraw_datasetview();
+	// *CWL* Not doing datasetview anymore.
+        //redraw_datasetview();
 	// May be an overkill, we want to catch all scenarios where the URL list is
 	//   invalidated by changes in crossfilter. Hence if the text area is open,
 	//   it should be closed again.
@@ -171,7 +198,9 @@ function create_crossfilter(data_rows) {
 
     // Create the datasetview widget, and obtain a callback function that
     // when called, refreshes the widget.
-    var redraw_datasetview = createDataSetView(data_xfilter.size(), data_rows, x_filter_dimension[XFILTER_PARAMS.datasetview_chart_index]);
+    //
+    // *CWL* - Removing the dataset view too.
+    // var redraw_datasetview = createDataSetView(data_xfilter.size(), data_rows, x_filter_dimension[XFILTER_PARAMS.datasetview_chart_index]);
 
     // Create each chart with the proper scale and dimensions, and connect
     // them to the crossfilter data.
@@ -224,8 +253,6 @@ function create_crossfilter(data_rows) {
     d3.selectAll('#genDataTotal')
         .text(formatWholeNumber(data_xfilter.size()));
 
-    renderAll();
-
     window.filter = filters => {
         filters.forEach((d, i) => {
             charts[i].filter(d);
@@ -256,4 +283,7 @@ function create_crossfilter(data_rows) {
         renderAll();
     };
 
+    // This has to be the last thing that happens, or the reset methods would remain
+    //   undefined.
+    renderAll();
 }

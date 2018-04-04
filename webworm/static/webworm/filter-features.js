@@ -1,4 +1,5 @@
 var selectedParamIndices = {};
+var paramTable;
 
 $(document).ready(function() {
 
@@ -13,7 +14,7 @@ $(document).ready(function() {
 		},
 	    });
 
-	var paramTable = $('#parameters').DataTable( {
+	paramTable = $('#parameters').DataTable( {
 		dom: 'Blfrtip',
 		buttons: [
 			  'selectAll',

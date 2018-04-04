@@ -17,7 +17,7 @@ while read id fname
 do
   echo $id $fname
   newdir="$output/$id"
-  url="https://sandbox.zenodo.org/record/$id/files/$fname"
+  url="https://zenodo.org/record/$id/files/$fname"
   mkdir -p $newdir
   pushd $newdir
   wget -t0 -c $url
