@@ -155,6 +155,46 @@ function view_WCON_json(filename, wcon_obj) {
     })
 ;}
 
+function canonical_time_unit(unit) {
+    unitMap = { 
+	"nanoseconds": "ns",
+	"nanosecond": "ns",
+	"microseconds": "us",
+	"microsecond": "us",
+	"milliseconds": "ms",
+	"millisecond": "ms",
+	"second": "s",
+	"sec": "s",
+	"minute": "min",
+	"hour": "h",
+	"day": "d",
+    }
+    if (unit in unitMap) {
+	return unitMap[unit];
+    } else {
+	// Unrecognized time unit, punt.
+	return unit;
+    }
+}
+
+function time_in_seconds(unit, value) {
+    timeMap = { 
+	"ns": 0.000000001,
+	"us": 0.000001,
+	"ms": 0.001,
+	"s": 1.0,
+	"min": 60.0,
+	"h": 3600.0,
+	"d": 86400.0,
+    };
+    if (unit in timeMap) {
+	return value * timeMap[unit];
+    } else {
+	// Unrecognized time unit, punt.
+	return value;
+    }
+}
+
 function display_wcon(wcon_obj) {
     /* 
         This method renders on the page the WCON object's 
@@ -179,7 +219,60 @@ function display_wcon(wcon_obj) {
 
 
     // Obtain a list of all unique worm ids
-    let worm_ids = []
+    let worm_ids = [];
+    let new_data = [];
+    let new_data_map = {};
+
+    // Merge multiple ID entries into one.
+    //   *CWL* - Will do something about the ugly code later.
+    for (let i=0; i<wcon_obj.data.length; i++) {
+	if (wcon_obj.data[i].id in new_data_map) {
+	    for (let j=0; j<wcon_obj.data[i].t.length; j++) {
+		new_data_map[wcon_obj.data[i].id].push([
+							wcon_obj.data[i].t[j],
+							wcon_obj.data[i].x[j],
+							wcon_obj.data[i].y[j],
+							]
+						       );
+	    }
+	} else {
+	    new_data_map[wcon_obj.data[i].id] = [];
+	    for (let j=0; j<wcon_obj.data[i].t.length; j++) {
+		new_data_map[wcon_obj.data[i].id].push([
+							wcon_obj.data[i].t[j],
+							wcon_obj.data[i].x[j],
+							wcon_obj.data[i].y[j],
+							]
+						       );
+	    }
+	}
+    }
+    // Spit out new data structure. Note that the time stamps have to be
+    //   sorted because this parser assumes that.
+    for (let wormid in new_data_map) {
+	let new_rec = {};
+	new_rec.id = wormid;
+	new_data_map[wormid].sort(function (a,b) {
+		if (a[0] < b[0]) return -1;
+		if (a[0] > b[0]) return 1;
+		return 0;
+	    });
+	new_rec.t = new_data_map[wormid].map(function (row) {
+		return row[0];
+	    });
+	new_rec.x = new_data_map[wormid].map(function (row) {
+		return row[1];
+	    });
+	new_rec.y = new_data_map[wormid].map(function (row) {
+		return row[2];
+	    });
+	new_data.push(new_rec);
+    }
+    //    console.log(new_data);
+
+    // *CWL* - Hack. Replace original data
+    wcon_obj.data = new_data;
+
     wcon_obj.data.map(d => worm_ids.push(d.id));
     let unique_worm_ids = worm_ids.filter(onlyUnique);
 
@@ -206,6 +299,7 @@ function display_wcon(wcon_obj) {
 
     // FRAME RATE
     // Assumes units are xs, where x is some scalar.
+    // *CWL* - NOTE: This will not handle all supported forms of WCON.
     let frame_rate = parseFloat(wcon_obj.units.t.slice(0, -1));
     // If the units were just "s", frame rate should be 1 frame / second.
     if (isNaN(frame_rate)) {
@@ -233,7 +327,10 @@ function display_wcon(wcon_obj) {
         wcon_data_info.push({
             "ID": wcon_obj.data[i].id,
             "Number of Frames": wcon_obj.data[i].t.length,
-            "Seconds of footage": wcon_obj.data[i].t.length * (1/frame_rate),
+		//            "Seconds of footage": wcon_obj.data[i].t.length * (1/frame_rate),
+            "Seconds of footage": 
+		time_in_seconds(canonical_time_unit(wcon_obj.units.t),
+				wcon_obj.data[i].t[wcon_obj.data[i].t.length-1]),
             "Data Types": Object.keys(wcon_obj.data[i]).toString(),
             "x Min Articulation Pts": d3.min(wcon_obj.data[i].x.map(d => d.length)).toString(),
             "x Max Articulation Pts": d3.max(wcon_obj.data[i].x.map(d => d.length)).toString(),

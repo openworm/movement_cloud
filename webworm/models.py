@@ -171,11 +171,13 @@ class Experimenters(models.Model):
 
 class Experiments(models.Model):
     base_name = models.CharField(unique=True, max_length=200)
+    worm_id = models.IntegerField()
     date = models.DateTimeField(blank=True, null=True)
     strain = models.ForeignKey('Strains', models.DO_NOTHING, blank=True, null=True)
     tracker = models.ForeignKey('Trackers', models.DO_NOTHING, blank=True, null=True)
     sex = models.ForeignKey('Sexes', models.DO_NOTHING, blank=True, null=True)
     developmental_stage = models.ForeignKey(DevelopmentalStages, models.DO_NOTHING, blank=True, null=True)
+    days_of_adulthood = models.IntegerField()
     ventral_side = models.ForeignKey('VentralSides', models.DO_NOTHING, blank=True, null=True)
     food = models.ForeignKey('Foods', models.DO_NOTHING, blank=True, null=True)
     arena = models.ForeignKey(Arenas, models.DO_NOTHING, blank=True, null=True)
@@ -986,8 +988,8 @@ class ResultsSummary(models.Model):
     last_skel_frame = models.IntegerField(blank=True, null=True)
     fps = models.FloatField(blank=True, null=True)
     total_time = models.FloatField(blank=True, null=True)
+    microns_per_pixel = models.FloatField(blank=True, null=True)
     mask_file_sizemb = models.FloatField(db_column='mask_file_sizeMB', blank=True, null=True)  # Field name made lowercase.
-    upload_sizemb = models.FloatField(db_column='upload_sizeMB', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         managed = False
@@ -1041,6 +1043,16 @@ class Strains(models.Model):
         db_table = 'strains'
 
 
+class TierpsyFeatures(models.Model):
+    experiment = models.ForeignKey(Experiments, models.DO_NOTHING)
+    name = models.CharField(max_length=100, blank=True, null=True)
+    value = models.FloatField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'tierpsy_features'
+
+
 class Trackers(models.Model):
     name = models.CharField(unique=True, max_length=100)
 
@@ -1063,7 +1075,7 @@ class ZenodoFiles(models.Model):
     zenodo_id = models.IntegerField(blank=True, null=True)
     filename = models.CharField(max_length=250, blank=True, null=True)
     filesize = models.BigIntegerField(blank=True, null=True)
-    checksum = models.CharField(max_length=32, blank=True, null=True)
+    checksum = models.CharField(max_length=36, blank=True, null=True)
     file_type = models.ForeignKey(FileTypes, models.DO_NOTHING, blank=True, null=True)
 
     class Meta:

@@ -58,13 +58,26 @@ function downloadResultsList() {
     // Get grouping by Zenodo Id
     let allCFValues = globalCF.dimension(d => d.zenodo_id).top(Infinity);
     for (var idx=0; idx<allCFValues.length; idx++) {
+	/* Old
 	let downloadUrl = allCFValues[idx].url;
 	let zenodoId = allCFValues[idx].zenodo_id;
 	let fileType = allCFValues[idx].filetype;
-	if (downloadUrl != 'None') {
+	*/
+	let zenodoId = allCFValues[idx].zenodo_id;
+	let zenodoFiles = zenodoDataDict[zenodoId];
+	if (zenodoFiles != undefined) {
+	    for (var fileIdx=0; fileIdx<zenodoFiles.length; fileIdx++) {
+		let downloadUrl = zenodoFiles[fileIdx][3];
+		let fileType = zenodoFiles[fileIdx][2];
+		if ($('#chk_' + fileType).is(':checked')) {
+		    returnText = returnText + zenodoId + "\t" + downloadUrl + "\n";
+		}
+	    }
+	    /* Old
 	    if ($('#chk_' + fileType).is(':checked')) {
 		returnText = returnText + zenodoId + "\t" + downloadUrl + "\n";
 	    }
+	    */
 	}
     }
     if (returnText == "") {
@@ -146,6 +159,18 @@ function reportExpectedDownloadSize() {
     let allCFValues = globalCF.dimension(d => d.zenodo_id).top(Infinity);
     let total = 0;
     for (var idx=0; idx<allCFValues.length; idx++) {
+	let zenodoId = allCFValues[idx].zenodo_id;
+	let zenodoFiles = zenodoDataDict[zenodoId];
+	if (zenodoFiles != undefined) {
+	    for (var fileIdx=0; fileIdx<zenodoFiles.length; fileIdx++) {
+		let fileType = zenodoFiles[fileIdx][2];
+		let filesize = zenodoFiles[fileIdx][0];
+		if ($('#chk_' + fileType).is(':checked')) {
+		    total += filesize;
+		}
+	    }
+	}
+	/* Old
 	let downloadUrl = allCFValues[idx].url;
 	let filesize = allCFValues[idx].filesize;
 	let fileType = allCFValues[idx].filetype;
@@ -154,6 +179,7 @@ function reportExpectedDownloadSize() {
 		total += filesize;
 	    }
 	}
+	*/
     }
     $('#expectedDatasize').text(prettySize(total));
 }
@@ -177,11 +203,15 @@ function getUrlList() {
     // Get grouping by Zenodo Id
     let allCFValues = globalCF.dimension(d => d.zenodo_id).top(Infinity);
     for (var idx=0; idx<allCFValues.length; idx++) {
-	let downloadUrl = allCFValues[idx].url;
-	let fileType = allCFValues[idx].filetype;
-	if (downloadUrl != 'None') {
-	    if ($('#chk_' + fileType).is(':checked')) {
-		urlListText += downloadUrl + "\n";
+	let zenodoId = allCFValues[idx].zenodo_id;
+	let zenodoFiles = zenodoDataDict[zenodoId];
+	if (zenodoFiles != undefined) {
+	    for (var fileIdx=0; fileIdx<zenodoFiles.length; fileIdx++) {
+		let downloadUrl = zenodoFiles[fileIdx][3];
+		let fileType = zenodoFiles[fileIdx][2];
+		if ($('#chk_' + fileType).is(':checked')) {
+		    urlListText += downloadUrl + "\n";
+		}
 	    }
 	}
     }
@@ -191,22 +221,28 @@ function getUrlList() {
     $('textarea#urlList').val(urlListText);
 }
 
-function getCsvFromResults() {
-    $('#metadataInput').append('<input type="hidden" id="downloadTag" name="download" value="">');
+function submitFeaturesDownload() {
+    populateFeaturesRequest();
+    submitAdvancedFilter();
+}
+
+function populateFeaturesRequest() {
+    $('#downloadMetadataInput').append('<input type="hidden" id="downloadTag" name="download" value="">');
     // Stub for getting chart ranges - to be delivered back via GET request
     XFILTER_PARAMS['charts'].forEach( function(dimension) {
 	    // insert hidden input
 	    let minSuffix = '_f_min';
 	    let maxSuffix = '_f_max';
 	    // special treatment for non-feature charts
-	    if ((dimension == 'iso_date') || (dimension == 'hour')) {
+	    if ((dimension == 'iso_date') || (dimension == 'hour') ||
+		(dimension == 'days_of_adulthood')) {
 		minSuffix = '_dl_min';
 		maxSuffix = '_dl_max';
 	    }
-	    $('#metadataInput').append('<input type="hidden" id="' + 
+	    $('#downloadMetadataInput').append('<input type="hidden" id="' + 
 				       dimension + minSuffix + '_InputList" name="' +
 				       dimension + minSuffix + '" value=""/>');
-	    $('#metadataInput').append('<input type="hidden" id="' + 
+	    $('#downloadMetadataInput').append('<input type="hidden" id="' + 
 				       dimension + maxSuffix + '_InputList" name="' +
 				       dimension + maxSuffix + '" value=""/>');
 	    let minValue = globalCF.dimension(d => d[dimension]).bottom(1)[0][dimension];
@@ -221,7 +257,7 @@ function getCsvFromResults() {
     // Deliver filtered features via GET request
     xFilterFeaturesTable.rows({selected: true}).every( function(rowIdx, tblLoop, rowLoop) {
 	    let feature = this.data()[0];
-	    $('#metadataInput').append('<input type="hidden" id="meta_dl_' +
+	    $('#downloadMetadataInput').append('<input type="hidden" id="meta_dl_' +
 				       feature + '" name="' +
 				       feature + '_isDownload" value=""/>');
 	});
@@ -230,25 +266,21 @@ function getCsvFromResults() {
     for (var key in prevAdvancedFilterState) {
 	if (key == 'filteredFeatures') {
 	    for (var feature in prevAdvancedFilterState['filteredFeatures']) {
-		$('#metadataInput').append('<input type="hidden" id="meta_' +
+		$('#downloadMetadataInput').append('<input type="hidden" id="meta_' +
 					   feature + '" name="' +
 					   feature + '_isFeature" value=""/>');
 	    }
 	} else if (key == 'start_date') {
-	    $('#metadataInput').append('<input type="hidden" id="meta_start_date" ' +
+	    $('#downloadMetadataInput').append('<input type="hidden" id="meta_start_date" ' +
 				       'name="start_date" value="' +
 				       prevAdvancedFilterState['start_date'] + '"/>');
 	} else if (key == 'end_date') {
-	    $('#metadataInput').append('<input type="hidden" id="meta_end_date" ' +
+	    $('#downloadMetadataInput').append('<input type="hidden" id="meta_end_date" ' +
 				       'name="end_date" value="' +
 				       prevAdvancedFilterState['end_date'] + '"/>');
-	} else {
-	    // discrete lists
-	    createDiscreteHiddenInput('#metadataInput');
 	}
     }
     loading(true, 'Loading Features Metadata. Please Wait.');
-    $('#metadataForm').submit();
 }
 
 function isoToYMD(inDate) {
@@ -271,6 +303,9 @@ function generateDownloadData() {
     let headerCsv = downloadHeaders.join(',');
     csvContent += headerCsv + "\n";
     downloadData.forEach( function(row, index) {
+	    row.forEach( function(element, index) {
+		    row[index] = '"' + element + '"';
+		});
 	    let csvRow = row.join(',');
 	    csvContent += csvRow + "\n";
 	});
