@@ -7,7 +7,8 @@ function createDiscreteHiddenInput(domTag) {
     for (var disIdx=0; disIdx<discreteFieldMetadata.length; disIdx++) {
 	var fieldString = '';
 	var discreteFieldName = discreteFieldMetadata[disIdx];
-	confirmTables[disIdx].rows().every( function(index) {
+	discreteTables[disIdx].rows({ selected: true }).every( function(index) {
+	//	confirmTables[disIdx].rows().every( function(index) {
 		var data = this.data();
 		fieldString += data[0] + ',';
 	    });
@@ -25,7 +26,9 @@ function createDiscreteHiddenInput(domTag) {
 // On Form Submission, populate the discrete search parameters
 var submitAdvancedFilter = function() {
     createDiscreteHiddenInput('#hiddenDiscreteInput');
+    createCrossfilterFeatureInput();
     loading(true, 'Loading Crossfilter Data. Please Wait.');
+    $('#searchForm').submit();
 }
 
 var populateDiscreteTables = function() {

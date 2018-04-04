@@ -1,5 +1,13 @@
 "use strict";
 
+function createCrossfilterFeatureInput() {
+    paramTable.rows({ selected: true }).every( function(index) {
+	    var data = this.data();
+	    $('#crossfilterFeatureInput').append('<input type="hidden" name="' +
+						 data[0] + '_isFeature" value=""/>');
+	});
+}
+
 function loading(isLoading, message) {
     if (!isLoading) {
 	document.getElementById("loader").style.display = "none";
@@ -213,12 +221,12 @@ function getExtremes(data_rows, field_name) {
 //   built-in.
 function initializeParamObject() {
     var returnObject = {};
-    returnObject['report_title'] = "Crossfilter Available Experiments";
+    returnObject['report_title'] = "Crossfilter Selected Experiments";
     // *CWL* This hardcode of 2 display fields depends on the nature of the static fields
     //    and needs to be generalized. Am thinking the server will send
     //    an appropriate number corresponding to the static fields.
     // returnObject['num_display_fields'] = 2;
-    returnObject['num_display_fields'] = 1;
+    returnObject['num_display_fields'] = 2;
     returnObject['data_fields'] = {};
     returnObject['data_fields']['timestamp'] = { "data_type": "string",
 						 "display_name": "Date / Time",
@@ -260,6 +268,8 @@ function initializeParamObject() {
 					   "display_name": "Zenodo Id" };
     returnObject['data_fields']['filename'] = { "data_type": "string",
 					   "display_name": "File Type" };
+    returnObject['data_fields']['numfiles'] = { "data_type": "numeric",
+					   "display_name": "Num Files" };
     returnObject['data_fields']['filesize'] = { "data_type": "numeric",
 					   "display_name": "File Size" };
     returnObject['data_fields']['filetype'] = { "data_type": "string",
@@ -270,8 +280,17 @@ function initializeParamObject() {
     					   "display_name": "YouTube ID" };
     returnObject['data_fields']['youtube'] = { "data_type": "html_embed",
     					   "display_name": "YouTube Sample" };
+    returnObject['data_fields']['days_of_adulthood'] = { "data_type": "numeric",
+							 "display_name": "Days of Adulthood",
+							 "suffix": "",
+							 "scale": "linear",
+							 "bucket_width": 1,
+							 "rangeRound": [0, 300] };
     //    returnObject['charts'] = [ "iso_date", "hour" ];
-    returnObject['charts'] = [ "iso_date" ];
+    returnObject['charts'] = [ 
+			      "iso_date",
+			      "days_of_adulthood",
+			       ];
     returnObject['results_display'] = [ 
 				       "youtube",
 				       "strain",  
@@ -280,8 +299,9 @@ function initializeParamObject() {
 				       "pretty_date",
 				       "pretty_time", 
 				       "zenodo_id",
-				       "filetype",
+				       "numfiles",
 				       "filesize",
+				       "days_of_adulthood",
 					];
     returnObject['max_results'] = 20;
     return returnObject;

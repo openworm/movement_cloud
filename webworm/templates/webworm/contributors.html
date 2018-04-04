@@ -1,0 +1,39 @@
+{% extends "webworm/header.html" %}
+
+{% block content %}
+{% load static %}
+
+<!-- *CWL* to allow contextual modification of tool-click behavior.
+     When in main tool, we do not want miscellaneous tools and info screens
+     to replace the tab. The reverse may be true for when the user is looking
+     at miscellaneous tools and info. -->
+{% with info_target="" support_target="" %}
+
+<nav class="navbar navbar-default navbar-inverse">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#contrib-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+      </button>
+      <a target="_blank" href="http://openworm.org/" class="navbar-brand">OpenWorm</a>
+    </div>
+    
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="contrib-navbar-collapse-1">
+      {% include "webworm/nav-return-to-main-template.html" %}
+      {% include "webworm/nav-support-tool-template.html" %}
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+
+{% endwith %}
+
+<h1>Database Contributors</h1>
+<div>
+  Many thanks to the following contributors for the scientific payload on this database!
+</div>
+
+<div id="contributors">
+</div>
+{% endblock %}

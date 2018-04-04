@@ -1,32 +1,88 @@
 {% extends "webworm/header.html" %}
 
 {% block content %}
+{% load static %}
+
+<!-- *CWL* to allow contextual modification of tool-click behavior.
+     When in main tool, we do not want miscellaneous tools and info screens
+     to replace the tab. The reverse may be true for when the user is looking
+     at miscellaneous tools and info. -->
+{% with info_target="_blank" support_target="_blank" %}
+
 <div id="loader"></div>
 <div id="loaderText"><h2 id="loaderLabel">Loading Crossfilter Data. Please wait.</h2></div>
 
 <div style="visibility:hidden;" class="container animatebottom" id="master">
 
-  <ul class="nav nav-tabs" id="tabsUL">
-    <li class="active"><a title="Select Features to Crossfilter on. Add restrictions to Database field values. Optional." 
-			  data-toggle="tab" href="#searchPane">Advanced Filters</a></li>
-    <li><a title="Find desired experiments by restricting Features value ranges. Download Features metadata or full experiment data." 
-	   data-toggle="tab" href="#crossfilterPane">Crossfilter Features/Get Data</a></li>
-  </ul>
+<nav class="navbar navbar-default navbar-inverse">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+      </button>
+      <a target="_blank" href="http://openworm.org/" class="navbar-brand">OpenWorm</a>
+    </div>
+    
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="main-navbar-collapse-1">
+      {% include "webworm/nav-main-tool-template.html" %}
+      {% include "webworm/nav-support-tool-template.html" %}
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+
+{% endwith %}
+
+  <form id="searchForm" action="{% url "index" %}" method="get">
+    <div class="form-group" >
+      <div id="searchWidget" class="ui-widget">
+	<p id="searchLine">
+	  <button onclick="submitSearchBar()" id="searchBarButton" class="btn btn-danger" value="">Search</button>
+	  <label for="searchBar">:</label>
+	  <textarea id="searchBar" rows="1" placeholder="e.g. N2 or unc "></textarea>
+	</p>
+      </div>
+      <input type="hidden" type="submit" name="search">
+      <div id="crossfilterFeatureInput">
+      </div>
+      <div id="downloadMetadataInput">
+      </div>
+      <div id="hiddenDiscreteInput">
+      </div>
+    </div> <!-- form group -->
+  </form>
+
+  <hr>
 
   <div class="tab-content">
-    <!-- Search Tool Panel -->
-    <div class="tab-pane fade in active" id="searchPane">
-      {% include "webworm/advanced-filter-template.html" %}
+    <!-- Database Selection Tool -->
+    <div class="tab-pane fade in active" id="crossfilterPane">
+      {% include "webworm/pane-crossfilter.html" %}
     </div>
 
-    <!-- Cross Filter Panel -->
-    <div class="tab-pane fade" id="crossfilterPane">
-      {% include "webworm/crossfilter-pane.html" %}
+    <!-- Select Crossfilter Features -->
+    <div class="tab-pane fade" id="xfFeaturesPane">
+      {% include "webworm/pane-crossfilterFeatures.html" %}
+    </div>    
+
+    <!-- Filter Tool Panel -->
+    <div class="tab-pane fade" id="searchPane">
+      {% include "webworm/pane-browseFilter.html" %}
+    </div>
+
+    <!-- Download Data Panel -->
+    <div class="tab-pane fade" id="downloadDataPane">
+      {% include "webworm/pane-getData.html" %}
+    </div>
+
+    <!-- Download MetaData Panel -->
+    <div class="tab-pane fade" id="featuresMetaPane">
+      {% include "webworm/pane-getMetadata.html" %}
     </div>
   </div>
-</div>
 
-{% load static %}
+</div>
 
 <script type="text/javascript"> 
   var hasCFData = false;
@@ -43,6 +99,9 @@
   var crossfilterData = {{ results_list|safe }};
   var selectedFeaturesNames = {{ selected_features_names|safe }};
   var allFeaturesNames = {{ all_features_names|safe }};
+  var zenodoFieldNames = {{ zenodo_header|safe }};
+  var zenodoFileData = {{ zenodo_data|safe }};
+  var zenodoDataDict = {};
   var discreteFieldData = {{ discrete_field_counts|safe }};
   var discreteFieldMetadata = {{ discrete_field_meta|safe }};
   var discreteFieldNames = {{ discrete_field_names|safe }};
@@ -58,6 +117,9 @@
 <!-- DataTables local -->
 <script src="{% static 'webworm/filter-discrete.js' %}"></script>
 <script src="{% static 'webworm/filter-features.js' %}"></script>
+
+<!-- Search Bar -->
+<script src="{% static 'webworm/main-search-bar.js' %}"></script>
 
 <!-- Crossfilter Local -->
 <script src="{% static 'webworm/crossfilter_parameters.js' %}"></script>

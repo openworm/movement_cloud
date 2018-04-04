@@ -2,202 +2,144 @@
 
 ## Background
 
-The movement database captures metadata concerning experiments that
-had been conducted studying the movements of C. Elegans nematode
-worms. Where available the metadata includes information about access
-to full scientific experimental data stored in other database
-repositories. As of this writing, we have support for data stored in
+The movement database captures metadata concerning experiments that had been conducted studying the movements of C. Elegans nematode worms. Where available the metadata includes information about access to full scientific experimental data stored in other database repositories. As of this writing, we have support for data stored in
 [Zenodo repositories](https://zenodo.org/).
 
 :warning: We welcome any suggestions for improvements or
 features. Please drop us a message or issue on our [Github
-repository](https://github.com/openworm/movement_cloud).
+repository](https://github.com/openworm/movement_cloud) or via our [feedback form](https://goo.gl/forms/4ryQpnlkJRhAv7vx1).
 
 ## Use-Cases
 
 This movement database interface allows users to:
 
-1. Search the database for experiments based on features means.  The
-primary mechanism for doing so is via the
-[crossfilter](http://square.github.io/crossfilter/) mechanism.
+1. Find experiments using features means as parameters (along with date and worm age), from a subset of experiments drawn from the database. This is done using a crossfilter mechanism. The tool will initially load with all experiment records from the full database.
 
-2. Download a file that can be import into a spreadsheet. This file
-contains metadata about each selected experiment. The user can control
-which set of features values get inserted into the file.
+2. Search for specific experiment subsets by field (e.g. Genes, Alleles etc ...) values, and apply that to the database display.
 
-3. Download experiment data files associated with selected experiments.
-We currently cannot support direct download of files from the
-interface, but we provide two mechanisms to support the downloading of
-selected experiment files via other means.
+3. Get a features means metadata file for experiments found. This is in the form of comma-separated-values (csv) file that can be imported into a spreadsheet. The user can control which set of features values get inserted into this file.
+
+4. Get experiment data files (hosted on Zenodo) associated with experiments found. We currently cannot support direct download of files from the interface, but we do provide two mechanisms to allow users to download the experiment files by other means.
+
+5. View and validate WCON-formatted movement data files.
+
+6. Make requests to contribute their own datasets to the database.
 
 ## Workflow
 
-The user will encounter the following landing page when accessing the
-database interface for the first time.
+The user will encounter the following landing page when accessing the database interface for the first time.
 
 :warning: As of this writing, we have a public test server at
 [http://movement.openworm.org/](http://movement.openworm.org/).
 
 ![Landing Page](screenshots/LandingPage.png)
 
-The landing page will begin with the crossfilter tool (tab
-"Crossfilter Features/Get Data" and subtab "Crossfilter Tool") using a
-set of default features, and be applied to all experiments currently
-available on the database.
+The landing page will begin with the crossfilter tool (Menu item: **_Find Experiments_** -> **_Crossfilter_**) using a
+set of default features, and be applied to all experiments currently available on the database.
 
-### Search via Crossfilter
+There will also be a convenient search bar where users familiar with the datasets they want, may specify search terms to limit the experiments the database displays. These search terms are applied to fields such as Genes names, Alleles, Strains, or the names of Experimenters. An autocomplete feature helps users narrow down search terms quickly.
 
-Using the crossfilter tool is simple. Clicking and dragging your mouse
-along any part of any of the crossfilter bar charts sets a range for
-the values on the x-axis on which to restrict the search. The height
-of each bar represents the number of experiments in the value-range of
-that bar. Restricting the range of one chart automatically eliminates
-valid ranges and values for the other charts. Each chart can be
-independently reset. There is also a global "Reset all" available
-above the Experiment Date chart.
+![Search Bar](screenshots/SearchBar.png)
 
-![Clean Crossfilter Charts](screenshots/CrossfilterBefore.png)
+Users unfamiliar with experiments stored in the database may also browse fields via Find Experiments -> Browse and Filter Database. All available search fields are listed in tables in this view along with the approximate number of experiments available in the database for any particular search value.
+
+![Browse and Filter Tool](screenshots/BrowseAndFilter.png)
+
+### Find Experiments via Crossfilter
+
+Using the crossfilter tool is simple. Clicking and dragging the mouse along any part of any of the crossfilter bar charts sets a range for the values on the x-axis on which to restrict the search. The height of each bar represents the number of experiments in the value-range of
+that bar. Restricting the range of one chart automatically eliminates valid ranges and values for the other charts. Each chart can be independently reset. The "reset" link shows up for any chart where a range is active. There is also a global "Reset all" available above the Experiment Date chart.
+
 ![Crossfilter Experiments in 2011 with Midbody speed from 100 to 300](screenshots/CrossfilterAfter.png)
 
-The result is a set of experiments with features values that are
-constrained by all applied crossfilter ranges. At the bottom of the
-page is a dynamic preview of the 20 experiments that belong to the
-full set of constrained experiments. This serves as a rough preview,
-and has links to youtube video samples of the worm movements should
-one wishes to watch at this stage of the search.
+The result is a set of experiments with features values that are constrained by all applied crossfilter ranges. At the bottom of the page is a dynamic preview of a subset of 20 experiments that belong to the full set of constrained experiments. This serves as a rough preview,
+and has links to youtube video samples of the worm movements should one wishes to watch at this stage of the search.
 
 ![Crossfilter Dynamic Preview](screenshots/CrossfilterDynamicPreview.png)
 
-:warning: A fuller table of selected experiments with embedded youtube
-samples is available later for full browsing. Please do not feel
-unnecessarily constrained by the limited preview above.
+:warning: A fuller table of selected experiments with embedded youtube samples is available for full browsing when the user wishes to download the data. Please do not feel unnecessarily constrained by the limited preview above.
 
-There is also a summary of the number of experiment files (there can
-be more than one associated with each experiment) captured in the
-crossfilter search. Each Zenodo ID is uniquely associated with an
-experiment, so users can make sense of multiple entries with the same
-features values data. The total file sizes of all experiment files in
-the resulting search is also reflected.
+Experiment Data and Days of Adulthood are fixed crossfilter parameters in this tool. Users may change any of the other parameters by **_Configure Database_** -> **_Change Crossfilter Features_**.
 
 ### Getting Data
 
-When satisfied with the crossfilter process, click on the "Get
-Experiments Data" subtab. You can return to the "Crossfilter Tool"
-subtab to re-filter at any time. At the top of the page is the summary
-of the results of the prior crossfiltering.
+When satisfied with the crossfilter parameters, users may select any of the options in the "Get Data" menu item. Users can always return to the crossfilter view by **_Find Experiments_** -> **_Crossfilter_** to change the parameters at any time. All state is preserved for between these shifts in views.
 
-![Get Data Page](screenshots/GetDataPage.png)
+#### Features Means Data
 
-Clicking on the "Generate Full Crossfilter Preview" produces a full
-preview of the experiments that were selected in the last crossfilter
-exercise. Each row of this table represents an experiment file
-associated with a selected experiment. As above, Zenodo IDs uniquely
-identify experiments. At the top left corner the number of rows
-displayed can be adjusted from 10 to 100. At the top right corner a
-dynamic search textbox allows you to find records by partial text
-matches. At the bottom of the table you may browse pages of the
-experiment records. Youtube sample video embeds are also included
-where available.
+![Get Features Means](screenshots/FeaturesMeans.png)
+
+Menu navigation **_Get Data_** -> **_Features Means_** brings us to this view. To download a csv file containing features metadata, users can first select
+the set of features using the "Select Features"
+table. Features are toggled by clicking on appropriate row. The features chosen here are orthogonal to the features used as parameters in the crossfilter tool.
+
+The top-right "Search:" box can also be used to filter for partial keywords, select individual features from that list, or all of the partial matches using the "Search Selected" button. Users can filter on other partial keywords using the "Search:" box without losing any of the prior selections.
+
+When satisfied with the selection, the "Download Features Means Metadata" button sends the request to the server. The experiments with features data will correspond to the set of experiments found earlier using the crossfilter tool.
+
+:warning: The download can take a bit of time, depending on the number of features and experiments selected. Users may have to wait around a minute to get the entire database with all features.
+
+When successful a "results.csv" file will be generated and downloaded to the user's local machine. This file can then be import into a spreadsheet.
+
+![Features means metadata on Apple Numbers](screenshots/FeaturesMeansData.png)
+
+The data acquired consists of columns including the given name for the experiment, the strain, the gene, the allele, the zenodo id, the time stamp of the experiment, the age of the worm in days, and a column for each feature selected.
+Each row represents an experiment and the rows are sorted by ascending strain values.
+
+#### Zenodo Data
+
+![Get Data Page](screenshots/GetZenodoMain.png)
+
+Menu navigation **_Get Data_** -> **_Zenodo Data_** brings us to this view. The "Click to Preview Selected Experiments" button produces a browsable and searchable table listing all of the experiments found by crossfilter. Each row of this table represents an experiment file
+associated with a selected experiment. At the top left corner the number of rows displayed can be adjusted from 10 to 100. At the top right corner a dynamic search textbox allows you to find records by partial text matches. At the bottom of the table users may browse pages of the experiment records. Youtube sample video embeds are also included where available.
 
 ![Full Preview Table](screenshots/CrossfilterFullPreview.png)
 
-We provide two forms of data acquisition support.
-
-1. Features Metadata Download
-
-Select a set of features. These features do not have to be the same as
-the set of features used to perform the crossfilter. You can then
-download a file that can be import into spreadsheets containing some
-base information about the crossfiltered experiments along with the
-values of the set of selected features.
-
-2. Support for Experiment Files Download
-
-The interface currently provides no direct download support for
-acquiring experiment files from Zenodo. However we provide two
-mechanisms to allow users to download these files by other means. The
-first mechanism generates a list of URLs in a text box users can
-copy. The second produces a download script package that can be
-executed in a POSIX/Linux/MacOSX environment to download the desired
-files.
-
-#### Downloading Features Metadata
-
-To download a file containing features metadata, you can first select
-the set of features using the "Select Features For Download"
-table. You can toggle selection by clicking on each row.
-
-You can also use the top-right "Search:" box to filter for partial
-keywords, select individual features from that list, or all of the
-partial matches using the "Search Selected" button. You can filter on
-other partial keywords using the "Search:" box without losing any of
-the prior selections.
-
-After you are satisfied with the selection, scroll down to the "Get
-Data" section and click on the "Get Features Means Data" button.
-
-:warning: The download can take a bit of time, depending on the number
-of features selected.
-
-:warning: The file type checkboxes at the bottom of the page have no
-effect on this download feature.
-
-When successful a "results.csv" file will be generated and downloaded
-to your machine. This can be imported into a spreadsheet.
-
-![Import features means metadata using Open Office](screenshots/ImportCsv.png)
-
-The data acquired consists of columns including the given name for the
-experiment, the strain, the gene, the allele, the zenodo id, the time
-stamp of the experiment, and a column for each feature selected prior.
-Each row represents an experiment (rather than experiment file as
-before) and the rows are sorted by ascending strain values.
-
-![Features means metadata on Open Office](screenshots/FeaturesMeansData.png)
-
 #### Acquisition of Experiment Data Files
 
-At the bottom of the page are file type checkboxes. These can be used
-to exclude certain types of experiment file types from download. For
-example the full uncompressed hdf5 video files of captured worm
-movements can be very large, and not desirable. Unchecking the
-"masked_video" box will exclude them.
+At the bottom of the page are file type checkboxes. These can be used to exclude certain types of experiment file types from download. For example the full uncompressed hdf5 video files of captured worm movements can be very large, and not desirable. Unchecking the "masked_video" box will exclude them. The expected download sizes are dynamically updated in response to the selection of checked boxes.
 
-![File type checkboxes](screenshots/DownloadFileData.png)
+Lacking a way for users to directly download files from the tool itself, we provide two mechanisms for getting Zenodo data.
 
-The filter will apply to both available ways to acquire experiment
-file data as described below.
+##### Generated list of Experiment File URLs.
 
-1. The first way to acquire experiment data files involve generating a
-list of URLs users can copy and paste into third-party download
-software or plugins. Users can do this by clicking on the "Generate
-File Data URLs" button. This creates a textbox with a list of URLs.
+The first mechanism to acquire experiment data files involve generating a list of URLs users can copy and paste into third-party download software or plugins. Users can do this by clicking on the "Generate File Data URLs" button. This creates a textbox with a list of URLs.
 
 ![Download List](screenshots/DownloadFileList.png)
 
-Users can copy all or part of the text, and use in a third party
-tool. Here is an example using a [Chrome
-plugin](https://github.com/lmmx/tabsave/) to download 2 smaller files.
+Users may select and copy individual lines, and paste them into browser navigation bars. They can also use 3rd party plugins like this download plugin (e.g. [Tab Save](https://github.com/lmmx/tabsave/)) for Chrome shown below.
 
 ![Downloading using Chrome Plugin](screenshots/DownloadViaPluginOnChrome.png)
 
-2. The second method generates a download package
-("movement_data_download_package.zip") for POSIX/Linux/MacOSX
-systems. This package contains:
+##### Download Script Package
+
+The second mechanism has our tool generate a download package ("movement_data_download_package.zip") for POSIX/Linux/MacOSX systems. This package contains:
   * A bash shell download script
   * A file containing download data based on zenodo ids and file names.  
   * Instructions.
 
-Using the download script on a Linux machine will make use of wget to
-download all files into a folder structure corresponding to zenodo
-ids.
+Using the download script on a Linux machine will make use of wget to download all files into a folder structure corresponding to zenodo ids.
+
+## WCON Viewer
+
+Menu item **_Support Tools_** -> **_WCON Movement Viewer_** brings us to this tool. The tool opens in a new window to avoid disruption to the state of the main database tool. The initial view loads a default example worm. A link to a larger WCON data file hosted on Zenodo is provided for users to try uploading to this tool if they do not have WCON files of their own.
+
+:warning: As an exercise, users may wish to try searching the database for interesting worms, acquire the appropriate WCON file from Zenodo, and drop it into this tool.
+
+![WCON Viewer](screenshots/WCONViewerTop.png)
+
+Clicking on the "UPLOAD ANOTHER FILE" button expands a drag-and-drop area where users may drag WCON files they possess on their local machines.
+
+Upon doing so the tool will attempt to parse and validate the schema of the uploaded WCON file (which are JSON files.) Often the viewer will continue to work in spite of some validation errors.
+
+In the visualization box, the red dot represents the head of the worm, and the blue line represents its body. The body's articulation can vary depending on the data. The grey line represents the worm's track over time. More than one worm may be found in a WCON file. If so, this tool will allow users to choose the worm to visualize by the drop-down selection under the "PICK A WORM" label. Users may pause and restart the animation at any time. The middle mouse scroll and certain trackpad gestures allow the user to zoom in and out inside the view.
+
+Below the main visualization, metadata information associated with the data file is presented, along with the units used, and details about each worm in the loaded WCON file.
+
+:warning: As of this writing, this viewer tool may not fully handle all possible forms of valid WCON files. We are working toward full format compatibility in future work. The viewer will however handle the most common forms.
 
 ## Notes
 
-This tutorial will not cover the optional "Advanced Filter" features
-used to constrain the set of database records prior to
-crossfilter. This can be useful for people who wish to crossfilter on
-features other than the default ones, or constrain the search to
-specific parameters such as the set of strains, or
-experimenters. Details on how to use the Advanced Filter, as well as
-key interface components may be found [here](Features.md).
+* Details about how each individual feature (e.g. crossfilter, table browsing, etc ...) found in this tool are documented in our [Features Documentation](Features.md).
+
+* Users who wish to contribute their own datasets to the database may make a request via the form in **_Contribute_** -> **_Upload your Data_**. We will work with you to get your data uploaded to the server, and will gladly acknowledge your contribution in the tool view **_Contribute_** -> **_Contributors List_**.
