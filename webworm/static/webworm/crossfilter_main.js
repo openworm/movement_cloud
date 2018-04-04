@@ -13,7 +13,7 @@ function noResults(domTag) {
     $('#' + domTag).append('<h1>No Results from Last Search</h1>');
     $('#' + domTag).append('<hr>');
     $('#' + domTag).append('<p>Please try with other search and filter terms.</p>');
-    $('#' + domTag).append('<p>Do this through the <b>search bar</b>, or <b><i>Configure Database -> Advanced Database Filters</i></b>.</p>');
+    $('#' + domTag).append('<p>Do this through the <b>search bar</b>, or <b><i>Find Experiments -> Browse and Filter Database</i></b>.</p>');
     $('#' + domTag).append('<p>You may also reset the tool by <b><i>Configure Database -> Clear All Settings</i></b>.</p>');
 }
 
