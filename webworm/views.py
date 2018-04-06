@@ -17,6 +17,8 @@ from datetime import timedelta
 import decimal
 import math
 
+import urllib
+
 # For performance debugging only
 import time
 
@@ -156,6 +158,7 @@ def processSearchField(key, db_filter, getRequest, dbRecords, filterState):
                 for searchTerm in searchList:
                     if searchTerm != '':
                         # https://stackoverflow.com/questions/38778080/pass-kwargs-into-django-filter
+                        searchTerm = urllib.parse.unquote(str(searchTerm));
                         execDict = {db_filter:searchTerm};
                         returnDbRecords = returnDbRecords | dbRecords.filter(**execDict); 
                         if filterState.get(key) == None:

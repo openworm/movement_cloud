@@ -10,7 +10,11 @@ function createDiscreteHiddenInput(domTag) {
 	discreteTables[disIdx].rows({ selected: true }).every( function(index) {
 	//	confirmTables[disIdx].rows().every( function(index) {
 		var data = this.data();
-		fieldString += data[0] + ',';
+		// *CWL* - encodeURIComponent IS VERY IMPORTANT. 
+		//   Properly encodes each search term value correctly.
+		//
+		// fieldString += data[0] + ',';
+		fieldString += encodeURIComponent(data[0]) + ',';
 	    });
 	// remove last excess comma
         fieldString = fieldString.substring(0, fieldString.length - 1);
