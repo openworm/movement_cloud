@@ -29,8 +29,8 @@ for (var currIdx=0; currIdx<discreteFieldData.length; currIdx++) {
 	databaseFieldData.push({ 
 		"category" : discreteFieldNames[currIdx],
          	"label" : discreteFieldData[currIdx][recordIdx][0],
-		"value" : discreteFieldMetadata[currIdx] + "=" + 
-		          discreteFieldData[currIdx][recordIdx][0],
+		"value" : discreteFieldMetadata[currIdx] + "= '" + 
+		          discreteFieldData[currIdx][recordIdx][0] + "'",
 		    });
     }
 }
@@ -93,7 +93,9 @@ function scrollToBottom() {
 function parseAndUpdateSearch() {
     var termDict = {};
     text = $('#searchBar').val();
-    terms = text.split(",");
+    //    terms = text.split(",");
+    var terms = text.match(/(\s*[^,'=]*=\s*'[^']*')|(\s*[^,'=]*=\s*[^,]*)/g);
+    // console.log(terms);
     for (var termIdx in terms) {
 	var term = terms[termIdx];
 	// ignore completely empty terms (contains only whitespaces)
@@ -113,12 +115,14 @@ function parseAndUpdateSearch() {
 		if (!(components[0] in termDict)) {
 		    termDict[components[0]] = "";
 		}
-		var value = components[1]; 
+		var value = encodeURIComponent(components[1].trim().replace(/[\']+/g,'')); 
+		// console.log('Value of ' + components[0] + ': ' + value);
 		// Use commas only if tacking on additional terms.
 		if (termDict[components[0]] != "") {
-		    value = "," + value;
-		} 
-		termDict[components[0]] += value;
+		    termDict[components[0]] += "," + value;
+		} else {
+		    termDict[components[0]] = value;
+		}
 	    }
 	}
     }
@@ -126,6 +130,7 @@ function parseAndUpdateSearch() {
 	$("#hiddenDiscreteInput").append('<input type="hidden" id="' + 
 					 term + 'InputList" name="' +
 					 term + '" value=""/>');
+	// console.log(termDict[term]);
 	$('#' + term + 'InputList').val(termDict[term]);
     }
     return true;
