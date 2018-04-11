@@ -59,7 +59,7 @@ $("#searchBar").on( "keydown", function( event ) {
 
 $("#searchBar").catcomplete({
    delay: 0,
-   minLength: 0,
+   minLength: 2,
    source: function(request, response) {
 		// delegate back to autocomplete, but extract the last term
 		response($.ui.autocomplete.filter(databaseFieldData, 
