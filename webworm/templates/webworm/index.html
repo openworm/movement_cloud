@@ -105,6 +105,7 @@
   var discreteFieldData = {{ discrete_field_counts|safe }};
   var discreteFieldMetadata = {{ discrete_field_meta|safe }};
   var discreteFieldNames = {{ discrete_field_names|safe }};
+  var strainDescriptions = {{ strain_descriptions|safe }};
   var downloadData = {% if download_data %}{{ download_data|safe }}{% else %}'None'{% endif %};
   var downloadHeaders = {% if download_header %}{{ download_header|safe }}{% else %}'None'{% endif %};
 </script>

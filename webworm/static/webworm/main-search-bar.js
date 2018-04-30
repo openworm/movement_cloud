@@ -4,6 +4,7 @@ $.widget( "custom.catcomplete", $.ui.autocomplete, {
 	    this.widget().menu( "option", "items", "> :not(.ui-autocomplete-category)" );
 	},
 	_renderMenu: function( ul, items ) {
+	    var t0 = performance.now();
 	    var that = this,
 		currentCategory = "";
 	    $.each( items, function( index, item ) {
@@ -17,20 +18,33 @@ $.widget( "custom.catcomplete", $.ui.autocomplete, {
 			li.attr( "aria-label", item.category + " : " + item.label );
 		    }
 		});
+	    var t1 = performance.now();
+	    console.log('Autocomplete Render: ' + (t1-t0) + ' ms');
 	},
     });
 
 // Format - { label: "annhhx10", category: "Products" },
 var databaseFieldData = [];
 
+// Turn strain description table into a dictionary
+var strainDictionary = {};
+for (var idx=0; idx<strainDescriptions.length; idx++) {
+    strainDictionary[strainDescriptions[idx][0]] = strainDescriptions[idx][1];
+}
+
 // Construct database field information for autocomplete search bar
 for (var currIdx=0; currIdx<discreteFieldData.length; currIdx++) {
     for (var recordIdx=0; recordIdx<discreteFieldData[currIdx].length; recordIdx++) {
+	let labelValue = discreteFieldData[currIdx][recordIdx][0];
+	let origValue = labelValue;
+	if (discreteFieldNames[currIdx] == "Strains") {
+	    labelValue += " (" + strainDictionary[labelValue] + ")";
+	}
 	databaseFieldData.push({ 
 		"category" : discreteFieldNames[currIdx],
-         	"label" : discreteFieldData[currIdx][recordIdx][0],
+		"label" : labelValue,
 		"value" : discreteFieldMetadata[currIdx] + "= '" + 
-		          discreteFieldData[currIdx][recordIdx][0] + "'",
+		          origValue + "'",
 		    });
     }
 }
