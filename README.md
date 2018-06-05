@@ -12,15 +12,19 @@ form](https://goo.gl/forms/4ryQpnlkJRhAv7vx1).
 
 ![Landing Page](webworm_docs/screenshots/LandingPage.png)
 
-* Please read the tutorial and feature documentation here - [Movement Database Interface Documentation and Tutorial](webworm_docs/Tutorial.md)
+* Overview of workflow:
+  1. The full database is loaded at the start.
+  2. Use the **Search Bar** to load specific subsets of experiments.
+  3. Dynamically **refine** the set of experiments by crossfiltering on ranges of features means values.
+  4. **Download** experiment data and/or features means data for experiments found.
 
-* Overview of workflow for using the interface:
-  1. Full database is loaded at the start.
-  2. Use Search Bar, or the Browse and Filter tool to load specific subsets of experiments.
-  3. Find experiments by crossfiltering on ranges of features means values.
-  4. Get Zenodo movement, data and/or features means metadata for experiments found.
+Details of the process of running through the **full workflow** can be found here - [Movement Database Workflow](webworm_docs/Workflow.md)
 
-## Interface Features Documentation
+## Tutorial
+
+Please try our basic **tutorial** here - [Movement Database Tutorial](webworm_docs/Tutorial-0.md)
+
+## Interface Features Reference Documentation
 
 Information on how each interface component feature can be used is
 found here - [Movement Database Features Documentation](webworm_docs/Features.md)

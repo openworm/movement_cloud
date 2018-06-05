@@ -4,6 +4,7 @@ $.widget( "custom.catcomplete", $.ui.autocomplete, {
 	    this.widget().menu( "option", "items", "> :not(.ui-autocomplete-category)" );
 	},
 	_renderMenu: function( ul, items ) {
+	    var t0 = performance.now();
 	    var that = this,
 		currentCategory = "";
 	    $.each( items, function( index, item ) {
@@ -17,20 +18,33 @@ $.widget( "custom.catcomplete", $.ui.autocomplete, {
 			li.attr( "aria-label", item.category + " : " + item.label );
 		    }
 		});
+	    var t1 = performance.now();
+	    console.log('Autocomplete Render: ' + (t1-t0) + ' ms');
 	},
     });
 
 // Format - { label: "annhhx10", category: "Products" },
 var databaseFieldData = [];
 
+// Turn strain description table into a dictionary
+var strainDictionary = {};
+for (var idx=0; idx<strainDescriptions.length; idx++) {
+    strainDictionary[strainDescriptions[idx][0]] = strainDescriptions[idx][1];
+}
+
 // Construct database field information for autocomplete search bar
 for (var currIdx=0; currIdx<discreteFieldData.length; currIdx++) {
     for (var recordIdx=0; recordIdx<discreteFieldData[currIdx].length; recordIdx++) {
+	let labelValue = discreteFieldData[currIdx][recordIdx][0];
+	let origValue = labelValue;
+	if (discreteFieldNames[currIdx] == "Strains") {
+	    labelValue += " (" + strainDictionary[labelValue] + ")";
+	}
 	databaseFieldData.push({ 
 		"category" : discreteFieldNames[currIdx],
-         	"label" : discreteFieldData[currIdx][recordIdx][0],
-		"value" : discreteFieldMetadata[currIdx] + "=" + 
-		          discreteFieldData[currIdx][recordIdx][0],
+		"label" : labelValue,
+		"value" : discreteFieldMetadata[currIdx] + "= '" + 
+		          origValue + "'",
 		    });
     }
 }
@@ -59,7 +73,7 @@ $("#searchBar").on( "keydown", function( event ) {
 
 $("#searchBar").catcomplete({
    delay: 0,
-   minLength: 0,
+   minLength: 2,
    source: function(request, response) {
 		// delegate back to autocomplete, but extract the last term
 		response($.ui.autocomplete.filter(databaseFieldData, 
@@ -93,7 +107,9 @@ function scrollToBottom() {
 function parseAndUpdateSearch() {
     var termDict = {};
     text = $('#searchBar').val();
-    terms = text.split(",");
+    //    terms = text.split(",");
+    var terms = text.match(/(\s*[^,'=]*=\s*'[^']*')|(\s*[^,'=]*=\s*[^,]*)/g);
+    // console.log(terms);
     for (var termIdx in terms) {
 	var term = terms[termIdx];
 	// ignore completely empty terms (contains only whitespaces)
@@ -113,12 +129,14 @@ function parseAndUpdateSearch() {
 		if (!(components[0] in termDict)) {
 		    termDict[components[0]] = "";
 		}
-		var value = components[1]; 
+		var value = encodeURIComponent(components[1].trim().replace(/[\']+/g,'')); 
+		// console.log('Value of ' + components[0] + ': ' + value);
 		// Use commas only if tacking on additional terms.
 		if (termDict[components[0]] != "") {
-		    value = "," + value;
-		} 
-		termDict[components[0]] += value;
+		    termDict[components[0]] += "," + value;
+		} else {
+		    termDict[components[0]] = value;
+		}
 	    }
 	}
     }
@@ -126,6 +144,7 @@ function parseAndUpdateSearch() {
 	$("#hiddenDiscreteInput").append('<input type="hidden" id="' + 
 					 term + 'InputList" name="' +
 					 term + '" value=""/>');
+	// console.log(termDict[term]);
 	$('#' + term + 'InputList').val(termDict[term]);
     }
     return true;

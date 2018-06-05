@@ -17,6 +17,8 @@ from datetime import timedelta
 import decimal
 import math
 
+import urllib
+
 # For performance debugging only
 import time
 
@@ -129,6 +131,7 @@ def getDiscreteFieldMetadata(experimentsDb, context):
     global discreteFields;
     experiments_count = experimentsDb.count();
     fieldCounts = [];
+    strainDescriptions = Strains.objects.order_by("name").values_list("name", "description").distinct();
     for tag,field in discreteFields.items():
         exec('' + tag + '_list = ' + field[2] + 
              '.objects.order_by("name").values_list("name", flat=True).distinct();');
@@ -138,6 +141,7 @@ def getDiscreteFieldMetadata(experimentsDb, context):
     context['discrete_field_meta'] = [tag for tag,field in discreteFields.items()];
     context['discrete_field_names'] = [field[1] for tag,field in discreteFields.items()];
     context['discrete_field_counts'] = fieldCounts;
+    context['strain_descriptions'] = [list(item) for item in strainDescriptions];
 
 def processSearchField(key, db_filter, getRequest, dbRecords, filterState):
     returnDbRecords = Experiments.objects.none();
@@ -156,6 +160,7 @@ def processSearchField(key, db_filter, getRequest, dbRecords, filterState):
                 for searchTerm in searchList:
                     if searchTerm != '':
                         # https://stackoverflow.com/questions/38778080/pass-kwargs-into-django-filter
+                        searchTerm = urllib.parse.unquote(str(searchTerm));
                         execDict = {db_filter:searchTerm};
                         returnDbRecords = returnDbRecords | dbRecords.filter(**execDict); 
                         if filterState.get(key) == None:

@@ -1,9 +1,13 @@
-# Movement Database Tutorial
+# Movement Database Workflow Documentation
 
 ## Background
 
-The movement database captures metadata concerning experiments that had been conducted studying the movements of C. Elegans nematode worms. Where available the metadata includes information about access to full scientific experimental data stored in other database repositories. As of this writing, we have support for data stored in
-[Zenodo repositories](https://zenodo.org/).
+The movement database captures features data of experiments that had
+been conducted studying the movements of C. Elegans nematode
+worms. Where available, information about access to full scientific
+experiment data stored in other database repositories can be also
+found here. As of this writing, we have support for experiment data
+stored in [Zenodo repositories](https://zenodo.org/).
 
 :warning: We welcome any suggestions for improvements or
 features. Please drop us a message or issue on our [Github
@@ -13,17 +17,17 @@ repository](https://github.com/openworm/movement_cloud) or via our [feedback for
 
 This movement database interface allows users to:
 
+1. Search for specific experiment subsets by field (e.g. Genes, Alleles etc ...) values, and apply that to the database display.
+
 1. Find experiments using features means as parameters (along with date and worm age), from a subset of experiments drawn from the database. This is done using a crossfilter mechanism. The tool will initially load with all experiment records from the full database.
 
-2. Search for specific experiment subsets by field (e.g. Genes, Alleles etc ...) values, and apply that to the database display.
+1. Get a features means metadata file for experiments found. This is in the form of comma-separated-values (csv) file that can be imported into a spreadsheet. The user can control which set of features values get inserted into this file.
 
-3. Get a features means metadata file for experiments found. This is in the form of comma-separated-values (csv) file that can be imported into a spreadsheet. The user can control which set of features values get inserted into this file.
+1. Get experiment data files (hosted on Zenodo) associated with experiments found. We currently cannot support direct download of files from the interface, but we do provide two mechanisms to allow users to download the experiment files by other means.
 
-4. Get experiment data files (hosted on Zenodo) associated with experiments found. We currently cannot support direct download of files from the interface, but we do provide two mechanisms to allow users to download the experiment files by other means.
+1. View and validate WCON-formatted movement data files.
 
-5. View and validate WCON-formatted movement data files.
-
-6. Make requests to contribute their own datasets to the database.
+1. Make requests to contribute their own datasets to the database.
 
 ## Workflow
 
@@ -50,7 +54,7 @@ Users unfamiliar with experiments stored in the database may also browse fields 
 Using the crossfilter tool is simple. Clicking and dragging the mouse along any part of any of the crossfilter bar charts sets a range for the values on the x-axis on which to restrict the search. The height of each bar represents the number of experiments in the value-range of
 that bar. Restricting the range of one chart automatically eliminates valid ranges and values for the other charts. Each chart can be independently reset. The "reset" link shows up for any chart where a range is active. There is also a global "Reset all" available above the Experiment Date chart.
 
-![Crossfilter Experiments in 2011 with Midbody speed from 100 to 300](screenshots/CrossfilterAfter.png)
+![Crossfilter Experiments in 2014 varying days of adulthood](screenshots/CrossfilterAfter.png)
 
 The result is a set of experiments with features values that are constrained by all applied crossfilter ranges. At the bottom of the page is a dynamic preview of a subset of 20 experiments that belong to the full set of constrained experiments. This serves as a rough preview,
 and has links to youtube video samples of the worm movements should one wishes to watch at this stage of the search.

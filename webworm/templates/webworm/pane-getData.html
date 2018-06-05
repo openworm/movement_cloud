@@ -1,11 +1,12 @@
 <div id="crossfilter_genData_pane">
   <div id="genDataHeader">
-    <h1>Get Experiments Zenodo Data</h1>
+    <h2>Get Experiments Data</h2>
+    <input class="btn btn-success" type="button" value="Return to Crossfilter" onclick="document.getElementById('xfMain').click();" />
   </div>
   <hr>
   <!-- Replication of the crossfilter table from the main crossfilter page -->
   <div id='genDataTotals'>
-    <h4>1. Selected Experiments Summary</h4>
+    <h3>1. Selected Experiments Summary</h3>
     <p><span id='genDataActive'>-</span> of <span id='genDataTotal'>-</span> experiment selected.</p>
     <p>Maximum data size - <span id='genDataDatasize'>0 Mb</span></p>
   </div>
@@ -14,7 +15,7 @@
   </div>
   <hr>
   <div>
-    <h4>2. Get Data</h4>
+    <h3>2. Get Data</h3>
     <div class="row">
       <div class="col-sm-3">
 	<button id="getUrlList" onclick="getUrlList()" type="button" class="btn btn-danger" disabled="true">Generate File Data URLs List</button>
@@ -25,7 +26,7 @@
     </div>
   </div>
   <div id="filetypeCheckboxes">
-    <div><h4>Filter download by file types</h4></div>
+    <div><h3>Filter download by file types</h3></div>
     <p>Expected file download data size - <span id='expectedDatasize'>0 Mb</span></p>
   </div>
   <hr>
