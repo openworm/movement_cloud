@@ -22,7 +22,7 @@ Details of the process of running through the **full workflow** can be found her
 
 ## Tutorial
 
-Please try our basic **tutorial** here - [Movement Database Tutorial](webworm_docs/Tutorial.md)
+Please try our basic **tutorial** here - [Movement Database Tutorial](webworm_docs/Tutorial-0.md)
 
 ## Interface Features Reference Documentation
 
