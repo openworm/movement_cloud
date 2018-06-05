@@ -36,6 +36,6 @@ charts should now look like the following.
 
 ------
 
-[Previous - Search Bar](Tutorial-1.md)
+[Previous - Search Bar](Tutorial-1.md)  
 [Next - Download Data](Tutorial-3.md)
 

@@ -21,6 +21,6 @@ the crossfilter charts have changed accordingly.
 
 ------
 
-[Previous - Start Database](Tutorial-0.md)
+[Previous - Start Database](Tutorial-0.md)  
 [Next - Crossfilter](Tutorial-2.md)
 

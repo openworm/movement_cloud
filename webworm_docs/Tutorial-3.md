@@ -40,6 +40,6 @@ it. You will be asked to accept the download of the zip file.
 
 ------
 
-[Previous - Crossfilter](Tutorial-2.md)
+[Previous - Crossfilter](Tutorial-2.md)  
 [Next - View WCON Files](Tutorial-4.md)
 

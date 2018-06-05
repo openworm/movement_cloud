@@ -11,4 +11,4 @@ see the following landing page after it loads.
 
 ------
 
-[Next - Search Bar](Tutorial-2.md)
+[Next - Search Bar](Tutorial-1.md)
