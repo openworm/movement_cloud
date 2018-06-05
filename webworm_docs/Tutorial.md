@@ -1,145 +1,126 @@
 # Movement Database Tutorial
 
-## Background
+## Load Database on Browser
 
-The movement database captures metadata concerning experiments that had been conducted studying the movements of C. Elegans nematode worms. Where available the metadata includes information about access to full scientific experimental data stored in other database repositories. As of this writing, we have support for data stored in
-[Zenodo repositories](https://zenodo.org/).
+**Navigate** to [http://movement.openworm.org/](http://movement.openworm.org/).
 
-:warning: We welcome any suggestions for improvements or
-features. Please drop us a message or issue on our [Github
-repository](https://github.com/openworm/movement_cloud) or via our [feedback form](https://goo.gl/forms/4ryQpnlkJRhAv7vx1).
-
-## Use-Cases
-
-This movement database interface allows users to:
-
-1. Find experiments using features means as parameters (along with date and worm age), from a subset of experiments drawn from the database. This is done using a crossfilter mechanism. The tool will initially load with all experiment records from the full database.
-
-2. Search for specific experiment subsets by field (e.g. Genes, Alleles etc ...) values, and apply that to the database display.
-
-3. Get a features means metadata file for experiments found. This is in the form of comma-separated-values (csv) file that can be imported into a spreadsheet. The user can control which set of features values get inserted into this file.
-
-4. Get experiment data files (hosted on Zenodo) associated with experiments found. We currently cannot support direct download of files from the interface, but we do provide two mechanisms to allow users to download the experiment files by other means.
-
-5. View and validate WCON-formatted movement data files.
-
-6. Make requests to contribute their own datasets to the database.
-
-## Workflow
-
-The user will encounter the following landing page when accessing the database interface for the first time.
-
-:warning: As of this writing, we have a public test server at
-[http://movement.openworm.org/](http://movement.openworm.org/).
+The database should not take more than 30 seconds to load. You should
+see the following landing page after it loads.
 
 ![Landing Page](screenshots/LandingPage.png)
 
-The landing page will begin with the crossfilter tool (Menu item: **_Find Experiments_** -> **_Crossfilter_**) using a
-set of default features, and be applied to all experiments currently available on the database.
+## Use the Search Bar
 
-There will also be a convenient search bar where users familiar with the datasets they want, may specify search terms to limit the experiments the database displays. These search terms are applied to fields such as Genes names, Alleles, Strains, or the names of Experimenters. An autocomplete feature helps users narrow down search terms quickly.
+The full database is loaded at the start. The **search bar** lets you
+choose specific subsets of the database to load. 
 
-![Search Bar](screenshots/SearchBar.png)
+**Type "N2" into the search bar**. You will see a list of matches with
+different categories. Use the mouse to **scroll down** to the _Strains
+category_ and **click on the row** "AQ2947 (CGC N2 (Bristol, UK))."
 
-Users unfamiliar with experiments stored in the database may also browse fields via Find Experiments -> Browse and Filter Database. All available search fields are listed in tables in this view along with the approximate number of experiments available in the database for any particular search value.
+![Search Selection](screenshots/TutorialSearchSelect.png)
 
-![Browse and Filter Tool](screenshots/BrowseAndFilter.png)
+You will see that the tool has filled out the search line with the
+appropriate details like below. **Click** on the "Search" button.
 
-### Find Experiments via Crossfilter
+![Search Selected](screenshots/TutorialSearchSelected.png)
 
-Using the crossfilter tool is simple. Clicking and dragging the mouse along any part of any of the crossfilter bar charts sets a range for the values on the x-axis on which to restrict the search. The height of each bar represents the number of experiments in the value-range of
-that bar. Restricting the range of one chart automatically eliminates valid ranges and values for the other charts. Each chart can be independently reset. The "reset" link shows up for any chart where a range is active. There is also a global "Reset all" available above the Experiment Date chart.
+The database will now reload with only that strain's data. Notice how
+the crossfilter charts have changed accordingly.
 
-![Crossfilter Experiments in 2011 with Midbody speed from 100 to 300](screenshots/CrossfilterAfter.png)
+## Crossfilter Results
 
-The result is a set of experiments with features values that are constrained by all applied crossfilter ranges. At the bottom of the page is a dynamic preview of a subset of 20 experiments that belong to the full set of constrained experiments. This serves as a rough preview,
-and has links to youtube video samples of the worm movements should one wishes to watch at this stage of the search.
+The **crossfilter** tool lets you dynamically refine the search by a
+set of features means values. The "Experiment Date" and "Days of
+Adulthood" charts are always available to crossfilter against. The
+other features can be added or removed.
 
-![Crossfilter Dynamic Preview](screenshots/CrossfilterDynamicPreview.png)
+**Click on** the "Change Crossfilter Features Here" button. This takes
+you to the tool that lets you change crossfilter feature sets. The
+highlighted rows in the list of "Common Core Features" are currently
+what is available for crossfilter.
 
-:warning: A fuller table of selected experiments with embedded youtube samples is available for full browsing when the user wishes to download the data. Please do not feel unnecessarily constrained by the limited preview above.
+![Default Crossfilter Features](screenshots/TutorialDefaultXF.png)
 
-Experiment Data and Days of Adulthood are fixed crossfilter parameters in this tool. Users may change any of the other parameters by **_Configure Database_** -> **_Change Crossfilter Features_**.
+**Click on** the "midbody_bend_mean_abs" row to deselect it. 
+Now **click on** the "area" and "head_tip_speed_abs" rows to
+select them. Notice how the table highlight changes.
 
-### Getting Data
+![Modified Crossfilter Features](screenshots/TutorialModifiedXF.png)
 
-When satisfied with the crossfilter parameters, users may select any of the options in the "Get Data" menu item. Users can always return to the crossfilter view by **_Find Experiments_** -> **_Crossfilter_** to change the parameters at any time. All state is preserved for between these shifts in views.
+**Click on** the "Apply New Configuration" button. The database
+will now reload.
 
-#### Features Means Data
+Now we want only the long worms 10 days and older. Use the mouse to
+**drag along** the "length" chart so only the worms longer than 900
+are selected.
 
-![Get Features Means](screenshots/FeaturesMeans.png)
+Notice how the other charts react to this change. Also notice how the
+"Dynamic Preview" table changes with your actions as well. **Repeat**
+for the "Days of Adulthood" chart with worms 10 days and older. The
+charts should now look like the following.
 
-Menu navigation **_Get Data_** -> **_Features Means_** brings us to this view. To download a csv file containing features metadata, users can first select
-the set of features using the "Select Features"
-table. Features are toggled by clicking on appropriate row. The features chosen here are orthogonal to the features used as parameters in the crossfilter tool.
+![Long Old Worms](screenshots/TutorialLongOldWorms.png)
 
-The top-right "Search:" box can also be used to filter for partial keywords, select individual features from that list, or all of the partial matches using the "Search Selected" button. Users can filter on other partial keywords using the "Search:" box without losing any of the prior selections.
+## Downloading Experiments Data
 
-When satisfied with the selection, the "Download Features Means Metadata" button sends the request to the server. The experiments with features data will correspond to the set of experiments found earlier using the crossfilter tool.
+**Click on** the "Get Data Here" button. This brings up a new
+interface to look at the set of experiments you had selected for
+download.
 
-:warning: The download can take a bit of time, depending on the number of features and experiments selected. Users may have to wait around a minute to get the entire database with all features.
+![Getting Data](screenshots/TutorialGetData.png)
 
-When successful a "results.csv" file will be generated and downloaded to the user's local machine. This file can then be import into a spreadsheet.
+**Click on** the "Click to Preview Selected Experiments" button. This
+brings up a browseable table with details on the experiments
+selected, with an embedded Youtube sample of the worm's movement.
 
-![Features means metadata on Apple Numbers](screenshots/FeaturesMeansData.png)
+We want a younger worm to look at, so **click on** the "Days of
+Adulthood" header of the table to get it to sort the preview
+accordingly. The worm data with Zenodo ID "1191373" looks interesting
+in that it moves relatively fast, so remember that because we want to
+look at it later.
 
-The data acquired consists of columns including the given name for the experiment, the strain, the gene, the allele, the zenodo id, the time stamp of the experiment, the age of the worm in days, and a column for each feature selected.
-Each row represents an experiment and the rows are sorted by ascending strain values.
+![Data Preview](screenshots/TutorialFullPreview.png)
 
-#### Zenodo Data
+**Scroll down** to the bottom of the page, and **click on** the
+"Generate File Data URLs List" button. Now **uncheck** "features" and
+"masked_video".  **Search** the resulting list to find Zenodo ID
+"1191373." Your browser's search feature will work on this list.
 
-![Get Data Page](screenshots/GetZenodoMain.png)
+![Interesting Data](screenshots/TutorialInterestingExperiment.png)
 
-Menu navigation **_Get Data_** -> **_Zenodo Data_** brings us to this view. The "Click to Preview Selected Experiments" button produces a browsable and searchable table listing all of the experiments found by crossfilter. Each row of this table represents an experiment file
-associated with a selected experiment. At the top left corner the number of rows displayed can be adjusted from 10 to 100. At the top right corner a dynamic search textbox allows you to find records by partial text matches. At the bottom of the table users may browse pages of the experiment records. Youtube sample video embeds are also included where available.
+Each line is a URL where we can acquire the desired data. For this
+tutorial, we are only interested in this single entry. **Select** the
+text of the whole line for "1191373" and **copy** the text string.
 
-![Full Preview Table](screenshots/CrossfilterFullPreview.png)
+![Get URL](screenshots/TutorialGetURL.png)
 
-#### Acquisition of Experiment Data Files
+**Paste** the text into your browser navigation bar and navigate to
+it. You will be asked to accept the download of the zip file.
 
-At the bottom of the page are file type checkboxes. These can be used to exclude certain types of experiment file types from download. For example the full uncompressed hdf5 video files of captured worm movements can be very large, and not desirable. Unchecking the "masked_video" box will exclude them. The expected download sizes are dynamically updated in response to the selection of checked boxes.
+![Download WCON File](screenshots/TutorialSaveFile.png)
 
-Lacking a way for users to directly download files from the tool itself, we provide two mechanisms for getting Zenodo data.
+## Looking at Worm Movement WCON Data
 
-##### Generated list of Experiment File URLs.
+After the file is downloaded, **unzip it**. Now from the Database
+Interface, find the "Support Tools" option on the Navigation Bar and
+**click on** "WCON Movement Viewer." This brings up the tool to view
+WCON data. There is default data that is loaded when you first visit
+the tool.
 
-The first mechanism to acquire experiment data files involve generating a list of URLs users can copy and paste into third-party download software or plugins. Users can do this by clicking on the "Generate File Data URLs" button. This creates a textbox with a list of URLs.
+![WCON Viewer](screenshots/TutorialWconLandingPage.png)
 
-![Download List](screenshots/DownloadFileList.png)
+We will now load the data you had just downloaded using the database
+from before. **Click on** the "Upload Another File" button. This
+expands into an area where you can drag-and-drop files into. Using
+your system's interface, **drop the unzipped WCON file** you had acquired
+from before into this box.
 
-Users may select and copy individual lines, and paste them into browser navigation bars. They can also use 3rd party plugins like this download plugin (e.g. [Tab Save](https://github.com/lmmx/tabsave/)) for Chrome shown below.
+![Load New WCON](screenshots/TutorialWconDragAndDrop.png)
 
-![Downloading using Chrome Plugin](screenshots/DownloadViaPluginOnChrome.png)
+You should now see what the worm from experiment "1191373" does, and
+browse through its movement characteristics over time using the tool.
 
-##### Download Script Package
+This ends the tutorial.
 
-The second mechanism has our tool generate a download package ("movement_data_download_package.zip") for POSIX/Linux/MacOSX systems. This package contains:
-  * A bash shell download script
-  * A file containing download data based on zenodo ids and file names.  
-  * Instructions.
-
-Using the download script on a Linux machine will make use of wget to download all files into a folder structure corresponding to zenodo ids.
-
-## WCON Viewer
-
-Menu item **_Support Tools_** -> **_WCON Movement Viewer_** brings us to this tool. The tool opens in a new window to avoid disruption to the state of the main database tool. The initial view loads a default example worm. A link to a larger WCON data file hosted on Zenodo is provided for users to try uploading to this tool if they do not have WCON files of their own.
-
-:warning: As an exercise, users may wish to try searching the database for interesting worms, acquire the appropriate WCON file from Zenodo, and drop it into this tool.
-
-![WCON Viewer](screenshots/WCONViewerTop.png)
-
-Clicking on the "UPLOAD ANOTHER FILE" button expands a drag-and-drop area where users may drag WCON files they possess on their local machines.
-
-Upon doing so the tool will attempt to parse and validate the schema of the uploaded WCON file (which are JSON files.) Often the viewer will continue to work in spite of some validation errors.
-
-In the visualization box, the red dot represents the head of the worm, and the blue line represents its body. The body's articulation can vary depending on the data. The grey line represents the worm's track over time. More than one worm may be found in a WCON file. If so, this tool will allow users to choose the worm to visualize by the drop-down selection under the "PICK A WORM" label. Users may pause and restart the animation at any time. The middle mouse scroll and certain trackpad gestures allow the user to zoom in and out inside the view.
-
-Below the main visualization, metadata information associated with the data file is presented, along with the units used, and details about each worm in the loaded WCON file.
-
-:warning: As of this writing, this viewer tool may not fully handle all possible forms of valid WCON files. We are working toward full format compatibility in future work. The viewer will however handle the most common forms.
-
-## Notes
-
-* Details about how each individual feature (e.g. crossfilter, table browsing, etc ...) found in this tool are documented in our [Features Documentation](Features.md).
-
-* Users who wish to contribute their own datasets to the database may make a request via the form in **_Contribute_** -> **_Upload your Data_**. We will work with you to get your data uploaded to the server, and will gladly acknowledge your contribution in the tool view **_Contribute_** -> **_Contributors List_**.
+![New WCON Visualized](screenshots/TutorialWconNewData.png)
