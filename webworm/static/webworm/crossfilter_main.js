@@ -66,9 +66,10 @@ function crossfilter_callback(error, data_rows) {
 
 function processCrossfilterData(data_rows) {
    // Set the titles in the report
+    // *CWL* Don't think this is very necessary anymore.
     document.title = XFILTER_PARAMS.report_title;
-    let title_element = document.getElementById("crossfilter_report_title");
-    title_element.innerHTML = XFILTER_PARAMS.report_title;
+    // let title_element = document.getElementById("crossfilter_report_title");
+    // title_element.innerHTML = XFILTER_PARAMS.report_title;
     
     // A little coercion, since the CSV is untyped.
     data_rows.forEach((d, i) => {
