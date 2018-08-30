@@ -1,4 +1,6 @@
 # Worm Movement Database
+<img width="1197" alt="worm_videos_in_overview" src="https://user-images.githubusercontent.com/1573896/44877208-3da05600-ac71-11e8-8da7-c5253c1944aa.png">
+
 Movement Analysis on the cloud.
 
 This is an open database framework for users to search for and download
