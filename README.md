@@ -2,7 +2,7 @@
 Movement Analysis on the cloud.
 
 This is an open database framework for users to search for and download
-C. Elegans movement experiment data, as well as features means metadata.
+*C. elegans* movement experiment data, as well as features means metadata.
 
 If you have found a bug, please raise an issue with the github
 repo. For general feedback and suggestions, please use our [feedback
