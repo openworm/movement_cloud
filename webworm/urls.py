@@ -1,12 +1,12 @@
-from django.conf.urls import url
+from django.urls import re_path
 
 from . import views
 
 urlpatterns = [
-    url(r'^$', views.index, name='index'),
-    url(r'^wconviewer', views.wconviewer, name='wconviewer'),
-    url(r'^upload', views.upload, name='upload'),
-    url(r'^contributors', views.contrib, name='contributors'),
-    url(r'^release', views.release, name='release'),
-    url(r'^feedback', views.feedback, name='feedback'),
+    re_path(r'^$', views.index, name='index'),
+    re_path(r'^wconviewer', views.wconviewer, name='wconviewer'),
+    re_path(r'^upload', views.upload, name='upload'),
+    re_path(r'^contributors', views.contrib, name='contributors'),
+    re_path(r'^release', views.release, name='release'),
+    re_path(r'^feedback', views.feedback, name='feedback'),
 ]
