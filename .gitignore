@@ -4,3 +4,5 @@ db.sqlite3
 models_bk.py
 nohup.out
 nohup.*
+venv/
+local_settings.py

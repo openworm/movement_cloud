@@ -34,3 +34,65 @@ Please try our basic **tutorial** here - [Movement Database Tutorial](webworm_do
 
 Information on how each interface component feature can be used is
 found here - [Movement Database Features Documentation](webworm_docs/Features.md)
+
+## Contributing
+
+### Preparation
+
+Create virtual environment
+
+```shell
+python -m venv venv
+```
+
+Activate virtual environment.
+
+On Windows
+```shell
+venv/Scripts/activate
+```
+
+On Linux
+```shell
+source venv/Scripts/activate
+```
+
+### Local setup
+
+Create `movement_site/local_settings.py` with approximately following content
+
+```py
+import os
+LOCAL_BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# SQLite database engine for much simpler setup
+# For production, consider using PostgreSQL or another robust database engine
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': LOCAL_BASE_DIR / 'db.sqlite3',
+    }
+}
+
+ALLOWED_HOSTS = ['127.0.0.1']
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'test@gmail.com'
+EMAIL_HOST_PASSWORD = 'test'
+EMAIL_PORT = 587
+```
+
+You may need run following commmand to apply migrations for a first time, and in case you actively develop things.
+```shell
+python manage.py migrate
+```
+
+### Develoment workflow
+
+Run development server
+```shell
+python manage.py runserver
+```
+
+Open http://127.0.0.1:8000/ in the browser
